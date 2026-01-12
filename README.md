@@ -15,21 +15,21 @@ The system utilizes a modular wind tunnel structure driven by dual ducted fans, 
 ## 2. Target Users and Use Cases
 
 * **Aeromodeling Enthusiasts & Drone Players:** For validating wing and body simulations when large-scale wind tunnels are inaccessible.
-* AeroSmart provides a stable desktop environment for low-cost aerodynamic testing.
-* Controllable wind speeds allow for comparative analysis.
-* Natural Language Control lowers the barrier to entry, requiring no complex wind tunnel or system control experience.
+    * AeroSmart provides a stable desktop environment for low-cost aerodynamic testing.
+    * Controllable wind speeds allow for comparative analysis.
+    * Natural Language Control lowers the barrier to entry, requiring no complex wind tunnel or system control experience.
 
 
 * **Student Startup Projects:** Bridging the gap between CFD simulation and physical prototyping where a low-cost intermediate validation step is missing.
-* Acts as a workflow validation tool for rapid screening of design options.
-* Multi-source sensor data provides a quantitative basis for decisions.
-* AI analysis and optimization tips improve efficiency.
+    * Acts as a workflow validation tool for rapid screening of design options.
+    * Multi-source sensor data provides a quantitative basis for decisions.
+    * AI analysis and optimization tips improve efficiency.
 
 
 * **Educational Demonstrations:** CFD results can be abstract; real airflow is vital for teaching.
-* Desktop-sized equipment suitable for classroom environments.
-* Real-time visualization and data overlays turn abstract concepts into intuitive phenomena.
-* Adjustable airflow allows for quick demonstrations of different effects and models.
+    * Desktop-sized equipment suitable for classroom environments.
+    * Real-time visualization and data overlays turn abstract concepts into intuitive phenomena.
+    * Adjustable airflow allows for quick demonstrations of different effects and models.
 
 ---
 
@@ -41,7 +41,7 @@ The system utilizes a modular wind tunnel structure driven by dual ducted fans, 
 | --- | --- | --- |
 | **Intake & Filtering** | Generate straight airflow | 5 mm Aluminum Honeycomb + PLA-CF |
 | **Contraction Layer (Nozzle)** | Accelerate airflow | 4:1 Area Ratio |
-| **Test Section** | Observation & Data | 5" x 3" x 8"; 5 mm Acrylic Panel |
+| **Test Section** | Observation & Data | 5" x 3" x 8"; 5 mm PC Panel |
 | **Diffuser & Splitter** | Pressure recovery | Y-splitter with 7° expansion angle |
 | **Power Source** | Generate airflow | Dual 70mm EDFs, Max 3.6kg/4.6kg thrust |
 
@@ -52,7 +52,7 @@ The overall structure primarily uses 3D printing and laser cutting:
 
 * **Intake Filter Section:** 3003 Aluminum Alloy honeycomb for durability; intake frame 3D printed with PLA-CF.
 * **Contraction:** Integrated 3D printing using PETG-CF for structural strength.
-* **Test Section:** Laser-cut Acrylic (or Polycarbonate) panels; TPU (95A) used for gaskets/seals.
+* **Test Section:** Laser-cut PC panels; TPU (95A) used for gaskets/seals.
 * **Diffuser:** PETG-CF, rigid enough to prevent "flutter" or structural vibration during dual EDF operation.
 * **Power Mount:** PETG-CF brackets adapted for 3.6 kg thrust levels.
 * **External Skeleton:** M5 threaded rods provide axial tension to keep modules compressed and aligned.
@@ -97,11 +97,3 @@ The overall structure primarily uses 3D printing and laser cutting:
 | **Phase 4: AI Analysis** | Data accumulation; regression model training. | Automated experimental evaluation reports. |
 
 *Target for the current term: Achieve at least Phase 2 and partially complete Phase 3.*
-
----
-
-## 5. Engineering Tips (from Gemini)
-
-1. **Vibration Isolation:** 70mm EDFs vibrate significantly at high speeds. Add **TPU flexible buffers** between the power mounts and the test section frame to prevent interference with IMU and acoustic sensor accuracy.
-2. **Safety First:** 3.6kg thrust involves extremely high RPMs. Add **shatter-proof film** to the acrylic or use thicker **Polycarbonate (PC)**. Include a physical **emergency stop button**.
-3. **Thermal Management:** ESCs (Electronic Speed Controllers) generate intense heat under high current. Place the ESCs in the **cold airflow path** of the diffuser nozzle to use the wind tunnel’s own air for active cooling.
