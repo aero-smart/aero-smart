@@ -1,0 +1,19 @@
+[package]
+name = "shared"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+serde = { version = "1.0.228", features = ["derive"] }
+sqlx = "0.8.6"
+prost = "0.14.3"
+prost-types = "0.14.3"
+rkyv = "0.8.13"
+dotenv = "0.15.0"
+chrono = { version = "0.4.42", features = ["serde"] }
+pgvector = { version = "0.4.1", features = ["postgres", "serde", "sqlx"] }
+uuid = { version = "1.19.0", features = ["serde", "v4"] }
+
+[build-dependencies]
+prost-build = "0.14.3"
