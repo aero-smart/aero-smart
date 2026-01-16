@@ -1,22 +1,29 @@
+#[cfg(feature = "sql")]
 use pgvector::Vector;
-use serde::{Deserialize, Serialize};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
+#[cfg(feature = "serde")]
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
 pub struct ThrottleConfig {
     pub left: u8,
     pub right: u8,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
 pub struct ServoConfig {
     pub angle: u8,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
 pub struct PitotAirspeedData {
     pub splitter_left: f32,
@@ -24,6 +31,7 @@ pub struct PitotAirspeedData {
     pub static_port: f32,
 }
 
+#[cfg(feature = "sql")]
 impl PitotAirspeedData {
     pub fn to_record(&self, session: Uuid) -> crate::sql::PitotAirspeedRecord {
         crate::sql::PitotAirspeedRecord {
@@ -37,7 +45,9 @@ impl PitotAirspeedData {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
 pub struct ImuData {
     pub accel_x: f32,
@@ -48,6 +58,27 @@ pub struct ImuData {
     pub gyro_z: f32,
 }
 
+impl ImuData {
+    pub fn new(
+        accel_x: f32,
+        accel_y: f32,
+        accel_z: f32,
+        gyro_x: f32,
+        gyro_y: f32,
+        gyro_z: f32,
+    ) -> Self {
+        ImuData {
+            accel_x,
+            accel_y,
+            accel_z,
+            gyro_x,
+            gyro_y,
+            gyro_z,
+        }
+    }
+}
+
+#[cfg(feature = "sql")]
 impl ImuData {
     pub fn to_record(&self, session: Uuid) -> crate::sql::ImuRecord {
         crate::sql::ImuRecord {
@@ -64,7 +95,9 @@ impl ImuData {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
 pub struct AcousticData {
     /// Overall Sound Pressure Level in dB
@@ -80,6 +113,7 @@ pub struct AcousticData {
     pub turbulence_index: f32,
 }
 
+#[cfg(feature = "sql")]
 impl AcousticData {
     pub fn to_record(&self, session: Uuid) -> crate::sql::AcousticRecord {
         crate::sql::AcousticRecord {
@@ -94,7 +128,18 @@ impl AcousticData {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[rkyv(derive(Debug))]
+pub struct LidarData {
+    pub distance_cm: u16,
+    pub signal_strength: u16,
+}
+
+#[derive(Debug, Clone, Archive, RkyvSerialize, RkyvDeserialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
 pub enum SerialMessage {
     ThrottleConfig(ThrottleConfig),
@@ -102,6 +147,7 @@ pub enum SerialMessage {
     PitotAirspeedData(PitotAirspeedData),
     ImuData(ImuData),
     AcousticData(AcousticData),
+    LidarData(LidarData),
 }
 
 #[cfg(test)]

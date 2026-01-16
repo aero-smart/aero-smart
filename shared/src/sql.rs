@@ -1,3 +1,5 @@
+#![cfg(feature = "sql")]
+
 use pgvector::Vector;
 
 #[derive(sqlx::FromRow, serde::Serialize, serde::Deserialize, Debug, Clone, Copy)]

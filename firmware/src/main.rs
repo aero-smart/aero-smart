@@ -1,6 +1,9 @@
 #![no_std]
 #![no_main]
 
+pub mod sensors;
+pub mod executors;
+
 use {defmt_rtt as _, panic_probe as _};
 
 use embassy_executor::Spawner;

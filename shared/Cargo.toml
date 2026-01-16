@@ -1,19 +1,27 @@
 [package]
-name = "shared"
+name = "aerosmart-shared"
 edition.workspace = true
 license.workspace = true
 version.workspace = true
 
+[features]
+std = ["rkyv/std", "chrono/std"]
+default = ["std"]
+sql = ["std", "dep:sqlx", "sqlx/postgres", "pgvector", "uuid"]
+serde = ["dep:serde", "pgvector?/serde", "uuid/serde", "chrono/serde"]
+proto = ["std", "prost", "prost-types"]
+defmt = ["dep:defmt"]
+
 [dependencies]
-serde = { version = "1.0.228", features = ["derive"] }
-sqlx = "0.8.6"
-prost = "0.14.3"
-prost-types = "0.14.3"
-rkyv = "0.8.13"
-dotenv = "0.15.0"
-chrono = { version = "0.4.42", features = ["serde"] }
-pgvector = { version = "0.4.1", features = ["postgres", "serde", "sqlx"] }
-uuid = { version = "1.19.0", features = ["serde", "v4"] }
+serde = { version = "1.0.228", features = ["derive"], optional = true }
+sqlx = { version = "0.8.6", optional = true }
+prost = { version = "0.14.3", optional = true }
+prost-types = { version = "0.14.3", optional = true }
+rkyv = { version = "0.8.13", default-features = false, features = ["bytecheck"]}
+chrono = { version = "0.4.42", default-features = false }
+pgvector = { version = "0.4.1", features = ["postgres", "serde", "sqlx"], optional = true }
+uuid = { version = "1.19.0", features = ["serde", "v4"], optional = true }
+defmt = { version = "1.0.1", optional = true }
 
 [build-dependencies]
 prost-build = "0.14.3"
