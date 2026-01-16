@@ -1,15 +1,15 @@
 #![no_std]
 #![no_main]
 
-pub mod sensors;
 pub mod executors;
+pub mod sensors;
 
 use {defmt_rtt as _, panic_probe as _};
 
+use defmt::info;
 use embassy_executor::Spawner;
 use embassy_stm32::gpio::{Level, Output, Speed};
 use embassy_time::{Duration, Timer};
-use defmt::info;
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {

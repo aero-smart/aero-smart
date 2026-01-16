@@ -39,7 +39,9 @@ heapless = { version = "0.8", default-features = false, features = [
 nb = "1.0.0"
 panic-halt = "1.0.0"
 panic-probe = { version = "1.0.0", features = ["print-defmt"] }
-aerosmart-shared = { path = "../shared", default-features = false, features = ["defmt"]}
+aerosmart-shared = { path = "../shared", default-features = false, features = [
+  "defmt",
+] }
 dshot-frame = "0.2.1"
 pid = "4.0.0"
 num-traits = { version = "0.2.19", default-features = false, features = [

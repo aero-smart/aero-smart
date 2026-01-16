@@ -13,3 +13,10 @@ rmcp = { version = "0.12.0", features = ["server"] }
 serde = { version = "1.0.228", features = ["derive"] }
 sqlx = { version = "0.8.6", features = ["postgres"] }
 tokio = { version = "1.49.0", features = ["full"] }
+tokio-serial = "5.4.5"
+aerosmart-shared = { path = "../shared", features = [
+  "sql",
+  "serde",
+  "graphql",
+] }
+thiserror = "2.0.17"

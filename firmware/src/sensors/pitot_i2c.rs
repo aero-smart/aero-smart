@@ -23,7 +23,10 @@ impl<'a> Pitot<'a> {
 
     async fn read_raw(&mut self) -> Result<(u16, u16, u16), PitotError> {
         let mut buf = [0u8; 4];
-        self.i2c.read(Self::MS4525DO_ADDR, &mut buf).await.map_err(PitotError::I2cError)?;
+        self.i2c
+            .read(Self::MS4525DO_ADDR, &mut buf)
+            .await
+            .map_err(PitotError::I2cError)?;
 
         // Extract status (bits 7-6 of byte 0)
         let status = (buf[0] >> 6) & 0x03;

@@ -109,7 +109,7 @@ pub struct AcousticData {
     /// Map these to 1/3 octave bands or custom interest zones
     pub spectral_shape: [f32; 32],
 
-    /// Ratio of broadband noise to tonal noise for AI optimization 
+    /// Ratio of broadband noise to tonal noise for AI optimization
     pub turbulence_index: f32,
 }
 
@@ -154,10 +154,13 @@ pub enum SerialMessage {
 mod tests {
     use super::*;
     use rkyv::rancor::Error;
-    
+
     #[test]
     fn test_throttle_config_serialization() {
-        let config = ThrottleConfig { left: 100, right: 150 };
+        let config = ThrottleConfig {
+            left: 100,
+            right: 150,
+        };
         let serialized = rkyv::to_bytes::<Error>(&config).unwrap();
         assert_eq!(serialized.len() > 0, true);
         assert_eq!(serialized.len(), 2); // u8 x 2

@@ -1,10 +1,14 @@
 #![allow(dead_code)]
-use embassy_stm32::{gpio::Output, spi::{Spi, Error as SpiError}, mode::Async};
 use aerosmart_shared::serial::ImuData;
+use embassy_stm32::{
+    gpio::Output,
+    mode::Async,
+    spi::{Error as SpiError, Spi},
+};
 
 pub struct ImuSpi<'a> {
     pub spi: Spi<'a, Async>,
-    pub cs: Output<'a>
+    pub cs: Output<'a>,
 }
 
 pub enum ImuError {
@@ -21,19 +25,19 @@ impl<'a> ImuSpi<'a> {
     const ACCEL_DATA_X1: u8 = 0x1F;
 
     pub fn new(spi: Spi<'a, Async>, cs: Output<'a>) -> Self {
-        ImuSpi {
-            spi,
-            cs,
-        }
+        ImuSpi { spi, cs }
     }
 
     pub async fn poll(&mut self) -> Result<ImuData, ImuError> {
         self.cs.set_low();
         // perform SPI operations here
-        let mut buffer = [0u8; {1 + 6 * 2}];
+        let mut buffer = [0u8; { 1 + 6 * 2 }];
         let tx_buf = [0x80 | Self::ACCEL_DATA_X1];
         self.spi.write(&tx_buf).await.map_err(ImuError::SpiError)?;
-        self.spi.transfer_in_place(&mut buffer).await.map_err(ImuError::SpiError)?;
+        self.spi
+            .transfer_in_place(&mut buffer)
+            .await
+            .map_err(ImuError::SpiError)?;
         self.cs.set_high();
 
         // TODO make it correct
@@ -45,12 +49,7 @@ impl<'a> ImuSpi<'a> {
         let gyro_z = ((buffer[11] as i16) << 8 | (buffer[12] as i16)) as f32 / 131.0;
 
         Ok(ImuData::new(
-            accel_x,
-            accel_y,
-            accel_z,
-            gyro_x,
-            gyro_y,
-            gyro_z,
+            accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z,
         ))
     }
 

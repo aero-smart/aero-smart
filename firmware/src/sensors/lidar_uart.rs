@@ -3,8 +3,8 @@
 //! - Baud Rate: 115200
 //! - Data Frame: 9 bytes
 
-use embassy_stm32::{usart::Uart, mode::Async};
 use aerosmart_shared::serial::LidarData;
+use embassy_stm32::{mode::Async, usart::Uart};
 
 pub struct LidarUart<'a> {
     pub uart: Uart<'a, Async>,
@@ -22,7 +22,10 @@ impl<'a> LidarUart<'a> {
 
     pub async fn poll(&mut self) -> Result<LidarData, LidarError> {
         let mut buffer = [0u8; 9];
-        self.uart.read(&mut buffer).await.map_err(|_| LidarError::UartError)?;
+        self.uart
+            .read(&mut buffer)
+            .await
+            .map_err(|_| LidarError::UartError)?;
 
         // Validate frame header
         if buffer[0] != 0x59 || buffer[1] != 0x59 {
