@@ -1,32 +1,36 @@
 #![allow(dead_code)]
+use aerosmart_shared::serial::BarometerData;
 use embassy_stm32::{
     i2c::{Error, I2c, Master},
     mode::Async,
 };
 use num_traits::float::Float;
 
-pub enum PitotError {
+pub enum AirspeedError {
     I2cError(Error),
     InvalidData,
 }
 
-pub struct Pitot<'a> {
+pub struct Airspeed<'a> {
     i2c: I2c<'a, Async, Master>,
 }
 
-impl<'a> Pitot<'a> {
+impl<'a> Airspeed<'a> {
     pub const MS4525DO_ADDR: u8 = 0x28;
-
+    pub const BME280_ADDR: u8 = 0x76;
+    pub const BME280_CHIP_ID: u8 = 0x60;
+    pub const BME280_REGISTER_PRESSUREDATA: u8 = 0xf7;
+    
     pub fn new(i2c: I2c<'a, Async, Master>) -> Self {
         Self { i2c }
     }
 
-    async fn read_raw(&mut self) -> Result<(u16, u16, u16), PitotError> {
+    async fn read_raw_pitot(&mut self) -> Result<(u16, u16, u16), AirspeedError> {
         let mut buf = [0u8; 4];
         self.i2c
             .read(Self::MS4525DO_ADDR, &mut buf)
             .await
-            .map_err(PitotError::I2cError)?;
+            .map_err(AirspeedError::I2cError)?;
 
         // Extract status (bits 7-6 of byte 0)
         let status = (buf[0] >> 6) & 0x03;
@@ -38,6 +42,38 @@ impl<'a> Pitot<'a> {
         let temperature_raw = (((buf[2] as u16) << 3) | ((buf[3] >> 5) as u16)) & 0x07FF;
 
         Ok((status as u16, pressure_raw, temperature_raw))
+    }
+    
+    /// BME280 barometer reading
+    pub async fn read_barometer(&mut self) -> Result<BarometerData, AirspeedError> {
+        let mut buf = [0u8; 6];
+        self.i2c
+            .write_read(
+                Self::BME280_ADDR,
+                &[Self::BME280_REGISTER_PRESSUREDATA],
+                &mut buf,
+            )
+            .await
+            .map_err(AirspeedError::I2cError)?;
+
+        let pressure_raw: u32 =
+            ((buf[0] as u32) << 12) | ((buf[1] as u32) << 4) | ((buf[2] as u32) >> 4);
+        let temperature_raw: u32 =
+            ((buf[3] as u32) << 12) | ((buf[4] as u32) << 4) | ((buf[5] as u32) >> 4);
+        let humidity_raw: u16 = ((buf[6] as u16) << 8) | (buf[7] as u16);
+
+        // Convert raw values to physical units
+        // Don't use `convert_pressure` and `convert_temperature` here because they are for MS4525DO
+        // TODO: Implement BME280 compensation formulas using calibration data
+        let pressure_pa = (pressure_raw as f32) / 256.0; // Example conversion
+        let temperature_c = (temperature_raw as f32) / 100.0; // Example conversion
+        let humidity_percent = (humidity_raw as f32) / 65536.0 * 100.0;
+
+        Ok(BarometerData {
+            pressure_pa,
+            temperature_c,
+            humidity_percent,
+        })
     }
 
     #[inline]

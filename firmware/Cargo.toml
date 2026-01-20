@@ -47,6 +47,7 @@ pid = "4.0.0"
 num-traits = { version = "0.2.19", default-features = false, features = [
   "libm",
 ] }
+bme280-rs = "0.3.0"
 
 [[bin]]
 name = "firmware"

@@ -137,6 +137,16 @@ pub struct LidarData {
     pub signal_strength: u16,
 }
 
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[rkyv(derive(Debug))]
+pub struct BarometerData {
+    pub pressure_pa: f32,
+    pub temperature_c: f32,
+    pub humidity_percent: f32,
+}
+
 #[derive(Debug, Clone, Archive, RkyvSerialize, RkyvDeserialize)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
@@ -148,6 +158,7 @@ pub enum SerialMessage {
     ImuData(ImuData),
     AcousticData(AcousticData),
     LidarData(LidarData),
+    BarometerData(BarometerData),
 }
 
 #[cfg(test)]
