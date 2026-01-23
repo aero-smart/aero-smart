@@ -16,7 +16,7 @@ defmt-rtt = { version = "1.1.0" }
 embassy-executor = { version = "0.9.1", features = [
   "arch-cortex-m",
   "executor-thread",
-  "defmt"
+  "defmt",
 ] }
 embassy-futures = "0.1.2"
 embassy-stm32 = { version = "0.4.0", features = [
@@ -52,6 +52,7 @@ bme280-rs = "0.3.0"
 ws2812-async = "0.3.0"
 smart-leds-trait = "0.3.2"
 smart-leds = "0.4.0"
+ahrs = { version = "0.8.0", default-features = false }
 
 [[bin]]
 name = "firmware"

@@ -1,0 +1,1 @@
+pub const MAX_AIRSPEED_METERS_PER_SECOND: f32 = 24.0;

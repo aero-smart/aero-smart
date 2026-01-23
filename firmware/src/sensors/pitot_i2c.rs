@@ -12,6 +12,7 @@ use embassy_stm32::{
 };
 use num_traits::float::Float;
 
+#[derive(defmt::Format)]
 pub enum AirspeedError {
     I2cError(Error),
     InvalidData,
@@ -31,7 +32,7 @@ impl<'a> Airspeed<'a> {
         Self { i2c }
     }
 
-    async fn read_raw_pitot(&mut self) -> Result<(u16, u16, u16), AirspeedError> {
+    pub async fn read_raw_pitot(&mut self) -> Result<(u16, u16, u16), AirspeedError> {
         let mut buf = [0u8; 4];
         self.i2c
             .read(Self::MS4525DO_ADDR, &mut buf)
