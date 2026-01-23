@@ -1,4 +1,9 @@
 #![allow(dead_code)]
+/// IMU SPI interface
+///
+/// ICM-42688-P
+///
+/// Poll @ 1 kHz at 1 MHz SPI
 use aerosmart_shared::serial::ImuData;
 use embassy_stm32::{
     gpio::Output,
@@ -11,6 +16,7 @@ pub struct ImuSpi<'a> {
     pub cs: Output<'a>,
 }
 
+#[derive(defmt::Format)]
 pub enum ImuError {
     SpiError(SpiError),
     CsError,

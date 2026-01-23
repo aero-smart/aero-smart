@@ -16,7 +16,7 @@ pub struct EdfDshot<'a> {
     /// Ch2 - Right pwm
     pwm: SimplePwm<'a, TIM1>,
     /// DMA peripheral for DShot transmission
-    pub dma: Peri<'a, peripherals::DMA1_CH0>,
+    pub dma: Peri<'static, peripherals::DMA1_CH5>,
 }
 
 pub enum ControlError {
@@ -26,7 +26,7 @@ pub enum ControlError {
 }
 
 impl<'a> EdfDshot<'a> {
-    pub fn new(pwm: SimplePwm<'a, TIM1>, dma: Peri<'a, peripherals::DMA1_CH0>) -> Self {
+    pub fn new(pwm: SimplePwm<'a, TIM1>, dma: Peri<'static, peripherals::DMA1_CH5>) -> Self {
         Self { pwm, dma }
     }
 

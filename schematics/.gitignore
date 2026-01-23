@@ -9,6 +9,7 @@
 *.kicad_sch-bak
 *-backups
 *-cache*
+fp-info-cache
 *-bak
 *-bak*
 *~

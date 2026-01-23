@@ -1,4 +1,10 @@
 #![allow(dead_code)]
+/// Pitot tube and barometer I2C interface
+///
+/// MS4525DO Pitot tube differential pressure sensor
+/// BME280 Barometric pressure sensor
+///
+/// Poll pitot @ 100 Hz and barometer @ 10 Hz over I2C
 use aerosmart_shared::serial::BarometerData;
 use embassy_stm32::{
     i2c::{Error, I2c, Master},
@@ -20,7 +26,7 @@ impl<'a> Airspeed<'a> {
     pub const BME280_ADDR: u8 = 0x76;
     pub const BME280_CHIP_ID: u8 = 0x60;
     pub const BME280_REGISTER_PRESSUREDATA: u8 = 0xf7;
-    
+
     pub fn new(i2c: I2c<'a, Async, Master>) -> Self {
         Self { i2c }
     }
@@ -43,7 +49,7 @@ impl<'a> Airspeed<'a> {
 
         Ok((status as u16, pressure_raw, temperature_raw))
     }
-    
+
     /// BME280 barometer reading
     pub async fn read_barometer(&mut self) -> Result<BarometerData, AirspeedError> {
         let mut buf = [0u8; 6];
