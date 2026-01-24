@@ -116,7 +116,6 @@ impl ImuData {
     }
 }
 
-
 #[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
@@ -207,9 +206,7 @@ mod tests {
 
     #[test]
     fn test_throttle_config_serialization() {
-        let config = ThrottleConfig {
-            airspeed: 10,
-        };
+        let config = ThrottleConfig { airspeed: 10 };
         let serialized = rkyv::to_bytes::<Error>(&config).unwrap();
         assert_eq!(serialized.len() > 0, true);
         assert_eq!(serialized.len(), 2); // u8 x 2
