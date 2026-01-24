@@ -1,16 +1,22 @@
 #![no_std]
 #![no_main]
 
+pub mod algorithms;
 pub mod consts;
 pub mod executors;
 pub mod sensors;
+pub mod serial;
 pub mod state;
 pub mod utils;
 
 use crate::{
+    algorithms::{madgwick::MadgwickAhrs, motion_fft::compute_motion_fft},
     executors::{airspeed::AirspeedControl, edf::EdfDshot},
     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
-    state::{AIRSPEED_UPDATED_SIGNAL, MachineStatus, STATUS_UPDATED_SIGNAL},
+    state::{
+        AIRSPEED_UPDATED_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL, MachineStatus,
+        STATUS_UPDATED_SIGNAL,
+    },
     utils::{magnus::density_kg_per_m3, pitot::calculate_airspeed},
 };
 
@@ -128,18 +134,15 @@ async fn main(spawner: Spawner) {
     // );
 
     let ws2812_spi = Spi::new_txonly(p.SPI2, p.PD3, p.PC3, p.DMA1_CH4, spi::Config::default());
-
     let mut ws2812: Ws2812<_, Rgb, 1> = Ws2812::new(ws2812_spi);
 
     let icm_ss = Output::new(p.PB2, Level::High, Speed::VeryHigh);
-
     let mut imu = ImuSpi::new(spi, icm_ss);
 
     let sensors = Airspeed::new(i2c);
-
     let edf = EdfDshot::new(edf_pwm, p.DMA1_CH5);
-
     let pid = AirspeedControl::new(1.0, 0.1, 0.05);
+    let ahrs = MadgwickAhrs::new(4_000.0, 0.033);
 
     wdt.pet();
 
@@ -160,7 +163,7 @@ async fn main(spawner: Spawner) {
         Err(e) => defmt::panic!("Failed to spawn LIDAR task: {:?}", e),
     }
 
-    match spawner.spawn(imu_task(imu)) {
+    match spawner.spawn(imu_task(imu, ahrs)) {
         Ok(_) => info!("IMU task spawned"),
         Err(e) => defmt::panic!("Failed to spawn IMU task: {:?}", e),
     }
@@ -174,6 +177,11 @@ async fn main(spawner: Spawner) {
         Ok(_) => info!("EDF task spawned"),
         Err(e) => defmt::panic!("Failed to spawn EDF task: {:?}", e),
     }
+
+    match spawner.spawn(led_task(ws2812)) {
+        Ok(_) => info!("LED task spawned"),
+        Err(e) => defmt::panic!("Failed to spawn LED task: {:?}", e),
+    }
 }
 
 #[embassy_executor::task]
@@ -185,7 +193,7 @@ async fn feed_watchdog(mut wdt: IndependentWatchdog<'static, IWDG1>) {
 }
 
 #[embassy_executor::task]
-async fn imu_task(mut imu: ImuSpi<'static>) {
+async fn imu_task(mut imu: ImuSpi<'static>, mut ahrs: MadgwickAhrs) {
     loop {
         match imu.poll().await {
             Ok(data) => {
@@ -198,12 +206,33 @@ async fn imu_task(mut imu: ImuSpi<'static>) {
                     data.gyro_y,
                     data.gyro_z
                 );
+                ahrs.update(
+                    [data.accel_x, data.accel_y, data.accel_z],
+                    [
+                        data.gyro_x.to_radians(),
+                        data.gyro_y.to_radians(),
+                        data.gyro_z.to_radians(),
+                    ],
+                );
+                {
+                    let mut state = GLOBAL_STATE.lock().await;
+                    let imu_head = state.imu_head;
+                    state.imu_buffer[0][imu_head] = data.accel_z;
+                    state.imu_buffer[1][imu_head] = data.gyro_x;
+                    state.imu_buffer[2][imu_head] = data.gyro_y;
+                    state.imu_head = (state.imu_head + 1) % state.imu_buffer.len();
+                    if state.imu_head == 0 {
+                        IMU_BUFFER_FULL_SIGNAL.signal(());
+                    }
+                    IMU_UPDATED_SIGNAL.signal(());
+                    state.quaternion = Some(ahrs.quaternion);
+                }
             }
             Err(e) => {
                 defmt::error!("IMU Error: {:?}", e);
             }
         }
-        Timer::after(Duration::from_millis(100)).await;
+        Timer::after(Duration::from_millis(25)).await;
     }
 }
 
@@ -281,19 +310,37 @@ async fn edf_task(mut edf: EdfDshot<'static>, mut pid: AirspeedControl) {
             )
         };
 
-        if matches!(status, MachineStatus::Running) {
-            pid.update_setpoint(setpoint);
-            let edf_airspeed = pid.compute_throttle(measured, density);
-            match edf.set_throttle_symmetric(edf_airspeed).await {
-                Ok(_) => {}
-                Err(e) => {
-                    defmt::error!("EDF Control Error: {:?}", e);
-                    {
-                        let mut state = GLOBAL_STATE.lock().await;
-                        state.machine_status = MachineStatus::Error;
+        match status {
+            MachineStatus::Running => {
+                defmt::info!(
+                    "EDF Control | Measured Airspeed: {} m/s | Setpoint: {} m/s",
+                    measured,
+                    setpoint
+                );
+                pid.update_setpoint(setpoint);
+                let edf_airspeed = pid.compute_throttle(measured, density);
+                match edf.set_throttle_symmetric(edf_airspeed).await {
+                    Ok(_) => {}
+                    Err(e) => {
+                        defmt::error!("EDF Control Error: {:?}", e);
+                        {
+                            let mut state = GLOBAL_STATE.lock().await;
+                            state.machine_status = MachineStatus::Error;
+                            STATUS_UPDATED_SIGNAL.signal(());
+                        }
                     }
                 }
             }
+            MachineStatus::EmergencyStop => {
+                defmt::warn!("Emergency Stop Engaged! Cutting off EDF throttle.");
+                match edf.set_throttle_symmetric(0).await {
+                    Ok(_) => {}
+                    Err(e) => {
+                        defmt::error!("EDF Control Error during Emergency Stop: {:?}", e);
+                    }
+                }
+            }
+            _ => {}
         }
     }
 }
@@ -312,6 +359,7 @@ async fn lidar_task(mut lidar: LidarUart<'static>) {
                     {
                         let mut state = GLOBAL_STATE.lock().await;
                         state.machine_status = MachineStatus::EmergencyStop;
+                        STATUS_UPDATED_SIGNAL.signal(());
                     }
                 }
             }
@@ -335,5 +383,35 @@ async fn led_task(mut ws2812: Ws2812<Spi<'static, Async>, Rgb, 1>) {
             .write([RGB8::new(color.0, color.1, color.2)].into_iter())
             .await
             .ok();
+    }
+}
+
+#[embassy_executor::task]
+async fn imu_fft_task() {
+    loop {
+        IMU_BUFFER_FULL_SIGNAL.wait().await;
+        let imu_buffer = {
+            let state = GLOBAL_STATE.lock().await;
+            state.imu_buffer
+        };
+        let mut results = [None; 3];
+        for axis in 0..3 {
+            let mut imu_data = imu_buffer[axis];
+            let fft_output = compute_motion_fft(&mut imu_data);
+            let vibration_metrics =
+                crate::algorithms::motion_fft::analyze_vibration(&fft_output, 4000.0);
+            defmt::info!(
+                "IMU Axis {} Vibration Metrics: RMS Vibration: {} | Dominant Frequency: {} Hz | Peak Magnitude: {}",
+                axis,
+                vibration_metrics.rms_vibration,
+                vibration_metrics.dominant_frequency_hz,
+                vibration_metrics.peak_magnitude
+            );
+            results[axis] = Some(vibration_metrics);
+        }
+        {
+            let mut state = GLOBAL_STATE.lock().await;
+            state.vibration_metrics = Some(results.map(|x| x.unwrap()));
+        }
     }
 }

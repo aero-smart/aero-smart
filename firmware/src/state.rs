@@ -2,7 +2,7 @@ use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::mutex::Mutex;
 use embassy_sync::signal::Signal;
 
-#[derive(Clone, Copy, Debug, PartialEq, defmt::Format)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct GlobalState {
     pub machine_status: MachineStatus,
     pub control_mode: ControlMode,
@@ -11,8 +11,12 @@ pub struct GlobalState {
     pub airspeed_meters_per_second: f32,
     pub desired_airspeed_meters_per_second: f32,
 
-    pub imu_buffer: [(i16, i16, i16, i16, i16, i16); 1024],
+    /// IMU buffer for FFT: [accel_z, gyro_x, gyro_y]
+    pub imu_buffer: [[f32; 1024]; 3],
     pub airspeed_buffer: [u8; 256],
+
+    pub vibration_metrics: Option<[crate::algorithms::motion_fft::VibrationMetrics; 3]>,
+    pub quaternion: Option<nalgebra::UnitQuaternion<f32>>,
 
     pub imu_head: usize,
     pub airspeed_head: usize,
@@ -56,8 +60,10 @@ impl GlobalState {
             air_density_kg_per_cubic_meter: 1.225,
             airspeed_meters_per_second: 0.0,
             desired_airspeed_meters_per_second: 0.0,
-            imu_buffer: [(0, 0, 0, 0, 0, 0); 1024],
+            imu_buffer: [[0.0; 1024]; 3],
             airspeed_buffer: [0; 256],
+            vibration_metrics: None,
+            quaternion: None,
             imu_head: 0,
             airspeed_head: 0,
         }
@@ -75,3 +81,4 @@ pub static GLOBAL_STATE: Mutex<CriticalSectionRawMutex, GlobalState> =
 pub static AIRSPEED_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static IMU_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static STATUS_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
+pub static IMU_BUFFER_FULL_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
