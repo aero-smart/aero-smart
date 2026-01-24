@@ -10,7 +10,7 @@ pub mod utils;
 use crate::{
     executors::{airspeed::AirspeedControl, edf::EdfDshot},
     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
-    state::{AIRSPEED_UPDATED_SIGNAL, MachineStatus},
+    state::{AIRSPEED_UPDATED_SIGNAL, MachineStatus, STATUS_UPDATED_SIGNAL},
     utils::{magnus::density_kg_per_m3, pitot::calculate_airspeed},
 };
 
@@ -22,6 +22,7 @@ use embassy_stm32::{
     bind_interrupts,
     gpio::{Level, Output, Speed},
     i2c::{self, I2c},
+    mode::Async,
     peripherals::IWDG1,
     spi::{self, Spi},
     time::Hertz,
@@ -51,8 +52,6 @@ async fn main(spawner: Spawner) {
 
     wdt.unleash();
 
-    let led = Output::new(p.PB7, Level::High, Speed::Low);
-
     let mut spi_config = spi::Config::default();
 
     spi_config.frequency = Hertz::mhz(1);
@@ -74,6 +73,7 @@ async fn main(spawner: Spawner) {
         config
     }
 
+    // TODO: serial communication
     let Ok(usart_upper) = Uart::new(
         p.USART1,
         p.PA10,
@@ -113,17 +113,18 @@ async fn main(spawner: Spawner) {
         embassy_stm32::timer::low_level::CountingMode::CenterAlignedBothInterrupts,
     );
 
-    let servo = PwmPin::new(p.PA0, embassy_stm32::gpio::OutputType::PushPull);
+    // TODO
+    // let servo = PwmPin::new(p.PA0, embassy_stm32::gpio::OutputType::PushPull);
 
-    let servo_pwm = SimplePwm::new(
-        p.TIM2,
-        Some(servo),
-        None,
-        None,
-        None,
-        Hertz::hz(50),
-        embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
-    );
+    // let servo_pwm = SimplePwm::new(
+    //     p.TIM2,
+    //     Some(servo),
+    //     None,
+    //     None,
+    //     None,
+    //     Hertz::hz(50),
+    //     embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
+    // );
 
     let ws2812_spi = Spi::new_txonly(p.SPI2, p.PD3, p.PC3, p.DMA1_CH4, spi::Config::default());
 
@@ -136,6 +137,8 @@ async fn main(spawner: Spawner) {
     let sensors = Airspeed::new(i2c);
 
     let edf = EdfDshot::new(edf_pwm, p.DMA1_CH5);
+
+    let pid = AirspeedControl::new(1.0, 0.1, 0.05);
 
     wdt.pet();
 
@@ -151,6 +154,11 @@ async fn main(spawner: Spawner) {
         Err(e) => defmt::panic!("Failed to spawn watchdog task: {:?}", e),
     }
 
+    match spawner.spawn(lidar_task(lidar)) {
+        Ok(_) => info!("LIDAR task spawned"),
+        Err(e) => defmt::panic!("Failed to spawn LIDAR task: {:?}", e),
+    }
+
     match spawner.spawn(imu_task(imu)) {
         Ok(_) => info!("IMU task spawned"),
         Err(e) => defmt::panic!("Failed to spawn IMU task: {:?}", e),
@@ -159,6 +167,11 @@ async fn main(spawner: Spawner) {
     match spawner.spawn(airspeed_task(sensors)) {
         Ok(_) => info!("Airspeed task spawned"),
         Err(e) => defmt::panic!("Failed to spawn airspeed task: {:?}", e),
+    }
+
+    match spawner.spawn(edf_task(edf, pid)) {
+        Ok(_) => info!("EDF task spawned"),
+        Err(e) => defmt::panic!("Failed to spawn EDF task: {:?}", e),
     }
 }
 
@@ -282,5 +295,45 @@ async fn edf_task(mut edf: EdfDshot<'static>, mut pid: AirspeedControl) {
                 }
             }
         }
+    }
+}
+
+#[embassy_executor::task]
+async fn lidar_task(mut lidar: LidarUart<'static>) {
+    loop {
+        match lidar.poll().await {
+            Ok(distance) => {
+                defmt::info!("LIDAR Distance: {} mm", distance);
+                if distance.signal_strength < 100 {
+                    defmt::warn!("LIDAR signal strength low: {}", distance.signal_strength);
+                }
+                if distance.distance_cm <= 30 {
+                    defmt::warn!("LIDAR distance too close: {} cm", distance.distance_cm);
+                    {
+                        let mut state = GLOBAL_STATE.lock().await;
+                        state.machine_status = MachineStatus::EmergencyStop;
+                    }
+                }
+            }
+            Err(e) => {
+                defmt::error!("LIDAR Error: {:?}", e);
+            }
+        }
+        Timer::after(Duration::from_millis(100)).await;
+    }
+}
+
+#[embassy_executor::task]
+async fn led_task(mut ws2812: Ws2812<Spi<'static, Async>, Rgb, 1>) {
+    loop {
+        STATUS_UPDATED_SIGNAL.wait().await;
+        let color = {
+            let state = GLOBAL_STATE.lock().await;
+            state.machine_status.display_led()
+        };
+        ws2812
+            .write([RGB8::new(color.0, color.1, color.2)].into_iter())
+            .await
+            .ok();
     }
 }

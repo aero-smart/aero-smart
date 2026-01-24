@@ -27,6 +27,24 @@ pub enum MachineStatus {
     EmergencyStop,
 }
 
+impl Default for MachineStatus {
+    fn default() -> Self {
+        MachineStatus::Idle
+    }
+}
+
+impl MachineStatus {
+    pub fn display_led(&self) -> (u8, u8, u8) {
+        match self {
+            MachineStatus::Idle => (0, 0, 255),            // Blue
+            MachineStatus::Initializing => (255, 255, 0),  // Yellow
+            MachineStatus::Running => (0, 255, 0),         // Green
+            MachineStatus::Error => (255, 0, 0),           // Red
+            MachineStatus::EmergencyStop => (255, 0, 255), // Magenta
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, defmt::Format)]
 pub enum ControlMode {
     Manual,
@@ -54,3 +72,4 @@ pub static GLOBAL_STATE: Mutex<CriticalSectionRawMutex, GlobalState> =
     Mutex::new(GlobalState::new());
 pub static AIRSPEED_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static IMU_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
+pub static STATUS_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();

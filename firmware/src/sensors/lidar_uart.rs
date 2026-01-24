@@ -10,6 +10,7 @@ pub struct LidarUart<'a> {
     pub uart: Uart<'a, Async>,
 }
 
+#[derive(defmt::Format)]
 pub enum LidarError {
     UartError,
     InvalidData,
