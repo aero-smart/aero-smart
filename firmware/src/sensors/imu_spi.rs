@@ -4,7 +4,6 @@
 /// ICM-42688-P
 ///
 /// Poll @ 1 kHz at 1 MHz SPI
-use aerosmart_shared::serial::ImuData;
 use embassy_stm32::{
     gpio::Output,
     mode::Async,
@@ -20,6 +19,36 @@ pub struct ImuSpi<'a> {
 pub enum ImuError {
     SpiError(SpiError),
     CsError,
+}
+
+#[derive(Debug, defmt::Format, Clone, Copy)]
+pub struct ImuData {
+    pub accel_x: f32,
+    pub accel_y: f32,
+    pub accel_z: f32,
+    pub gyro_x: f32,
+    pub gyro_y: f32,
+    pub gyro_z: f32,
+}
+
+impl ImuData {
+    pub fn new(
+        accel_x: f32,
+        accel_y: f32,
+        accel_z: f32,
+        gyro_x: f32,
+        gyro_y: f32,
+        gyro_z: f32,
+    ) -> Self {
+        Self {
+            accel_x,
+            accel_y,
+            accel_z,
+            gyro_x,
+            gyro_y,
+            gyro_z,
+        }
+    }
 }
 
 impl<'a> ImuSpi<'a> {

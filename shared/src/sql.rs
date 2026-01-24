@@ -7,12 +7,13 @@ pub struct ImuRecord {
     pub id: i32,
     pub session: uuid::Uuid,
     pub timestamp: chrono::DateTime<chrono::Utc>,
-    pub accel_x: f32,
-    pub accel_y: f32,
     pub accel_z: f32,
     pub gyro_x: f32,
     pub gyro_y: f32,
-    pub gyro_z: f32,
+    pub quad_w: f32,
+    pub quad_i: f32,
+    pub quad_j: f32,
+    pub quad_k: f32,
 }
 
 #[derive(sqlx::FromRow, serde::Serialize, serde::Deserialize, Debug, Clone)]

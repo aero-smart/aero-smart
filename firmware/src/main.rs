@@ -5,23 +5,23 @@ pub mod algorithms;
 pub mod consts;
 pub mod executors;
 pub mod sensors;
-pub mod serial;
 pub mod state;
 pub mod utils;
 
 use crate::{
     algorithms::{madgwick::MadgwickAhrs, motion_fft::compute_motion_fft},
-    executors::{airspeed::AirspeedControl, edf::EdfDshot},
+    executors::{airspeed::AirspeedControl, edf::EdfDshot, servo::Servo},
     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
     state::{
-        AIRSPEED_UPDATED_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL, MachineStatus,
-        STATUS_UPDATED_SIGNAL,
+        AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
+        MachineStatus, STATUS_UPDATED_SIGNAL,
     },
-    utils::{magnus::density_kg_per_m3, pitot::calculate_airspeed},
+    utils::{magnus::density_kg_per_m3, pitot::calculate_airspeed, send_message},
 };
 
 use {defmt_rtt as _, panic_probe as _};
 
+use aerosmart_shared::serial::SerialMessage;
 use defmt::info;
 use embassy_executor::Spawner;
 use embassy_stm32::{
@@ -33,7 +33,7 @@ use embassy_stm32::{
     spi::{self, Spi},
     time::Hertz,
     timer::simple_pwm::{PwmPin, SimplePwm},
-    usart::Uart,
+    usart::{Uart, UartRx, UartTx},
     wdg::IndependentWatchdog,
 };
 use embassy_time::{Duration, Timer};
@@ -79,9 +79,7 @@ async fn main(spawner: Spawner) {
         config
     }
 
-    // TODO: serial communication
-    #[allow(dead_code)]
-    let Ok(_usart_upper) = Uart::new(
+    let Ok(usart_upper) = Uart::new(
         p.USART1,
         p.PA10,
         p.PA9,
@@ -92,6 +90,8 @@ async fn main(spawner: Spawner) {
     ) else {
         defmt::panic!("Failed to initialize upper USART");
     };
+
+    let (uart_tx, uart_rx) = usart_upper.split();
 
     let Ok(usart_lidar) = Uart::new(
         p.USART3,
@@ -120,18 +120,19 @@ async fn main(spawner: Spawner) {
         embassy_stm32::timer::low_level::CountingMode::CenterAlignedBothInterrupts,
     );
 
-    // TODO
-    // let servo = PwmPin::new(p.PA0, embassy_stm32::gpio::OutputType::PushPull);
+    let servo = PwmPin::new(p.PA0, embassy_stm32::gpio::OutputType::PushPull);
 
-    // let servo_pwm = SimplePwm::new(
-    //     p.TIM2,
-    //     Some(servo),
-    //     None,
-    //     None,
-    //     None,
-    //     Hertz::hz(50),
-    //     embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
-    // );
+    let servo_pwm = SimplePwm::new(
+        p.TIM2,
+        Some(servo),
+        None,
+        None,
+        None,
+        Hertz::hz(50),
+        embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
+    );
+
+    let servo_control = Servo::new(servo_pwm);
 
     let ws2812_spi = Spi::new_txonly(p.SPI2, p.PD3, p.PC3, p.DMA1_CH4, spi::Config::default());
     let mut ws2812: Ws2812<_, Rgb, 1> = Ws2812::new(ws2812_spi);
@@ -181,6 +182,26 @@ async fn main(spawner: Spawner) {
     match spawner.spawn(led_task(ws2812)) {
         Ok(_) => info!("LED task spawned"),
         Err(e) => defmt::panic!("Failed to spawn LED task: {:?}", e),
+    }
+
+    match spawner.spawn(imu_fft_task()) {
+        Ok(_) => info!("IMU FFT task spawned"),
+        Err(e) => defmt::panic!("Failed to spawn IMU FFT task: {:?}", e),
+    }
+
+    match spawner.spawn(airspeed_servo_task(servo_control)) {
+        Ok(_) => info!("Airspeed Servo task spawned"),
+        Err(e) => defmt::panic!("Failed to spawn Airspeed Servo task: {:?}", e),
+    }
+
+    match spawner.spawn(serial_uart_rx_task(uart_rx)) {
+        Ok(_) => info!("Serial UART RX task spawned"),
+        Err(e) => defmt::panic!("Failed to spawn Serial UART RX task: {:?}", e),
+    }
+
+    match spawner.spawn(serial_uart_tx_task(uart_tx)) {
+        Ok(_) => info!("Serial UART TX task spawned"),
+        Err(e) => defmt::panic!("Failed to spawn Serial UART TX task: {:?}", e),
     }
 }
 
@@ -281,6 +302,7 @@ async fn airspeed_task(mut sensors: Airspeed<'static>) {
                             baro_data.temperature_c,
                             baro_data.humidity_percent,
                         );
+                        state.barometer_data = Some(baro_data);
                         state.air_density_kg_per_cubic_meter = density;
                         defmt::info!("Updated Air Density: {} kg/m^3", density);
                     }
@@ -350,6 +372,10 @@ async fn lidar_task(mut lidar: LidarUart<'static>) {
     loop {
         match lidar.poll().await {
             Ok(distance) => {
+                {
+                    let mut state = GLOBAL_STATE.lock().await;
+                    state.lidar_data = Some(distance);
+                }
                 defmt::info!("LIDAR Distance: {} mm", distance);
                 if distance.signal_strength < 100 {
                     defmt::warn!("LIDAR signal strength low: {}", distance.signal_strength);
@@ -412,6 +438,160 @@ async fn imu_fft_task() {
         {
             let mut state = GLOBAL_STATE.lock().await;
             state.vibration_metrics = Some(results.map(|x| x.unwrap()));
+        }
+    }
+}
+
+#[embassy_executor::task]
+async fn airspeed_servo_task(mut servo: Servo<'static>) {
+    loop {
+        DESIRED_UPDATE_SIGNAL.wait().await;
+        let desired_angle = {
+            let state = GLOBAL_STATE.lock().await;
+            state.desired_servo_angle_deg
+        };
+        servo.set_angle_deg(desired_angle);
+    }
+}
+
+#[embassy_executor::task]
+async fn serial_uart_rx_task(mut rx: UartRx<'static, Async>) {
+    use aerosmart_shared::serial::*;
+    loop {
+        let mut buffer = [0u8; 256];
+        match rx.read(&mut buffer).await {
+            Ok(len) => {
+                defmt::info!("Received {} bytes over UART", len);
+            }
+            Err(e) => {
+                defmt::error!("UART Read Error: {:?}", e);
+                continue;
+            }
+        }
+        let message = unsafe { rkyv::access_unchecked::<ArchivedSerialMessage>(&buffer) };
+        {
+            let mut state = GLOBAL_STATE.lock().await;
+            match message {
+                ArchivedSerialMessage::ThrottleConfig(ArchivedThrottleConfig { airspeed }) => {
+                    state.desired_airspeed_meters_per_second = *airspeed as f32;
+                }
+
+                ArchivedSerialMessage::ServoConfig(ArchivedServoConfig { angle }) => {
+                    state.desired_servo_angle_deg = *angle as f32;
+                }
+
+                ArchivedSerialMessage::SensorConfig(ArchivedSensorConfig { imu_horizontal }) => {
+                    state.config = SensorConfig {
+                        imu_horizontal: *imu_horizontal,
+                    }
+                }
+
+                ArchivedSerialMessage::Command(command) => {
+                    match command {
+                        ArchivedCommand::Start => {
+                            state.machine_status = MachineStatus::Running;
+                        }
+                        ArchivedCommand::Stop => {
+                            state.machine_status = MachineStatus::Idle;
+                        }
+                        ArchivedCommand::Calibrate => {
+                            state.machine_status = MachineStatus::Initializing;
+                        }
+                    }
+                    STATUS_UPDATED_SIGNAL.signal(());
+                }
+
+                _ => {
+                    defmt::error!("Unknown Serial Message Received");
+                    state.machine_status = MachineStatus::Error;
+                    STATUS_UPDATED_SIGNAL.signal(());
+                }
+            };
+        }
+    }
+}
+
+/// Send telemetry messages over UART
+///
+/// - Airspeed @ 10 Hz
+/// - IMU quaternion @ 20 Hz
+/// - Vibration metrics @ 1 Hz
+/// - Barometer data @ 1 Hz
+/// - LIDAR distance @ 5 Hz
+#[embassy_executor::task]
+async fn serial_uart_tx_task(mut tx: UartTx<'static, Async>) {
+    let mut counter = 0;
+    loop {
+        Timer::after(Duration::from_millis(100)).await;
+        counter += 1;
+
+        {
+            use aerosmart_shared::serial::*;
+            let state = GLOBAL_STATE.lock().await;
+
+            // Send airspeed @ 10 Hz
+            let airspeed_message = SerialMessage::PitotAirspeedData(PitotAirspeedData {
+                splitter_left: 0f32,
+                splitter_right: 0f32,
+                static_port: state.airspeed_meters_per_second,
+            });
+            let (buffer, len) = send_message(airspeed_message).await;
+            tx.write(&buffer[..len]).await.ok();
+
+            // Send IMU quaternion @ 20 Hz
+
+            if counter % 2 == 0
+                && let Some(quat) = state.quaternion
+            {
+                let imu_message = SerialMessage::ImuData(ImuData {
+                    accel_z: state.imu_buffer[0][(state.imu_head + 1023) % 1024],
+                    gyro_x: state.imu_buffer[1][(state.imu_head + 1023) % 1024],
+                    gyro_y: state.imu_buffer[2][(state.imu_head + 1023) % 1024],
+                    quad_w: quat.w,
+                    quad_i: quat.i,
+                    quad_j: quat.j,
+                    quad_k: quat.k,
+                });
+                let (buffer, len) = send_message(imu_message).await;
+                tx.write(&buffer[..len]).await.ok();
+            }
+
+            // Send vibration metrics @ 1 Hz
+            if counter % 10 == 0
+                && let Some(vibration_metrics) = state.vibration_metrics
+            {
+                let vibration_message = SerialMessage::ImuVibrationMetrics {
+                    accel_z: vibration_metrics[0].into(),
+                    gyro_x: vibration_metrics[1].into(),
+                    gyro_y: vibration_metrics[2].into(),
+                };
+                let (buffer, len) = send_message(vibration_message).await;
+                tx.write(&buffer[..len]).await.ok();
+            }
+
+            if counter % 10 == 0
+                && let Some(baro_data) = &state.barometer_data
+            {
+                // Send barometer data @ 1 Hz
+
+                let baro_message = SerialMessage::BarometerData(*baro_data);
+                let (buffer, len) = send_message(baro_message).await;
+                tx.write(&buffer[..len]).await.ok();
+            }
+
+            if counter % 2 == 0
+                && let Some(lidar_data) = &state.lidar_data
+            {
+                // Send LIDAR data @ 5 Hz
+
+                let lidar_message: SerialMessage = SerialMessage::LidarData(*lidar_data);
+                let (buffer, len) = send_message(lidar_message).await;
+                tx.write(&buffer[..len]).await.ok();
+            }
+
+            if counter >= 100 {
+                counter = 0;
+            }
         }
     }
 }

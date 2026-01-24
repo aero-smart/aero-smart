@@ -1,3 +1,4 @@
+use aerosmart_shared::serial;
 use microfft::real::rfft_1024;
 
 mod windows {
@@ -12,6 +13,16 @@ pub struct VibrationMetrics {
     pub dominant_frequency_hz: f32,
     /// Severity of worst vibration
     pub peak_magnitude: f32,
+}
+
+impl From<VibrationMetrics> for serial::ImuVibrationMetrics {
+    fn from(metrics: VibrationMetrics) -> Self {
+        Self {
+            rms_vibration: metrics.rms_vibration,
+            dominant_frequency_hz: metrics.dominant_frequency_hz,
+            peak_magnitude: metrics.peak_magnitude,
+        }
+    }
 }
 
 pub fn compute_motion_fft(input: &mut [f32; 1024]) -> [microfft::Complex32; 512] {

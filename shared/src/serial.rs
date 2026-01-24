@@ -4,16 +4,15 @@ use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
 #[cfg(feature = "serde")]
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
 pub struct ThrottleConfig {
-    pub left: u8,
-    pub right: u8,
+    pub airspeed: u8,
 }
 
-#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
@@ -21,7 +20,25 @@ pub struct ServoConfig {
     pub angle: u8,
 }
 
-#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(Debug, Clone, Copy, Default, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[rkyv(derive(Debug))]
+pub struct SensorConfig {
+    pub imu_horizontal: bool,
+}
+
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[rkyv(derive(Debug))]
+pub enum Command {
+    Start,
+    Stop,
+    Calibrate,
+}
+
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
@@ -45,35 +62,38 @@ impl PitotAirspeedData {
     }
 }
 
-#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
 pub struct ImuData {
-    pub accel_x: f32,
-    pub accel_y: f32,
     pub accel_z: f32,
     pub gyro_x: f32,
     pub gyro_y: f32,
-    pub gyro_z: f32,
+    pub quad_w: f32,
+    pub quad_i: f32,
+    pub quad_j: f32,
+    pub quad_k: f32,
 }
 
 impl ImuData {
     pub fn new(
-        accel_x: f32,
-        accel_y: f32,
         accel_z: f32,
         gyro_x: f32,
         gyro_y: f32,
-        gyro_z: f32,
+        quad_w: f32,
+        quad_i: f32,
+        quad_j: f32,
+        quad_k: f32,
     ) -> Self {
-        ImuData {
-            accel_x,
-            accel_y,
+        Self {
             accel_z,
             gyro_x,
             gyro_y,
-            gyro_z,
+            quad_w,
+            quad_i,
+            quad_j,
+            quad_k,
         }
     }
 }
@@ -85,17 +105,29 @@ impl ImuData {
             id: 0, // ID will be set by the database
             session,
             timestamp: chrono::Utc::now(),
-            accel_x: self.accel_x,
-            accel_y: self.accel_y,
             accel_z: self.accel_z,
             gyro_x: self.gyro_x,
             gyro_y: self.gyro_y,
-            gyro_z: self.gyro_z,
+            quad_w: self.quad_w,
+            quad_i: self.quad_i,
+            quad_j: self.quad_j,
+            quad_k: self.quad_k,
         }
     }
 }
 
-#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[rkyv(derive(Debug))]
+pub struct ImuVibrationMetrics {
+    pub rms_vibration: f32,
+    pub dominant_frequency_hz: f32,
+    pub peak_magnitude: f32,
+}
+
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
@@ -105,9 +137,9 @@ pub struct AcousticData {
     /// The "white" frequency of the EDF
     pub peak_frequency: f32,
 
-    /// The `Spectral Shape` (32 bins)
+    /// The `Spectral Shape` (4 bins for the first implementation)
     /// Map these to 1/3 octave bands or custom interest zones
-    pub spectral_shape: [f32; 32],
+    pub spectral_shape: [f32; 4],
 
     /// Ratio of broadband noise to tonal noise for AI optimization
     pub turbulence_index: f32,
@@ -128,7 +160,7 @@ impl AcousticData {
     }
 }
 
-#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
@@ -137,7 +169,7 @@ pub struct LidarData {
     pub signal_strength: u16,
 }
 
-#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
@@ -147,18 +179,25 @@ pub struct BarometerData {
     pub humidity_percent: f32,
 }
 
-#[derive(Debug, Clone, Archive, RkyvSerialize, RkyvDeserialize)]
+#[derive(Debug, Clone, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
 pub enum SerialMessage {
     ThrottleConfig(ThrottleConfig),
     ServoConfig(ServoConfig),
+    SensorConfig(SensorConfig),
+    Command(Command),
     PitotAirspeedData(PitotAirspeedData),
     ImuData(ImuData),
     AcousticData(AcousticData),
     LidarData(LidarData),
     BarometerData(BarometerData),
+    ImuVibrationMetrics {
+        accel_z: ImuVibrationMetrics,
+        gyro_x: ImuVibrationMetrics,
+        gyro_y: ImuVibrationMetrics,
+    },
 }
 
 #[cfg(test)]
@@ -169,8 +208,7 @@ mod tests {
     #[test]
     fn test_throttle_config_serialization() {
         let config = ThrottleConfig {
-            left: 100,
-            right: 150,
+            airspeed: 10,
         };
         let serialized = rkyv::to_bytes::<Error>(&config).unwrap();
         assert_eq!(serialized.len() > 0, true);
@@ -180,16 +218,17 @@ mod tests {
     #[test]
     fn test_imu_data_serialization() {
         let imu_data = ImuData {
-            accel_x: 1.0,
-            accel_y: 2.0,
             accel_z: 3.0,
             gyro_x: 4.0,
             gyro_y: 5.0,
-            gyro_z: 6.0,
+            quad_i: 0.1,
+            quad_j: 0.2,
+            quad_k: 0.3,
+            quad_w: 0.4,
         };
         let serialized = rkyv::to_bytes::<Error>(&imu_data).unwrap();
         assert_eq!(serialized.len() > 0, true);
-        assert_eq!(serialized.len(), 24); // f32 x 6
+        assert_eq!(serialized.len(), 28); // f32 x 7
     }
 
     #[test]
@@ -217,7 +256,7 @@ mod tests {
         let data = AcousticData {
             overall_spl: 85.0,
             peak_frequency: 1500.0,
-            spectral_shape: [0.0; 32],
+            spectral_shape: [0.0; 4],
             turbulence_index: 0.5,
         };
         let serialized = rkyv::to_bytes::<Error>(&data).unwrap();

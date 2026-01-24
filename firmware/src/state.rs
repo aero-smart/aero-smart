@@ -1,3 +1,4 @@
+use aerosmart_shared::serial::{BarometerData, LidarData, SensorConfig};
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::mutex::Mutex;
 use embassy_sync::signal::Signal;
@@ -10,11 +11,16 @@ pub struct GlobalState {
     pub air_density_kg_per_cubic_meter: f32,
     pub airspeed_meters_per_second: f32,
     pub desired_airspeed_meters_per_second: f32,
+    pub desired_servo_angle_deg: f32,
+
+    pub config: SensorConfig,
 
     /// IMU buffer for FFT: [accel_z, gyro_x, gyro_y]
     pub imu_buffer: [[f32; 1024]; 3],
-    pub airspeed_buffer: [u8; 256],
+    pub airspeed_buffer: [u16; 256],
 
+    pub barometer_data: Option<BarometerData>, // pressure_pa, temperature_c, humidity_percent
+    pub lidar_data: Option<LidarData>,
     pub vibration_metrics: Option<[crate::algorithms::motion_fft::VibrationMetrics; 3]>,
     pub quaternion: Option<nalgebra::UnitQuaternion<f32>>,
 
@@ -60,8 +66,14 @@ impl GlobalState {
             air_density_kg_per_cubic_meter: 1.225,
             airspeed_meters_per_second: 0.0,
             desired_airspeed_meters_per_second: 0.0,
+            desired_servo_angle_deg: 0.0,
+            config: SensorConfig {
+                imu_horizontal: false,
+            },
             imu_buffer: [[0.0; 1024]; 3],
             airspeed_buffer: [0; 256],
+            barometer_data: None,
+            lidar_data: None,
             vibration_metrics: None,
             quaternion: None,
             imu_head: 0,
@@ -82,3 +94,4 @@ pub static AIRSPEED_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal
 pub static IMU_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static STATUS_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static IMU_BUFFER_FULL_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
+pub static DESIRED_UPDATE_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
