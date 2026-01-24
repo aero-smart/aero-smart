@@ -18,19 +18,14 @@ pub struct GlobalState {
     pub airspeed_head: usize,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, defmt::Format)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, defmt::Format)]
 pub enum MachineStatus {
+    #[default]
     Idle,
     Initializing,
     Running,
     Error,
     EmergencyStop,
-}
-
-impl Default for MachineStatus {
-    fn default() -> Self {
-        MachineStatus::Idle
-    }
 }
 
 impl MachineStatus {
@@ -45,8 +40,9 @@ impl MachineStatus {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, defmt::Format)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, defmt::Format)]
 pub enum ControlMode {
+    #[default]
     Manual,
     Assisted,
     Autonomous,
@@ -65,6 +61,12 @@ impl GlobalState {
             imu_head: 0,
             airspeed_head: 0,
         }
+    }
+}
+
+impl Default for GlobalState {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

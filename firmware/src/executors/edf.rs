@@ -33,8 +33,7 @@ impl<'a> EdfDshot<'a> {
 
     pub async fn set_throttle_symmetric(&mut self, throttle: u16) -> Result<(), ControlError> {
         let max_duty_cycles = self.pwm.max_duty_cycle();
-        let frame =
-            Frame::<NormalDshot>::new(throttle, false).ok_or_else(|| ControlError::DshotError)?;
+        let frame = Frame::<NormalDshot>::new(throttle, false).ok_or(ControlError::DshotError)?;
 
         self.pwm
             .waveform_up_multi_channel(

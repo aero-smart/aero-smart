@@ -18,7 +18,7 @@ pub fn max_edf_airspeed_meters_per_second(air_density_kg_per_cubic_meter: f32) -
     use libm::sqrtf;
 
     // Since it's one EDF generating the thrust, we don't need to multiply by EDF_COUNT here.
-    sqrtf(edf::MAX_THROTTLE_KG / (air_density_kg_per_cubic_meter * edf::EDF_AREA_SQ_METERS as f32))
+    sqrtf(edf::MAX_THROTTLE_KG / (air_density_kg_per_cubic_meter * edf::EDF_AREA_SQ_METERS))
 }
 
 /// Outputs Dshot throttle value (0–2000) normalized for the desired airspeed in meters per second.

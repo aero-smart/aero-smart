@@ -56,7 +56,7 @@ impl<'a> Airspeed<'a> {
 
     /// BME280 barometer reading
     pub async fn read_barometer(&mut self) -> Result<BarometerData, AirspeedError> {
-        let mut buf = [0u8; 6];
+        let mut buf = [0u8; 8];
         self.i2c
             .write_read(
                 Self::BME280_ADDR,
