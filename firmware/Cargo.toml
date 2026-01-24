@@ -1,9 +1,9 @@
 # This file was automatically generated.
 
 [package]
-edition = "2024"
-name = "firmware"
-version = "0.1.0"
+edition.workspace = true
+version.workspace = true
+name = "aerosmart-firmware"
 
 [dependencies]
 cortex-m = { version = "0.7.7", features = [
@@ -53,20 +53,9 @@ ws2812-async = "0.3.0"
 smart-leds-trait = "0.3.2"
 smart-leds = "0.4.0"
 ahrs = { version = "0.8.0", default-features = false }
+libm = "0.2.16"
 
 [[bin]]
-name = "firmware"
+name = "aerosmart-firmware"
 test = false
 bench = false
-
-[profile.dev]
-debug = true
-lto = true
-opt-level = "z"
-incremental = true
-
-[profile.release]
-debug = false
-lto = true
-opt-level = "z"
-incremental = true

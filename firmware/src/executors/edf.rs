@@ -19,6 +19,7 @@ pub struct EdfDshot<'a> {
     pub dma: Peri<'static, peripherals::DMA1_CH5>,
 }
 
+#[derive(Debug, defmt::Format)]
 pub enum ControlError {
     PwmError,
     DshotError,
@@ -30,11 +31,10 @@ impl<'a> EdfDshot<'a> {
         Self { pwm, dma }
     }
 
-    pub async fn set_throttle_symmetric(&mut self, throttle: f32) -> Result<(), ControlError> {
-        let duty_cycle = Self::get_pwm_duty_cycle(throttle);
+    pub async fn set_throttle_symmetric(&mut self, throttle: u16) -> Result<(), ControlError> {
         let max_duty_cycles = self.pwm.max_duty_cycle();
         let frame =
-            Frame::<NormalDshot>::new(duty_cycle, false).ok_or_else(|| ControlError::DshotError)?;
+            Frame::<NormalDshot>::new(throttle, false).ok_or_else(|| ControlError::DshotError)?;
 
         self.pwm
             .waveform_up_multi_channel(
@@ -61,22 +61,5 @@ impl<'a> EdfDshot<'a> {
             .await;
 
         Ok(())
-    }
-
-    #[inline]
-    fn get_pwm_duty_cycle(throttle: f32) -> u16 {
-        // In the `dshot-frame` crate, it already defines the DSHOT range as 48-2047 for normal commands, so we map 0.0-1.0 to that range.
-        const DSHOT_MAX: u16 = 2000;
-        const DSHOT_MIN: u16 = 0; // minimum throttle
-
-        let clamped_ratio = if throttle < 0.0 {
-            0.0
-        } else if throttle > 1.0 {
-            1.0
-        } else {
-            throttle
-        };
-
-        (clamped_ratio * (DSHOT_MAX - DSHOT_MIN) as f32) as u16 + DSHOT_MIN
     }
 }

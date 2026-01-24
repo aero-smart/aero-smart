@@ -1,24 +1,40 @@
 #![no_std]
 #![no_main]
 
+pub mod consts;
 pub mod executors;
 pub mod sensors;
 pub mod state;
-pub mod consts;
+pub mod utils;
 
-use crate::{executors::edf::EdfDshot, sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed}};
+use crate::{
+    executors::{airspeed::AirspeedControl, edf::EdfDshot},
+    sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+    state::{AIRSPEED_UPDATED_SIGNAL, MachineStatus},
+    utils::{magnus::density_kg_per_m3, pitot::calculate_airspeed},
+};
 
 use {defmt_rtt as _, panic_probe as _};
 
 use defmt::info;
 use embassy_executor::Spawner;
 use embassy_stm32::{
-    bind_interrupts, gpio::{Level, Output, Speed}, i2c::{self, I2c}, peripherals::IWDG1, spi::{self, Spi}, time::Hertz, timer::simple_pwm::{PwmPin, SimplePwm}, usart::Uart, wdg::IndependentWatchdog
+    bind_interrupts,
+    gpio::{Level, Output, Speed},
+    i2c::{self, I2c},
+    peripherals::IWDG1,
+    spi::{self, Spi},
+    time::Hertz,
+    timer::simple_pwm::{PwmPin, SimplePwm},
+    usart::Uart,
+    wdg::IndependentWatchdog,
 };
 use embassy_time::{Duration, Timer};
-use ws2812_async::{Rgb, Ws2812};
+use smart_leds::RGB8;
 use smart_leds_trait::SmartLedsWriteAsync;
-use smart_leds::{RGB, RGB8};
+use ws2812_async::{Rgb, Ws2812};
+
+use state::GLOBAL_STATE;
 
 bind_interrupts!(struct Irqs {
     I2C1_EV => i2c::EventInterruptHandler<embassy_stm32::peripherals::I2C1>;
@@ -35,28 +51,22 @@ async fn main(spawner: Spawner) {
 
     wdt.unleash();
 
-    let mut led = Output::new(p.PB7, Level::High, Speed::Low);
-
-    wdt.pet();
+    let led = Output::new(p.PB7, Level::High, Speed::Low);
 
     let mut spi_config = spi::Config::default();
 
     spi_config.frequency = Hertz::mhz(1);
 
-    let mut spi = Spi::new(
+    let spi = Spi::new(
         p.SPI1, p.PB3, p.PB5, p.PB4, p.DMA1_CH0, p.DMA1_CH1, spi_config,
     );
-
-    wdt.pet();
 
     let mut i2c_config = i2c::Config::default();
     i2c_config.frequency = Hertz::khz(400);
 
-    let mut i2c = I2c::new(
+    let i2c = I2c::new(
         p.I2C1, p.PB8, p.PB9, Irqs, p.DMA1_CH2, p.DMA1_CH3, i2c_config,
     );
-
-    wdt.pet();
 
     fn uart_config_with_baud(baud_rate: u32) -> embassy_stm32::usart::Config {
         let mut config = embassy_stm32::usart::Config::default();
@@ -80,7 +90,7 @@ async fn main(spawner: Spawner) {
         p.USART3,
         p.PC11,
         p.PC10,
-        Irqs,   
+        Irqs,
         p.DMA1_CH6,
         p.DMA1_CH7,
         uart_config_with_baud(115200),
@@ -88,14 +98,12 @@ async fn main(spawner: Spawner) {
         defmt::panic!("Failed to initialize LIDAR USART");
     };
 
-    let mut lidar = LidarUart::new(usart_lidar);
-
-    wdt.pet();
+    let lidar = LidarUart::new(usart_lidar);
 
     let left_esc = PwmPin::new(p.PE9, embassy_stm32::gpio::OutputType::PushPull);
     let right_esc = PwmPin::new(p.PE11, embassy_stm32::gpio::OutputType::PushPull);
 
-    let mut edf_pwm = SimplePwm::new(
+    let edf_pwm = SimplePwm::new(
         p.TIM1,
         Some(left_esc),
         Some(right_esc),
@@ -105,11 +113,9 @@ async fn main(spawner: Spawner) {
         embassy_stm32::timer::low_level::CountingMode::CenterAlignedBothInterrupts,
     );
 
-    wdt.pet();
-
     let servo = PwmPin::new(p.PA0, embassy_stm32::gpio::OutputType::PushPull);
 
-    let mut servo_pwm = SimplePwm::new(
+    let servo_pwm = SimplePwm::new(
         p.TIM2,
         Some(servo),
         None,
@@ -119,23 +125,21 @@ async fn main(spawner: Spawner) {
         embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
     );
 
-    wdt.pet();
-
     let ws2812_spi = Spi::new_txonly(p.SPI2, p.PD3, p.PC3, p.DMA1_CH4, spi::Config::default());
 
     let mut ws2812: Ws2812<_, Rgb, 1> = Ws2812::new(ws2812_spi);
 
-    ws2812.write([RGB8::new(0, 32, 0)].into_iter()).await.ok();
-
-    wdt.pet();
-
-    let mut icm_ss = Output::new(p.PB2, Level::High, Speed::VeryHigh);
+    let icm_ss = Output::new(p.PB2, Level::High, Speed::VeryHigh);
 
     let mut imu = ImuSpi::new(spi, icm_ss);
 
-    let mut sensors = Airspeed::new(i2c);
+    let sensors = Airspeed::new(i2c);
 
-    let mut edf = EdfDshot::new(edf_pwm, p.DMA1_CH5);
+    let edf = EdfDshot::new(edf_pwm, p.DMA1_CH5);
+
+    wdt.pet();
+
+    ws2812.write([RGB8::new(0, 32, 0)].into_iter()).await.ok();
 
     match imu.init().await {
         Ok(_) => info!("IMU initialized successfully"),
@@ -195,7 +199,7 @@ async fn airspeed_task(mut sensors: Airspeed<'static>) {
     loop {
         let mut counter = 0;
         loop {
-            match sensors.read_raw_pitot().await {
+            match sensors.read_pitot().await {
                 Ok((status, pressure_raw, temperature_raw)) => {
                     defmt::info!(
                         "Pitot Status: {} | Pressure Raw: {} | Temperature Raw: {}",
@@ -203,6 +207,14 @@ async fn airspeed_task(mut sensors: Airspeed<'static>) {
                         pressure_raw,
                         temperature_raw
                     );
+                    {
+                        let mut state = GLOBAL_STATE.lock().await;
+                        let airspeed =
+                            calculate_airspeed(pressure_raw, state.air_density_kg_per_cubic_meter);
+                        state.airspeed_meters_per_second = airspeed;
+                        defmt::info!("Calculated Airspeed: {} m/s", airspeed);
+                    }
+                    AIRSPEED_UPDATED_SIGNAL.signal(());
                 }
                 Err(e) => {
                     defmt::error!("Airspeed Sensor Error: {:?}", e);
@@ -219,6 +231,16 @@ async fn airspeed_task(mut sensors: Airspeed<'static>) {
                             baro_data.temperature_c,
                             baro_data.humidity_percent
                         );
+                        {
+                            let mut state = GLOBAL_STATE.lock().await;
+                            let density = density_kg_per_m3(
+                                baro_data.pressure_pa,
+                                baro_data.temperature_c,
+                                baro_data.humidity_percent,
+                            );
+                            state.air_density_kg_per_cubic_meter = density;
+                            defmt::info!("Updated Air Density: {} kg/m^3", density);
+                        }
                     }
                     Err(e) => {
                         defmt::error!("Barometer Error: {:?}", e);
@@ -228,6 +250,37 @@ async fn airspeed_task(mut sensors: Airspeed<'static>) {
             }
 
             Timer::after(Duration::from_millis(10)).await;
+        }
+    }
+}
+
+#[embassy_executor::task]
+async fn edf_task(mut edf: EdfDshot<'static>, mut pid: AirspeedControl) {
+    loop {
+        AIRSPEED_UPDATED_SIGNAL.wait().await;
+        let (measured, setpoint, status, density) = {
+            let state = GLOBAL_STATE.lock().await;
+            (
+                state.airspeed_meters_per_second,
+                state.desired_airspeed_meters_per_second,
+                state.machine_status,
+                state.air_density_kg_per_cubic_meter,
+            )
+        };
+
+        if matches!(status, MachineStatus::Running) {
+            pid.update_setpoint(setpoint);
+            let edf_airspeed = pid.compute_throttle(measured, density);
+            match edf.set_throttle_symmetric(edf_airspeed).await {
+                Ok(_) => {}
+                Err(e) => {
+                    defmt::error!("EDF Control Error: {:?}", e);
+                    {
+                        let mut state = GLOBAL_STATE.lock().await;
+                        state.machine_status = MachineStatus::Error;
+                    }
+                }
+            }
         }
     }
 }

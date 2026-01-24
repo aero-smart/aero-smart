@@ -32,7 +32,7 @@ impl<'a> Airspeed<'a> {
         Self { i2c }
     }
 
-    pub async fn read_raw_pitot(&mut self) -> Result<(u16, u16, u16), AirspeedError> {
+    pub async fn read_pitot(&mut self) -> Result<(u8, f32, f32), AirspeedError> {
         let mut buf = [0u8; 4];
         self.i2c
             .read(Self::MS4525DO_ADDR, &mut buf)
@@ -48,7 +48,10 @@ impl<'a> Airspeed<'a> {
         // Extract temperature (11 bits)
         let temperature_raw = (((buf[2] as u16) << 3) | ((buf[3] >> 5) as u16)) & 0x07FF;
 
-        Ok((status as u16, pressure_raw, temperature_raw))
+        let pressure_pa = Self::convert_pressure(pressure_raw);
+        let temperature_c = Self::convert_temperature(temperature_raw);
+
+        Ok((status, pressure_pa, temperature_c))
     }
 
     /// BME280 barometer reading
