@@ -25,16 +25,7 @@ use aerosmart_shared::serial::SerialMessage;
 use defmt::info;
 use embassy_executor::Spawner;
 use embassy_stm32::{
-    bind_interrupts,
-    gpio::{Level, Output, Speed},
-    i2c::{self, I2c},
-    mode::Async,
-    peripherals::IWDG1,
-    spi::{self, Spi},
-    time::Hertz,
-    timer::simple_pwm::{PwmPin, SimplePwm},
-    usart::{Uart, UartRx, UartTx},
-    wdg::IndependentWatchdog,
+    bind_interrupts, exti::ExtiInput, gpio::{Level, Output, Pull, Speed}, i2c::{self, I2c}, mode::Async, peripherals::IWDG1, spi::{self, Spi}, time::Hertz, timer::simple_pwm::{PwmPin, SimplePwm}, usart::{Uart, UartRx, UartTx}, wdg::IndependentWatchdog
 };
 use embassy_time::{Duration, Timer};
 use smart_leds::RGB8;
@@ -139,6 +130,7 @@ async fn main(spawner: Spawner) {
 
     let icm_ss = Output::new(p.PB2, Level::High, Speed::VeryHigh);
     let mut imu = ImuSpi::new(spi, icm_ss);
+    let icm_drdy = ExtiInput::new(p.PB1, p.EXTI1, Pull::Up);
 
     let sensors = Airspeed::new(i2c);
     let edf = EdfDshot::new(edf_pwm, p.DMA1_CH5);
@@ -164,7 +156,7 @@ async fn main(spawner: Spawner) {
         Err(e) => defmt::panic!("Failed to spawn LIDAR task: {:?}", e),
     }
 
-    match spawner.spawn(imu_task(imu, ahrs)) {
+    match spawner.spawn(imu_task(imu, icm_drdy, ahrs)) {
         Ok(_) => info!("IMU task spawned"),
         Err(e) => defmt::panic!("Failed to spawn IMU task: {:?}", e),
     }
@@ -214,8 +206,10 @@ async fn feed_watchdog(mut wdt: IndependentWatchdog<'static, IWDG1>) {
 }
 
 #[embassy_executor::task]
-async fn imu_task(mut imu: ImuSpi<'static>, mut ahrs: MadgwickAhrs) {
+async fn imu_task(mut imu: ImuSpi<'static>, mut input: ExtiInput<'static>, mut ahrs: MadgwickAhrs) {
     loop {
+        input.wait_for_rising_edge().await;
+        // Poll @ 4 kHz
         match imu.poll().await {
             Ok(data) => {
                 defmt::info!(
@@ -253,7 +247,6 @@ async fn imu_task(mut imu: ImuSpi<'static>, mut ahrs: MadgwickAhrs) {
                 defmt::error!("IMU Error: {:?}", e);
             }
         }
-        Timer::after(Duration::from_millis(25)).await;
     }
 }
 
