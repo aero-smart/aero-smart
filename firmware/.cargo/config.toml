@@ -5,6 +5,7 @@ runner = 'probe-rs run --chip STM32H743VGHx'
 
 [build]
 target = "thumbv7em-none-eabi"
+rustdocflags = ["--html-in-header", "firmware/docs-header.html"]
 
 [env]
 DEFMT_LOG = "trace"

@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+
 /// Pitot tube and barometer I2C interface
 ///
 /// MS4525DO Pitot tube differential pressure sensor
@@ -10,7 +11,9 @@ use embassy_stm32::{
     i2c::{Error, I2c, Master},
     mode::Async,
 };
+use embassy_time::{Duration, Timer};
 use num_traits::float::Float;
+use defmt::{debug, info};
 
 #[derive(defmt::Format)]
 pub enum AirspeedError {
@@ -34,10 +37,21 @@ impl<'a> Airspeed<'a> {
 
     pub async fn read_pitot(&mut self) -> Result<(u8, f32, f32), AirspeedError> {
         let mut buf = [0u8; 4];
+
+        for addr in 0x00..=0xFF {
+            debug!("Probing I2C address: 0x{:02X}", addr);
+            if self.i2c.write(addr, &[]).await.is_ok() {
+                info!("Found device at address: 0x{:02X}", addr);
+            }
+        }
+
+        debug!("Reading MS4525DO pitot sensor");
         self.i2c
             .read(Self::MS4525DO_ADDR, &mut buf)
             .await
             .map_err(AirspeedError::I2cError)?;
+
+        debug!("Raw pitot data: {:?}", buf);
 
         // Extract status (bits 7-6 of byte 0)
         let status = (buf[0] >> 6) & 0x03;
@@ -65,6 +79,8 @@ impl<'a> Airspeed<'a> {
             )
             .await
             .map_err(AirspeedError::I2cError)?;
+
+        info!("Raw BME280 barometer data: {:?}", buf);
 
         let pressure_raw: u32 =
             ((buf[0] as u32) << 12) | ((buf[1] as u32) << 4) | ((buf[2] as u32) >> 4);

@@ -5,6 +5,19 @@ edition.workspace = true
 version.workspace = true
 name = "aerosmart-firmware"
 
+[features]
+default = ["airspeed-control", "fft", "ahrs", "microphone", "imu", "lidar", "serial", "pwm-edf", "pwm-servo"]
+microphone = []
+airspeed = []
+imu = []
+lidar = []
+serial = []
+pwm-edf = []
+pwm-servo = []
+airspeed-control = ["airspeed", "pwm-edf"]
+fft = ["imu", "microphone"]
+ahrs = ["imu"]
+
 [dependencies]
 cortex-m = { version = "0.7.7", features = [
   "inline-asm",
@@ -57,8 +70,12 @@ libm = "0.2.16"
 nalgebra = { version = "0.34.1", default-features = false }
 microfft = "0.6.0"
 rkyv = { version = "0.8.14", default-features = false, features = ["bytecheck"] }
+aquamarine = "0.6.0"
 
 [[bin]]
 name = "aerosmart-firmware"
 test = false
 bench = false
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--html-in-header", "./docs-header.html"]
