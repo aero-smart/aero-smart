@@ -12,7 +12,7 @@ use embassy_stm32::{
     i2c::{Error, I2c, Master},
     mode::Async,
 };
-use embassy_time::{Duration, Instant, Timer};
+use embassy_time::Instant;
 use num_traits::float::Float;
 
 use crate::sensors::drivers::bme_280::CtrlMeas;

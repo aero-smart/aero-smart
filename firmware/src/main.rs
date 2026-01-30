@@ -6,22 +6,14 @@ pub mod consts;
 pub mod executors;
 pub mod sensors;
 pub mod state;
+pub mod tasks;
 pub mod utils;
 
 use crate::{
-    algorithms::{
-        airspeed::AirspeedControl, madgwick::MadgwickAhrs, motion_fft::compute_motion_fft,
-    },
+    algorithms::{airspeed::AirspeedControl, madgwick::MadgwickAhrs},
     executors::{edf::EdfDshot, servo::Servo},
     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
-    state::{
-        AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
-        MachineStatus, STATUS_UPDATED_SIGNAL,
-    },
-    utils::{
-        battery::get_battery_info, magnus::density_kg_per_m3, pitot::calculate_airspeed,
-        send_message,
-    },
+    tasks::*,
 };
 
 use {defmt_rtt as _, panic_probe as _};
@@ -30,26 +22,19 @@ use aerosmart_shared::serial::SerialMessage;
 use defmt::info;
 use embassy_executor::Spawner;
 use embassy_stm32::{
-    Peri,
-    adc::{Adc, AdcChannel},
+    adc::Adc,
     bind_interrupts,
     exti::ExtiInput,
     gpio::{Level, Output, Pull, Speed},
     i2c::{self, I2c},
-    mode::Async,
-    peripherals::{self, IWDG1},
     spi::{self, Spi},
     time::Hertz,
     timer::simple_pwm::{PwmPin, SimplePwm},
-    usart::{Uart, UartRx, UartTx},
+    usart::Uart,
     wdg::IndependentWatchdog,
 };
-use embassy_time::{Duration, Instant, TICK_HZ, Timer};
-use smart_leds::RGB8;
-use smart_leds_trait::SmartLedsWriteAsync;
+use embassy_time::{Duration, TICK_HZ, Timer};
 use ws2812_async::{Rgb, Ws2812};
-
-use state::GLOBAL_STATE;
 
 bind_interrupts!(struct Irqs {
     I2C1_EV => i2c::EventInterruptHandler<embassy_stm32::peripherals::I2C1>;
@@ -237,7 +222,7 @@ async fn main(spawner: Spawner) {
     info!("TIM2 initialized for Servo control");
 
     let ws2812_spi = Spi::new_txonly(p.SPI2, p.PD3, p.PC3, p.DMA1_CH4, spi::Config::default());
-    let mut ws2812: Ws2812<_, Rgb, 1> = Ws2812::new(ws2812_spi);
+    let ws2812: Ws2812<_, Rgb, 1> = Ws2812::new(ws2812_spi);
 
     info!("SPI2 initialized for WS2812 LED control");
 
@@ -280,7 +265,7 @@ async fn main(spawner: Spawner) {
 
     Timer::after(Duration::from_micros(200)).await;
 
-    match spawner.spawn(feed_watchdog(wdt)) {
+    match spawner.spawn(watchdog_task(wdt)) {
         Ok(_) => info!("Watchdog task spawned"),
         Err(e) => defmt::panic!("Failed to spawn watchdog task: {:?}", e),
     }
@@ -335,7 +320,7 @@ async fn main(spawner: Spawner) {
 
     if config.pwm_servo {
         info!("Starting Airspeed Servo task...");
-        match spawner.spawn(airspeed_servo_task(servo_control)) {
+        match spawner.spawn(servo_task(servo_control)) {
             Ok(_) => info!("Airspeed Servo task spawned"),
             Err(e) => defmt::panic!("Failed to spawn Airspeed Servo task: {:?}", e),
         }
@@ -360,457 +345,6 @@ async fn main(spawner: Spawner) {
         match spawner.spawn(battery_task(adc1, p.PA3, p.DMA2_CH3)) {
             Ok(_) => info!("Battery Monitoring task spawned"),
             Err(e) => defmt::panic!("Failed to spawn Battery Monitoring task: {:?}", e),
-        }
-    }
-}
-
-#[embassy_executor::task]
-async fn feed_watchdog(mut wdt: IndependentWatchdog<'static, IWDG1>) {
-    loop {
-        wdt.pet();
-        Timer::after(Duration::from_millis(1000)).await;
-    }
-}
-
-#[embassy_executor::task]
-async fn imu_task(mut imu: ImuSpi<'static>, input: ExtiInput<'static>, mut ahrs: MadgwickAhrs) {
-    loop {
-        // Poll @ 1 kHz
-        Timer::after(Duration::from_millis(1)).await;
-        match imu.poll().await {
-            Ok(data) => {
-                defmt::info!(
-                    "Accel: x={} y={} z={} | Gyro: x={} y={} z={}",
-                    data.accel_x,
-                    data.accel_y,
-                    data.accel_z,
-                    data.gyro_x,
-                    data.gyro_y,
-                    data.gyro_z
-                );
-                ahrs.update(
-                    [data.accel_x, data.accel_y, data.accel_z],
-                    [
-                        data.gyro_x.to_radians(),
-                        data.gyro_y.to_radians(),
-                        data.gyro_z.to_radians(),
-                    ],
-                );
-                {
-                    let mut state = GLOBAL_STATE.lock().await;
-                    let imu_head = state.imu_head;
-                    state.imu_buffer[0][imu_head] = data.accel_z;
-                    state.imu_buffer[1][imu_head] = data.gyro_x;
-                    state.imu_buffer[2][imu_head] = data.gyro_y;
-                    state.imu_head = (state.imu_head + 1) % state.imu_buffer.len();
-                    if state.imu_head == 0 {
-                        IMU_BUFFER_FULL_SIGNAL.signal(());
-                    }
-                    IMU_UPDATED_SIGNAL.signal(());
-                    state.quaternion = Some(ahrs.quaternion);
-                }
-            }
-            Err(e) => {
-                defmt::error!("IMU Error: {:?}", e);
-            }
-        }
-    }
-}
-
-#[embassy_executor::task]
-/// Poll pitot tube @ 100 Hz and barometer @ 10 Hz
-async fn airspeed_task(mut sensors: Airspeed<'static>) {
-    let mut counter = 0;
-    loop {
-        match sensors.read_pitot().await {
-            Ok((status, pressure_raw, temperature_raw)) => {
-                defmt::info!(
-                    "Pitot Status: {} | Pressure Raw: {} | Temperature Raw: {}",
-                    status,
-                    pressure_raw,
-                    temperature_raw
-                );
-                {
-                    let mut state = GLOBAL_STATE.lock().await;
-                    let airspeed =
-                        calculate_airspeed(pressure_raw, state.air_density_kg_per_cubic_meter);
-                    state.airspeed_meters_per_second = airspeed;
-                    defmt::info!("Calculated Airspeed: {} m/s", airspeed);
-                }
-                AIRSPEED_UPDATED_SIGNAL.signal(());
-            }
-            Err(e) => {
-                defmt::error!("Airspeed Sensor Error: {:?}", e);
-            }
-        }
-
-        counter += 1;
-
-        if counter >= 10 {
-            match sensors.read_barometer().await {
-                Ok(baro_data) => {
-                    defmt::info!(
-                        "Barometer Pressure: {} Pa | Temperature: {} °C | Humidity: {} %",
-                        baro_data.pressure_pa,
-                        baro_data.temperature_c,
-                        baro_data.humidity_percent
-                    );
-                    {
-                        let mut state = GLOBAL_STATE.lock().await;
-                        let density = density_kg_per_m3(
-                            baro_data.pressure_pa,
-                            baro_data.temperature_c,
-                            baro_data.humidity_percent,
-                        );
-                        state.barometer_data = Some(baro_data);
-                        state.air_density_kg_per_cubic_meter = density;
-                        defmt::info!("Updated Air Density: {} kg/m^3", density);
-                    }
-                }
-                Err(e) => {
-                    defmt::error!("Barometer Error: {:?}", e);
-                }
-            }
-            counter = 0;
-        }
-
-        Timer::after(Duration::from_millis(10)).await;
-    }
-}
-
-#[embassy_executor::task]
-async fn edf_task(mut edf: EdfDshot<'static>, mut pid: AirspeedControl) {
-    loop {
-        AIRSPEED_UPDATED_SIGNAL.wait().await;
-        let (measured, setpoint, status, density) = {
-            let state = GLOBAL_STATE.lock().await;
-            (
-                state.airspeed_meters_per_second,
-                state.desired_airspeed_meters_per_second,
-                state.machine_status,
-                state.air_density_kg_per_cubic_meter,
-            )
-        };
-
-        match status {
-            MachineStatus::Running => {
-                defmt::info!(
-                    "EDF Control | Measured Airspeed: {} m/s | Setpoint: {} m/s",
-                    measured,
-                    setpoint
-                );
-                pid.update_setpoint(setpoint);
-                let edf_airspeed = pid.compute_throttle(measured, density);
-                match edf.set_throttle_symmetric(edf_airspeed).await {
-                    Ok(_) => {}
-                    Err(e) => {
-                        defmt::error!("EDF Control Error: {:?}", e);
-                        {
-                            let mut state = GLOBAL_STATE.lock().await;
-                            state.machine_status = MachineStatus::Error;
-                            STATUS_UPDATED_SIGNAL.signal(());
-                        }
-                    }
-                }
-            }
-            MachineStatus::EmergencyStop => {
-                defmt::warn!("Emergency Stop Engaged! Cutting off EDF throttle.");
-                match edf.stop().await {
-                    Ok(_) => {}
-                    Err(e) => {
-                        defmt::error!("EDF Control Error during Emergency Stop: {:?}", e);
-                    }
-                }
-            }
-            _ => {}
-        }
-    }
-}
-
-#[embassy_executor::task]
-async fn lidar_task(mut lidar: LidarUart<'static>) {
-    loop {
-        match lidar.poll().await {
-            Ok(distance) => {
-                {
-                    let mut state = GLOBAL_STATE.lock().await;
-                    state.lidar_data = Some(distance);
-                }
-                defmt::info!("LIDAR Distance: {} mm", distance);
-                if distance.signal_strength < 100 {
-                    defmt::warn!("LIDAR signal strength low: {}", distance.signal_strength);
-                }
-                if distance.distance_cm <= 30 {
-                    defmt::warn!("LIDAR distance too close: {} cm", distance.distance_cm);
-                    {
-                        let mut state = GLOBAL_STATE.lock().await;
-                        state.machine_status = MachineStatus::EmergencyStop;
-                        STATUS_UPDATED_SIGNAL.signal(());
-                    }
-                }
-            }
-            Err(e) => {
-                defmt::error!("LIDAR Error: {:?}", e);
-            }
-        }
-        Timer::after(Duration::from_secs(3)).await;
-    }
-}
-
-#[embassy_executor::task]
-async fn led_task(mut ws2812: Ws2812<Spi<'static, Async>, Rgb, 1>) {
-    loop {
-        STATUS_UPDATED_SIGNAL.wait().await;
-        let color = {
-            let state = GLOBAL_STATE.lock().await;
-            state.machine_status.display_led()
-        };
-        ws2812
-            .write([RGB8::new(color.0, color.1, color.2), RGB8::default()].into_iter())
-            .await
-            .ok();
-    }
-}
-
-#[embassy_executor::task]
-async fn imu_fft_task() {
-    loop {
-        IMU_BUFFER_FULL_SIGNAL.wait().await;
-        let imu_buffer = {
-            let state = GLOBAL_STATE.lock().await;
-            state.imu_buffer
-        };
-        let mut results = [None; 3];
-        for axis in 0..3 {
-            let mut imu_data = imu_buffer[axis];
-            let fft_output = compute_motion_fft(&mut imu_data);
-            let vibration_metrics =
-                crate::algorithms::motion_fft::analyze_vibration(&fft_output, 1000.0);
-            defmt::info!(
-                "IMU Axis {} Vibration Metrics: RMS Vibration: {} | Dominant Frequency: {} Hz | Peak Magnitude: {}",
-                axis,
-                vibration_metrics.rms_vibration,
-                vibration_metrics.dominant_frequency_hz,
-                vibration_metrics.peak_magnitude
-            );
-            results[axis] = Some(vibration_metrics);
-        }
-        {
-            let mut state = GLOBAL_STATE.lock().await;
-            state.vibration_metrics = Some(results.map(|x| x.unwrap()));
-        }
-    }
-}
-
-#[embassy_executor::task]
-async fn airspeed_servo_task(mut servo: Servo<'static>) {
-    loop {
-        DESIRED_UPDATE_SIGNAL.wait().await;
-        let desired_angle = {
-            let state = GLOBAL_STATE.lock().await;
-            state.desired_servo_angle_deg
-        };
-        servo.set_angle_deg(desired_angle);
-    }
-}
-
-#[embassy_executor::task]
-async fn serial_uart_rx_task(mut rx: UartRx<'static, Async>) {
-    use aerosmart_shared::serial::*;
-    loop {
-        let mut buffer = [0u8; 256];
-        match rx.read(&mut buffer).await {
-            Ok(len) => {
-                defmt::info!("Received {} bytes over UART", len);
-            }
-            Err(e) => {
-                defmt::error!("UART Read Error: {:?}", e);
-                continue;
-            }
-        }
-        let message = unsafe { rkyv::access_unchecked::<ArchivedSerialMessage>(&buffer) };
-        {
-            let mut state = GLOBAL_STATE.lock().await;
-            match message {
-                ArchivedSerialMessage::ThrottleConfig(ArchivedThrottleConfig { airspeed }) => {
-                    state.desired_airspeed_meters_per_second = *airspeed as f32;
-                }
-
-                ArchivedSerialMessage::ServoConfig(ArchivedServoConfig { angle }) => {
-                    state.desired_servo_angle_deg = *angle as f32;
-                }
-
-                ArchivedSerialMessage::SensorConfig(ArchivedSensorConfig { imu_horizontal }) => {
-                    state.config = SensorConfig {
-                        imu_horizontal: *imu_horizontal,
-                    }
-                }
-
-                ArchivedSerialMessage::Command(command) => {
-                    match command {
-                        ArchivedCommand::Start => {
-                            state.machine_status = MachineStatus::Running;
-                        }
-                        ArchivedCommand::Stop => {
-                            state.machine_status = MachineStatus::Idle;
-                        }
-                        ArchivedCommand::Calibrate => {
-                            state.machine_status = MachineStatus::Initializing;
-                        }
-                    }
-                    STATUS_UPDATED_SIGNAL.signal(());
-                }
-
-                _ => {
-                    defmt::error!("Unknown Serial Message Received");
-                    state.machine_status = MachineStatus::Error;
-                    STATUS_UPDATED_SIGNAL.signal(());
-                }
-            };
-        }
-    }
-}
-
-/// Send telemetry messages over UART
-///
-/// - Airspeed @ 10 Hz
-/// - IMU quaternion @ 20 Hz
-/// - Vibration metrics @ 1 Hz
-/// - Barometer data @ 1 Hz
-/// - LIDAR distance @ 5 Hz
-#[embassy_executor::task]
-async fn serial_uart_tx_task(mut tx: UartTx<'static, Async>) {
-    let mut counter = 0;
-    loop {
-        Timer::after(Duration::from_millis(100)).await;
-        counter += 1;
-        use aerosmart_shared::serial::*;
-        let (airspeed, imu, quat, vibration, baro, lidar) = {
-            let state = GLOBAL_STATE.lock().await;
-            let last_idx =
-                (state.imu_head + state.imu_buffer[0].len() - 1) % state.imu_buffer[0].len();
-
-            let imu_data: [f32; 3] = core::array::from_fn(|i| state.imu_buffer[i][last_idx]);
-
-            (
-                state.airspeed_meters_per_second,
-                imu_data,
-                state.quaternion,
-                state.vibration_metrics,
-                state.barometer_data,
-                state.lidar_data,
-            )
-        };
-        // Send airspeed @ 10 Hz
-        let airspeed_message = SerialMessage::PitotAirspeedData(PitotAirspeedData {
-            splitter_left: 0f32,
-            splitter_right: 0f32,
-            static_port: airspeed,
-            time_elapsed_ms: Instant::now().as_millis(),
-        });
-        let (buffer, len) = send_message(airspeed_message).await;
-        tx.write(&buffer[..len]).await.ok();
-
-        // Send IMU quaternion @ 20 Hz
-
-        if counter % 2 == 0
-            && let Some(quat) = quat
-        {
-            let imu_message = SerialMessage::ImuData(ImuData {
-                accel_z: imu[0],
-                gyro_x: imu[1],
-                gyro_y: imu[2],
-                quad_w: quat.w,
-                quad_i: quat.i,
-                quad_j: quat.j,
-                quad_k: quat.k,
-                time_elapsed_ms: Instant::now().as_millis(),
-            });
-            let (buffer, len) = send_message(imu_message).await;
-            tx.write(&buffer[..len]).await.ok();
-        }
-
-        // Send vibration metrics @ 1 Hz
-        if counter % 10 == 0
-            && let Some(vibration_metrics) = vibration
-        {
-            let vibration_message = SerialMessage::ImuVibrationMetrics {
-                accel_z: vibration_metrics[0].into(),
-                gyro_x: vibration_metrics[1].into(),
-                gyro_y: vibration_metrics[2].into(),
-            };
-            let (buffer, len) = send_message(vibration_message).await;
-            tx.write(&buffer[..len]).await.ok();
-        }
-
-        if counter % 10 == 0
-            && let Some(baro_data) = baro
-        {
-            // Send barometer data @ 1 Hz
-
-            let baro_message = SerialMessage::BarometerData(baro_data);
-            let (buffer, len) = send_message(baro_message).await;
-            tx.write(&buffer[..len]).await.ok();
-        }
-
-        if counter % 2 == 0
-            && let Some(lidar_data) = lidar
-        {
-            // Send LIDAR data @ 5 Hz
-
-            let lidar_message: SerialMessage = SerialMessage::LidarData(lidar_data);
-            let (buffer, len) = send_message(lidar_message).await;
-            tx.write(&buffer[..len]).await.ok();
-        }
-
-        if counter >= 100 {
-            counter = 0;
-        }
-    }
-}
-
-#[embassy_executor::task]
-async fn battery_task(
-    mut adc: Adc<'static, peripherals::ADC1>,
-    input_chan: Peri<'static, peripherals::PA3>,
-    mut dma_chan: Peri<'static, peripherals::DMA2_CH3>,
-) {
-    let mut refchan = adc.enable_vrefint().degrade_adc();
-    let mut battchan = input_chan.degrade_adc();
-    loop {
-        Timer::after(Duration::from_hz(1)).await;
-        let mut sum = [0u32; 2];
-        // For better accuracy, average 4 samples
-        for _ in 0..4 {
-            let mut buffer = [0u16; 2];
-            adc.read(
-                dma_chan.reborrow(),
-                [
-                    (&mut refchan, embassy_stm32::adc::SampleTime::CYCLES810_5),
-                    (&mut battchan, embassy_stm32::adc::SampleTime::CYCLES387_5),
-                ]
-                .into_iter(),
-                &mut buffer,
-            )
-            .await;
-            sum[0] += buffer[0] as u32;
-            sum[1] += buffer[1] as u32;
-        }
-        let vrefint_raw = (sum[0] / 4) as u16;
-        let battery_raw = (sum[1] / 4) as u16;
-        // 4S LiPo, voltage divider: 5k/1k from the battery to ground
-        // Vref is 3V3.
-        let (battery_voltage, cell_voltage, soc) = get_battery_info(battery_raw, vrefint_raw, 3.3);
-        defmt::info!(
-            "Battery Voltage: {} V | Cell Voltage: {} V | State of Charge: {} %",
-            battery_voltage,
-            cell_voltage,
-            soc * 100.0
-        );
-        {
-            let mut state = GLOBAL_STATE.lock().await;
-            state.battery_voltage_volts = battery_voltage;
-            state.battery_soc_percent = soc * 100.0;
         }
     }
 }

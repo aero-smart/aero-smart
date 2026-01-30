@@ -1,0 +1,21 @@
+mod airspeed;
+mod battery;
+mod edf;
+mod imu;
+mod imu_fft;
+mod led;
+mod lidar;
+mod serial;
+mod servo;
+mod watchdog;
+
+pub use airspeed::airspeed_task;
+pub use battery::battery_task;
+pub use edf::edf_task;
+pub use imu::imu_task;
+pub use imu_fft::imu_fft_task;
+pub use led::led_task;
+pub use lidar::lidar_task;
+pub use serial::*;
+pub use servo::servo_task;
+pub use watchdog::watchdog_task;

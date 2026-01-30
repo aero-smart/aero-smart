@@ -32,7 +32,7 @@ fn get_soc(measured_voltage: f32) -> f32 {
 ///
 /// # Returns
 /// Total battery pack voltage in volts
-fn adc_to_voltage(adc_reading: u16, vrefint_reading: u16, vref_nominal: f32) -> f32 {
+fn adc_to_voltage(adc_reading: u16, vrefint_reading: u16) -> f32 {
     // VREFINT from datasheet: -40°C < TJ < 105°C, VDD = 3.3V
     // Typical: 1.216V, Min: 1.180V, Max: 1.255V
     const VREFINT_CAL: f32 = 1.216; // Typical value for STM32
@@ -68,10 +68,9 @@ fn adc_to_voltage(adc_reading: u16, vrefint_reading: u16, vref_nominal: f32) -> 
 fn adc_to_cell_voltage(
     adc_reading: u16,
     vrefint_reading: u16,
-    vref_nominal: f32,
     num_cells: f32,
 ) -> f32 {
-    let battery_voltage = adc_to_voltage(adc_reading, vrefint_reading, vref_nominal);
+    let battery_voltage = adc_to_voltage(adc_reading, vrefint_reading);
     battery_voltage / num_cells
 }
 
@@ -84,10 +83,10 @@ fn adc_to_cell_voltage(
 ///
 /// # Returns
 /// Battery SOC percentage (0.0 - 100.0)
-pub fn measured_to_soc(adc_reading: u16, vrefint_reading: u16, vref_nominal: f32) -> f32 {
+pub fn measured_to_soc(adc_reading: u16, vrefint_reading: u16) -> f32 {
     const NUM_CELLS: f32 = 4.0; // 4S LiPo
 
-    let cell_voltage = adc_to_cell_voltage(adc_reading, vrefint_reading, vref_nominal, NUM_CELLS);
+    let cell_voltage = adc_to_cell_voltage(adc_reading, vrefint_reading, NUM_CELLS);
     get_soc(cell_voltage)
 }
 
@@ -98,11 +97,10 @@ pub fn measured_to_soc(adc_reading: u16, vrefint_reading: u16, vref_nominal: f32
 pub fn get_battery_info(
     adc_reading: u16,
     vrefint_reading: u16,
-    vref_nominal: f32,
 ) -> (f32, f32, f32) {
     const NUM_CELLS: f32 = 4.0;
 
-    let battery_voltage = adc_to_voltage(adc_reading, vrefint_reading, vref_nominal);
+    let battery_voltage = adc_to_voltage(adc_reading, vrefint_reading);
     let cell_voltage = battery_voltage / NUM_CELLS;
     let soc = get_soc(cell_voltage);
 

@@ -1,0 +1,1190 @@
+   Compiling aerosmart-firmware v0.1.0 (/Users/ethangoh/Developer/aerosmart/firmware)
+error[E0432]: unresolved import `state`
+  --> firmware/src/tasks/airspeed.rs:43:5
+   |
+43 | use state::GLOBAL_STATE;
+   |     ^^^^^ help: a similar path exists: `crate::state`
+   |
+   = note: `use` statements changed in Rust 2018; read more at <https://doc.rust-lang.org/edition-guide/rust-2018/module-system/path-clarity.html>
+
+error[E0432]: unresolved import `state`
+  --> firmware/src/tasks/battery.rs:43:5
+   |
+43 | use state::GLOBAL_STATE;
+   |     ^^^^^ help: a similar path exists: `crate::state`
+   |
+   = note: `use` statements changed in Rust 2018; read more at <https://doc.rust-lang.org/edition-guide/rust-2018/module-system/path-clarity.html>
+
+error[E0432]: unresolved import `state`
+  --> firmware/src/tasks/imu.rs:43:5
+   |
+43 | use state::GLOBAL_STATE;
+   |     ^^^^^ help: a similar path exists: `crate::state`
+   |
+   = note: `use` statements changed in Rust 2018; read more at <https://doc.rust-lang.org/edition-guide/rust-2018/module-system/path-clarity.html>
+
+error[E0432]: unresolved import `state`
+  --> firmware/src/tasks/imu_fft.rs:43:5
+   |
+43 | use state::GLOBAL_STATE;
+   |     ^^^^^ help: a similar path exists: `crate::state`
+   |
+   = note: `use` statements changed in Rust 2018; read more at <https://doc.rust-lang.org/edition-guide/rust-2018/module-system/path-clarity.html>
+
+error[E0432]: unresolved import `state`
+  --> firmware/src/tasks/led.rs:43:5
+   |
+43 | use state::GLOBAL_STATE;
+   |     ^^^^^ help: a similar path exists: `crate::state`
+   |
+   = note: `use` statements changed in Rust 2018; read more at <https://doc.rust-lang.org/edition-guide/rust-2018/module-system/path-clarity.html>
+
+error[E0432]: unresolved import `state`
+  --> firmware/src/tasks/lidar.rs:43:5
+   |
+43 | use state::GLOBAL_STATE;
+   |     ^^^^^ help: a similar path exists: `crate::state`
+   |
+   = note: `use` statements changed in Rust 2018; read more at <https://doc.rust-lang.org/edition-guide/rust-2018/module-system/path-clarity.html>
+
+error[E0432]: unresolved import `state`
+  --> firmware/src/tasks/serial/uart_rx.rs:43:5
+   |
+43 | use state::GLOBAL_STATE;
+   |     ^^^^^ help: a similar path exists: `crate::state`
+   |
+   = note: `use` statements changed in Rust 2018; read more at <https://doc.rust-lang.org/edition-guide/rust-2018/module-system/path-clarity.html>
+
+error[E0432]: unresolved import `state`
+  --> firmware/src/tasks/serial/uart_tx.rs:43:5
+   |
+43 | use state::GLOBAL_STATE;
+   |     ^^^^^ help: a similar path exists: `crate::state`
+   |
+   = note: `use` statements changed in Rust 2018; read more at <https://doc.rust-lang.org/edition-guide/rust-2018/module-system/path-clarity.html>
+
+error[E0432]: unresolved import `state`
+  --> firmware/src/tasks/servo.rs:43:5
+   |
+43 | use state::GLOBAL_STATE;
+   |     ^^^^^ help: a similar path exists: `crate::state`
+   |
+   = note: `use` statements changed in Rust 2018; read more at <https://doc.rust-lang.org/edition-guide/rust-2018/module-system/path-clarity.html>
+
+error[E0432]: unresolved import `state`
+  --> firmware/src/tasks/watchdog.rs:43:5
+   |
+43 | use state::GLOBAL_STATE;
+   |     ^^^^^ help: a similar path exists: `crate::state`
+   |
+   = note: `use` statements changed in Rust 2018; read more at <https://doc.rust-lang.org/edition-guide/rust-2018/module-system/path-clarity.html>
+
+error[E0412]: cannot find type `EdfDshot` in this scope
+ --> firmware/src/tasks/edf.rs:2:32
+  |
+2 | pub async fn edf_task(mut edf: EdfDshot<'static>, mut pid: AirspeedControl) {
+  |                                ^^^^^^^^ not found in this scope
+  |
+help: consider importing this struct through its public re-export
+  |
+1 + use crate::EdfDshot;
+  |
+
+error[E0412]: cannot find type `AirspeedControl` in this scope
+ --> firmware/src/tasks/edf.rs:2:60
+  |
+2 | pub async fn edf_task(mut edf: EdfDshot<'static>, mut pid: AirspeedControl) {
+  |                                                            ^^^^^^^^^^^^^^^ not found in this scope
+  |
+help: consider importing this struct through its public re-export
+  |
+1 + use crate::AirspeedControl;
+  |
+
+error[E0425]: cannot find value `AIRSPEED_UPDATED_SIGNAL` in this scope
+ --> firmware/src/tasks/edf.rs:4:9
+  |
+4 |         AIRSPEED_UPDATED_SIGNAL.wait().await;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+  |
+help: consider importing this static through its public re-export
+  |
+1 + use crate::AIRSPEED_UPDATED_SIGNAL;
+  |
+
+error[E0425]: cannot find value `GLOBAL_STATE` in this scope
+ --> firmware/src/tasks/edf.rs:6:25
+  |
+6 |             let state = GLOBAL_STATE.lock().await;
+  |                         ^^^^^^^^^^^^ not found in this scope
+  |
+help: consider importing this static through its public re-export
+  |
+1 + use crate::GLOBAL_STATE;
+  |
+
+error[E0433]: failed to resolve: use of undeclared type `MachineStatus`
+  --> firmware/src/tasks/edf.rs:16:13
+   |
+16 |             MachineStatus::Running => {
+   |             ^^^^^^^^^^^^^ use of undeclared type `MachineStatus`
+   |
+help: consider importing this enum through its public re-export
+   |
+ 1 + use crate::MachineStatus;
+   |
+
+error[E0425]: cannot find value `GLOBAL_STATE` in this scope
+  --> firmware/src/tasks/edf.rs:29:45
+   |
+29 | ...                   let mut state = GLOBAL_STATE.lock().await;
+   |                                       ^^^^^^^^^^^^ not found in this scope
+   |
+help: consider importing this static through its public re-export
+   |
+ 1 + use crate::GLOBAL_STATE;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `MachineStatus`
+  --> firmware/src/tasks/edf.rs:30:52
+   |
+30 | ...                   state.machine_status = MachineStatus::Error;
+   |                                              ^^^^^^^^^^^^^ use of undeclared type `MachineStatus`
+   |
+help: consider importing this enum through its public re-export
+   |
+ 1 + use crate::MachineStatus;
+   |
+
+error[E0425]: cannot find value `STATUS_UPDATED_SIGNAL` in this scope
+  --> firmware/src/tasks/edf.rs:31:29
+   |
+31 | ...                   STATUS_UPDATED_SIGNAL.signal(());
+   |                       ^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+   |
+help: consider importing this static through its public re-export
+   |
+ 1 + use crate::STATUS_UPDATED_SIGNAL;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `MachineStatus`
+  --> firmware/src/tasks/edf.rs:36:13
+   |
+36 |             MachineStatus::EmergencyStop => {
+   |             ^^^^^^^^^^^^^ use of undeclared type `MachineStatus`
+   |
+help: consider importing this enum through its public re-export
+   |
+ 1 + use crate::MachineStatus;
+   |
+
+warning: unused imports: `Duration` and `Timer`
+  --> firmware/src/sensors/pitot_i2c.rs:15:20
+   |
+15 | use embassy_time::{Duration, Instant, Timer};
+   |                    ^^^^^^^^           ^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused imports: `DESIRED_UPDATE_SIGNAL`, `IMU_BUFFER_FULL_SIGNAL`, `IMU_UPDATED_SIGNAL`, `MachineStatus`, `STATUS_UPDATED_SIGNAL`, `airspeed::AirspeedControl`, `battery::get_battery_info`, `edf::EdfDshot`, `imu_spi::ImuSpi`, `lidar_uart::LidarUart`, `madgwick::MadgwickAhrs`, `motion_fft::compute_motion_fft`, `send_message`, `servo::Servo`, and `tasks::*`
+  --> firmware/src/tasks/airspeed.rs:3:9
+   |
+ 3 |         airspeed::AirspeedControl, madgwick::MadgwickAhrs, motion_fft::compute_motion_fft,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |     },
+ 5 |     executors::{edf::EdfDshot, servo::Servo},
+   |                 ^^^^^^^^^^^^^  ^^^^^^^^^^^^
+ 6 |     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+   |               ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+ 7 |     state::{
+ 8 |         AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
+   |                                  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+ 9 |         MachineStatus, STATUS_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+10 |     },
+11 |     tasks::*,
+   |     ^^^^^^^^
+12 |     utils::{
+13 |         battery::get_battery_info, magnus::density_kg_per_m3, pitot::calculate_airspeed,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+14 |         send_message,
+   |         ^^^^^^^^^^^^
+
+warning: unused import: `aerosmart_shared::serial::SerialMessage`
+  --> firmware/src/tasks/airspeed.rs:20:5
+   |
+20 | use aerosmart_shared::serial::SerialMessage;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `defmt::info`
+  --> firmware/src/tasks/airspeed.rs:21:5
+   |
+21 | use defmt::info;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `embassy_executor::Spawner`
+  --> firmware/src/tasks/airspeed.rs:22:5
+   |
+22 | use embassy_executor::Spawner;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AdcChannel`, `Adc`, `I2c`, `IWDG1`, `Level`, `Output`, `Peri`, `Pull`, `PwmPin`, `SimplePwm`, `Speed`, `Spi`, `UartRx`, `UartTx`, `Uart`, `bind_interrupts`, `exti::ExtiInput`, `mode::Async`, `self`, `self`, `self`, `time::Hertz`, and `wdg::IndependentWatchdog`
+  --> firmware/src/tasks/airspeed.rs:24:5
+   |
+24 |     Peri,
+   |     ^^^^
+25 |     adc::{Adc, AdcChannel},
+   |           ^^^  ^^^^^^^^^^
+26 |     bind_interrupts,
+   |     ^^^^^^^^^^^^^^^
+27 |     exti::ExtiInput,
+   |     ^^^^^^^^^^^^^^^
+28 |     gpio::{Level, Output, Pull, Speed},
+   |            ^^^^^  ^^^^^^  ^^^^  ^^^^^
+29 |     i2c::{self, I2c},
+   |           ^^^^  ^^^
+30 |     mode::Async,
+   |     ^^^^^^^^^^^
+31 |     peripherals::{self, IWDG1},
+   |                   ^^^^  ^^^^^
+32 |     spi::{self, Spi},
+   |           ^^^^  ^^^
+33 |     time::Hertz,
+   |     ^^^^^^^^^^^
+34 |     timer::simple_pwm::{PwmPin, SimplePwm},
+   |                         ^^^^^^  ^^^^^^^^^
+35 |     usart::{Uart, UartRx, UartTx},
+   |             ^^^^  ^^^^^^  ^^^^^^
+36 |     wdg::IndependentWatchdog,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Instant` and `TICK_HZ`
+  --> firmware/src/tasks/airspeed.rs:38:30
+   |
+38 | use embassy_time::{Duration, Instant, TICK_HZ, Timer};
+   |                              ^^^^^^^  ^^^^^^^
+
+warning: unused import: `smart_leds::RGB8`
+  --> firmware/src/tasks/airspeed.rs:39:5
+   |
+39 | use smart_leds::RGB8;
+   |     ^^^^^^^^^^^^^^^^
+
+warning: unused import: `smart_leds_trait::SmartLedsWriteAsync`
+  --> firmware/src/tasks/airspeed.rs:40:5
+   |
+40 | use smart_leds_trait::SmartLedsWriteAsync;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Rgb` and `Ws2812`
+  --> firmware/src/tasks/airspeed.rs:41:20
+   |
+41 | use ws2812_async::{Rgb, Ws2812};
+   |                    ^^^  ^^^^^^
+
+warning: unused imports: `AIRSPEED_UPDATED_SIGNAL`, `DESIRED_UPDATE_SIGNAL`, `IMU_BUFFER_FULL_SIGNAL`, `IMU_UPDATED_SIGNAL`, `MachineStatus`, `STATUS_UPDATED_SIGNAL`, `airspeed::AirspeedControl`, `edf::EdfDshot`, `imu_spi::ImuSpi`, `lidar_uart::LidarUart`, `madgwick::MadgwickAhrs`, `magnus::density_kg_per_m3`, `motion_fft::compute_motion_fft`, `pitot::calculate_airspeed`, `pitot_i2c::Airspeed`, `send_message`, `servo::Servo`, and `tasks::*`
+  --> firmware/src/tasks/battery.rs:3:9
+   |
+ 3 |         airspeed::AirspeedControl, madgwick::MadgwickAhrs, motion_fft::compute_motion_fft,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |     },
+ 5 |     executors::{edf::EdfDshot, servo::Servo},
+   |                 ^^^^^^^^^^^^^  ^^^^^^^^^^^^
+ 6 |     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+   |               ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+ 7 |     state::{
+ 8 |         AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+ 9 |         MachineStatus, STATUS_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+10 |     },
+11 |     tasks::*,
+   |     ^^^^^^^^
+12 |     utils::{
+13 |         battery::get_battery_info, magnus::density_kg_per_m3, pitot::calculate_airspeed,
+   |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+14 |         send_message,
+   |         ^^^^^^^^^^^^
+
+warning: unused import: `aerosmart_shared::serial::SerialMessage`
+  --> firmware/src/tasks/battery.rs:20:5
+   |
+20 | use aerosmart_shared::serial::SerialMessage;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `defmt::info`
+  --> firmware/src/tasks/battery.rs:21:5
+   |
+21 | use defmt::info;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `embassy_executor::Spawner`
+  --> firmware/src/tasks/battery.rs:22:5
+   |
+22 | use embassy_executor::Spawner;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `I2c`, `IWDG1`, `Level`, `Output`, `Pull`, `PwmPin`, `SimplePwm`, `Speed`, `Spi`, `UartRx`, `UartTx`, `Uart`, `bind_interrupts`, `exti::ExtiInput`, `mode::Async`, `self`, `self`, `time::Hertz`, and `wdg::IndependentWatchdog`
+  --> firmware/src/tasks/battery.rs:26:5
+   |
+26 |     bind_interrupts,
+   |     ^^^^^^^^^^^^^^^
+27 |     exti::ExtiInput,
+   |     ^^^^^^^^^^^^^^^
+28 |     gpio::{Level, Output, Pull, Speed},
+   |            ^^^^^  ^^^^^^  ^^^^  ^^^^^
+29 |     i2c::{self, I2c},
+   |           ^^^^  ^^^
+30 |     mode::Async,
+   |     ^^^^^^^^^^^
+31 |     peripherals::{self, IWDG1},
+   |                         ^^^^^
+32 |     spi::{self, Spi},
+   |           ^^^^  ^^^
+33 |     time::Hertz,
+   |     ^^^^^^^^^^^
+34 |     timer::simple_pwm::{PwmPin, SimplePwm},
+   |                         ^^^^^^  ^^^^^^^^^
+35 |     usart::{Uart, UartRx, UartTx},
+   |             ^^^^  ^^^^^^  ^^^^^^
+36 |     wdg::IndependentWatchdog,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Instant` and `TICK_HZ`
+  --> firmware/src/tasks/battery.rs:38:30
+   |
+38 | use embassy_time::{Duration, Instant, TICK_HZ, Timer};
+   |                              ^^^^^^^  ^^^^^^^
+
+warning: unused import: `smart_leds::RGB8`
+  --> firmware/src/tasks/battery.rs:39:5
+   |
+39 | use smart_leds::RGB8;
+   |     ^^^^^^^^^^^^^^^^
+
+warning: unused import: `smart_leds_trait::SmartLedsWriteAsync`
+  --> firmware/src/tasks/battery.rs:40:5
+   |
+40 | use smart_leds_trait::SmartLedsWriteAsync;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Rgb` and `Ws2812`
+  --> firmware/src/tasks/battery.rs:41:20
+   |
+41 | use ws2812_async::{Rgb, Ws2812};
+   |                    ^^^  ^^^^^^
+
+warning: unused imports: `AIRSPEED_UPDATED_SIGNAL`, `DESIRED_UPDATE_SIGNAL`, `MachineStatus`, `STATUS_UPDATED_SIGNAL`, `airspeed::AirspeedControl`, `battery::get_battery_info`, `edf::EdfDshot`, `lidar_uart::LidarUart`, `magnus::density_kg_per_m3`, `motion_fft::compute_motion_fft`, `pitot::calculate_airspeed`, `pitot_i2c::Airspeed`, `send_message`, `servo::Servo`, and `tasks::*`
+  --> firmware/src/tasks/imu.rs:3:9
+   |
+ 3 |         airspeed::AirspeedControl, madgwick::MadgwickAhrs, motion_fft::compute_motion_fft,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |     },
+ 5 |     executors::{edf::EdfDshot, servo::Servo},
+   |                 ^^^^^^^^^^^^^  ^^^^^^^^^^^^
+ 6 |     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+   |                                ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+ 7 |     state::{
+ 8 |         AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+ 9 |         MachineStatus, STATUS_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+10 |     },
+11 |     tasks::*,
+   |     ^^^^^^^^
+12 |     utils::{
+13 |         battery::get_battery_info, magnus::density_kg_per_m3, pitot::calculate_airspeed,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+14 |         send_message,
+   |         ^^^^^^^^^^^^
+
+warning: unused import: `aerosmart_shared::serial::SerialMessage`
+  --> firmware/src/tasks/imu.rs:20:5
+   |
+20 | use aerosmart_shared::serial::SerialMessage;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `defmt::info`
+  --> firmware/src/tasks/imu.rs:21:5
+   |
+21 | use defmt::info;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `embassy_executor::Spawner`
+  --> firmware/src/tasks/imu.rs:22:5
+   |
+22 | use embassy_executor::Spawner;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AdcChannel`, `Adc`, `I2c`, `IWDG1`, `Level`, `Output`, `Peri`, `Pull`, `PwmPin`, `SimplePwm`, `Speed`, `Spi`, `UartRx`, `UartTx`, `Uart`, `bind_interrupts`, `mode::Async`, `self`, `self`, `self`, `time::Hertz`, and `wdg::IndependentWatchdog`
+  --> firmware/src/tasks/imu.rs:24:5
+   |
+24 |     Peri,
+   |     ^^^^
+25 |     adc::{Adc, AdcChannel},
+   |           ^^^  ^^^^^^^^^^
+26 |     bind_interrupts,
+   |     ^^^^^^^^^^^^^^^
+27 |     exti::ExtiInput,
+28 |     gpio::{Level, Output, Pull, Speed},
+   |            ^^^^^  ^^^^^^  ^^^^  ^^^^^
+29 |     i2c::{self, I2c},
+   |           ^^^^  ^^^
+30 |     mode::Async,
+   |     ^^^^^^^^^^^
+31 |     peripherals::{self, IWDG1},
+   |                   ^^^^  ^^^^^
+32 |     spi::{self, Spi},
+   |           ^^^^  ^^^
+33 |     time::Hertz,
+   |     ^^^^^^^^^^^
+34 |     timer::simple_pwm::{PwmPin, SimplePwm},
+   |                         ^^^^^^  ^^^^^^^^^
+35 |     usart::{Uart, UartRx, UartTx},
+   |             ^^^^  ^^^^^^  ^^^^^^
+36 |     wdg::IndependentWatchdog,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Instant` and `TICK_HZ`
+  --> firmware/src/tasks/imu.rs:38:30
+   |
+38 | use embassy_time::{Duration, Instant, TICK_HZ, Timer};
+   |                              ^^^^^^^  ^^^^^^^
+
+warning: unused import: `smart_leds::RGB8`
+  --> firmware/src/tasks/imu.rs:39:5
+   |
+39 | use smart_leds::RGB8;
+   |     ^^^^^^^^^^^^^^^^
+
+warning: unused import: `smart_leds_trait::SmartLedsWriteAsync`
+  --> firmware/src/tasks/imu.rs:40:5
+   |
+40 | use smart_leds_trait::SmartLedsWriteAsync;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Rgb` and `Ws2812`
+  --> firmware/src/tasks/imu.rs:41:20
+   |
+41 | use ws2812_async::{Rgb, Ws2812};
+   |                    ^^^  ^^^^^^
+
+warning: unused imports: `AIRSPEED_UPDATED_SIGNAL`, `DESIRED_UPDATE_SIGNAL`, `IMU_UPDATED_SIGNAL`, `MachineStatus`, `STATUS_UPDATED_SIGNAL`, `airspeed::AirspeedControl`, `battery::get_battery_info`, `edf::EdfDshot`, `imu_spi::ImuSpi`, `lidar_uart::LidarUart`, `madgwick::MadgwickAhrs`, `magnus::density_kg_per_m3`, `pitot::calculate_airspeed`, `pitot_i2c::Airspeed`, `send_message`, `servo::Servo`, and `tasks::*`
+  --> firmware/src/tasks/imu_fft.rs:3:9
+   |
+ 3 |         airspeed::AirspeedControl, madgwick::MadgwickAhrs, motion_fft::compute_motion_fft,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+ 4 |     },
+ 5 |     executors::{edf::EdfDshot, servo::Servo},
+   |                 ^^^^^^^^^^^^^  ^^^^^^^^^^^^
+ 6 |     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+   |               ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+ 7 |     state::{
+ 8 |         AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^                          ^^^^^^^^^^^^^^^^^^
+ 9 |         MachineStatus, STATUS_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+10 |     },
+11 |     tasks::*,
+   |     ^^^^^^^^
+12 |     utils::{
+13 |         battery::get_battery_info, magnus::density_kg_per_m3, pitot::calculate_airspeed,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+14 |         send_message,
+   |         ^^^^^^^^^^^^
+
+warning: unused import: `aerosmart_shared::serial::SerialMessage`
+  --> firmware/src/tasks/imu_fft.rs:20:5
+   |
+20 | use aerosmart_shared::serial::SerialMessage;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `defmt::info`
+  --> firmware/src/tasks/imu_fft.rs:21:5
+   |
+21 | use defmt::info;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `embassy_executor::Spawner`
+  --> firmware/src/tasks/imu_fft.rs:22:5
+   |
+22 | use embassy_executor::Spawner;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AdcChannel`, `Adc`, `I2c`, `IWDG1`, `Level`, `Output`, `Peri`, `Pull`, `PwmPin`, `SimplePwm`, `Speed`, `Spi`, `UartRx`, `UartTx`, `Uart`, `bind_interrupts`, `exti::ExtiInput`, `mode::Async`, `self`, `self`, `self`, `time::Hertz`, and `wdg::IndependentWatchdog`
+  --> firmware/src/tasks/imu_fft.rs:24:5
+   |
+24 |     Peri,
+   |     ^^^^
+25 |     adc::{Adc, AdcChannel},
+   |           ^^^  ^^^^^^^^^^
+26 |     bind_interrupts,
+   |     ^^^^^^^^^^^^^^^
+27 |     exti::ExtiInput,
+   |     ^^^^^^^^^^^^^^^
+28 |     gpio::{Level, Output, Pull, Speed},
+   |            ^^^^^  ^^^^^^  ^^^^  ^^^^^
+29 |     i2c::{self, I2c},
+   |           ^^^^  ^^^
+30 |     mode::Async,
+   |     ^^^^^^^^^^^
+31 |     peripherals::{self, IWDG1},
+   |                   ^^^^  ^^^^^
+32 |     spi::{self, Spi},
+   |           ^^^^  ^^^
+33 |     time::Hertz,
+   |     ^^^^^^^^^^^
+34 |     timer::simple_pwm::{PwmPin, SimplePwm},
+   |                         ^^^^^^  ^^^^^^^^^
+35 |     usart::{Uart, UartRx, UartTx},
+   |             ^^^^  ^^^^^^  ^^^^^^
+36 |     wdg::IndependentWatchdog,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Duration`, `Instant`, `TICK_HZ`, and `Timer`
+  --> firmware/src/tasks/imu_fft.rs:38:20
+   |
+38 | use embassy_time::{Duration, Instant, TICK_HZ, Timer};
+   |                    ^^^^^^^^  ^^^^^^^  ^^^^^^^  ^^^^^
+
+warning: unused import: `smart_leds::RGB8`
+  --> firmware/src/tasks/imu_fft.rs:39:5
+   |
+39 | use smart_leds::RGB8;
+   |     ^^^^^^^^^^^^^^^^
+
+warning: unused import: `smart_leds_trait::SmartLedsWriteAsync`
+  --> firmware/src/tasks/imu_fft.rs:40:5
+   |
+40 | use smart_leds_trait::SmartLedsWriteAsync;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Rgb` and `Ws2812`
+  --> firmware/src/tasks/imu_fft.rs:41:20
+   |
+41 | use ws2812_async::{Rgb, Ws2812};
+   |                    ^^^  ^^^^^^
+
+warning: unused imports: `AIRSPEED_UPDATED_SIGNAL`, `DESIRED_UPDATE_SIGNAL`, `IMU_BUFFER_FULL_SIGNAL`, `IMU_UPDATED_SIGNAL`, `MachineStatus`, `airspeed::AirspeedControl`, `battery::get_battery_info`, `edf::EdfDshot`, `imu_spi::ImuSpi`, `lidar_uart::LidarUart`, `madgwick::MadgwickAhrs`, `magnus::density_kg_per_m3`, `motion_fft::compute_motion_fft`, `pitot::calculate_airspeed`, `pitot_i2c::Airspeed`, `send_message`, `servo::Servo`, and `tasks::*`
+  --> firmware/src/tasks/led.rs:3:9
+   |
+ 3 |         airspeed::AirspeedControl, madgwick::MadgwickAhrs, motion_fft::compute_motion_fft,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |     },
+ 5 |     executors::{edf::EdfDshot, servo::Servo},
+   |                 ^^^^^^^^^^^^^  ^^^^^^^^^^^^
+ 6 |     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+   |               ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+ 7 |     state::{
+ 8 |         AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+ 9 |         MachineStatus, STATUS_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^
+10 |     },
+11 |     tasks::*,
+   |     ^^^^^^^^
+12 |     utils::{
+13 |         battery::get_battery_info, magnus::density_kg_per_m3, pitot::calculate_airspeed,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+14 |         send_message,
+   |         ^^^^^^^^^^^^
+
+warning: unused import: `aerosmart_shared::serial::SerialMessage`
+  --> firmware/src/tasks/led.rs:20:5
+   |
+20 | use aerosmart_shared::serial::SerialMessage;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `defmt::info`
+  --> firmware/src/tasks/led.rs:21:5
+   |
+21 | use defmt::info;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `embassy_executor::Spawner`
+  --> firmware/src/tasks/led.rs:22:5
+   |
+22 | use embassy_executor::Spawner;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AdcChannel`, `Adc`, `I2c`, `IWDG1`, `Level`, `Output`, `Peri`, `Pull`, `PwmPin`, `SimplePwm`, `Speed`, `UartRx`, `UartTx`, `Uart`, `bind_interrupts`, `exti::ExtiInput`, `self`, `self`, `self`, `time::Hertz`, and `wdg::IndependentWatchdog`
+  --> firmware/src/tasks/led.rs:24:5
+   |
+24 |     Peri,
+   |     ^^^^
+25 |     adc::{Adc, AdcChannel},
+   |           ^^^  ^^^^^^^^^^
+26 |     bind_interrupts,
+   |     ^^^^^^^^^^^^^^^
+27 |     exti::ExtiInput,
+   |     ^^^^^^^^^^^^^^^
+28 |     gpio::{Level, Output, Pull, Speed},
+   |            ^^^^^  ^^^^^^  ^^^^  ^^^^^
+29 |     i2c::{self, I2c},
+   |           ^^^^  ^^^
+30 |     mode::Async,
+31 |     peripherals::{self, IWDG1},
+   |                   ^^^^  ^^^^^
+32 |     spi::{self, Spi},
+   |           ^^^^
+33 |     time::Hertz,
+   |     ^^^^^^^^^^^
+34 |     timer::simple_pwm::{PwmPin, SimplePwm},
+   |                         ^^^^^^  ^^^^^^^^^
+35 |     usart::{Uart, UartRx, UartTx},
+   |             ^^^^  ^^^^^^  ^^^^^^
+36 |     wdg::IndependentWatchdog,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Duration`, `Instant`, `TICK_HZ`, and `Timer`
+  --> firmware/src/tasks/led.rs:38:20
+   |
+38 | use embassy_time::{Duration, Instant, TICK_HZ, Timer};
+   |                    ^^^^^^^^  ^^^^^^^  ^^^^^^^  ^^^^^
+
+warning: unused imports: `AIRSPEED_UPDATED_SIGNAL`, `DESIRED_UPDATE_SIGNAL`, `IMU_BUFFER_FULL_SIGNAL`, `IMU_UPDATED_SIGNAL`, `airspeed::AirspeedControl`, `battery::get_battery_info`, `edf::EdfDshot`, `imu_spi::ImuSpi`, `madgwick::MadgwickAhrs`, `magnus::density_kg_per_m3`, `motion_fft::compute_motion_fft`, `pitot::calculate_airspeed`, `pitot_i2c::Airspeed`, `send_message`, `servo::Servo`, and `tasks::*`
+  --> firmware/src/tasks/lidar.rs:3:9
+   |
+ 3 |         airspeed::AirspeedControl, madgwick::MadgwickAhrs, motion_fft::compute_motion_fft,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |     },
+ 5 |     executors::{edf::EdfDshot, servo::Servo},
+   |                 ^^^^^^^^^^^^^  ^^^^^^^^^^^^
+ 6 |     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+   |               ^^^^^^^^^^^^^^^                         ^^^^^^^^^^^^^^^^^^^
+ 7 |     state::{
+ 8 |         AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+...
+11 |     tasks::*,
+   |     ^^^^^^^^
+12 |     utils::{
+13 |         battery::get_battery_info, magnus::density_kg_per_m3, pitot::calculate_airspeed,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+14 |         send_message,
+   |         ^^^^^^^^^^^^
+
+warning: unused import: `aerosmart_shared::serial::SerialMessage`
+  --> firmware/src/tasks/lidar.rs:20:5
+   |
+20 | use aerosmart_shared::serial::SerialMessage;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `defmt::info`
+  --> firmware/src/tasks/lidar.rs:21:5
+   |
+21 | use defmt::info;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `embassy_executor::Spawner`
+  --> firmware/src/tasks/lidar.rs:22:5
+   |
+22 | use embassy_executor::Spawner;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AdcChannel`, `Adc`, `I2c`, `IWDG1`, `Level`, `Output`, `Peri`, `Pull`, `PwmPin`, `SimplePwm`, `Speed`, `Spi`, `UartRx`, `UartTx`, `Uart`, `bind_interrupts`, `exti::ExtiInput`, `mode::Async`, `self`, `self`, `self`, `time::Hertz`, and `wdg::IndependentWatchdog`
+  --> firmware/src/tasks/lidar.rs:24:5
+   |
+24 |     Peri,
+   |     ^^^^
+25 |     adc::{Adc, AdcChannel},
+   |           ^^^  ^^^^^^^^^^
+26 |     bind_interrupts,
+   |     ^^^^^^^^^^^^^^^
+27 |     exti::ExtiInput,
+   |     ^^^^^^^^^^^^^^^
+28 |     gpio::{Level, Output, Pull, Speed},
+   |            ^^^^^  ^^^^^^  ^^^^  ^^^^^
+29 |     i2c::{self, I2c},
+   |           ^^^^  ^^^
+30 |     mode::Async,
+   |     ^^^^^^^^^^^
+31 |     peripherals::{self, IWDG1},
+   |                   ^^^^  ^^^^^
+32 |     spi::{self, Spi},
+   |           ^^^^  ^^^
+33 |     time::Hertz,
+   |     ^^^^^^^^^^^
+34 |     timer::simple_pwm::{PwmPin, SimplePwm},
+   |                         ^^^^^^  ^^^^^^^^^
+35 |     usart::{Uart, UartRx, UartTx},
+   |             ^^^^  ^^^^^^  ^^^^^^
+36 |     wdg::IndependentWatchdog,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Instant` and `TICK_HZ`
+  --> firmware/src/tasks/lidar.rs:38:30
+   |
+38 | use embassy_time::{Duration, Instant, TICK_HZ, Timer};
+   |                              ^^^^^^^  ^^^^^^^
+
+warning: unused import: `smart_leds::RGB8`
+  --> firmware/src/tasks/lidar.rs:39:5
+   |
+39 | use smart_leds::RGB8;
+   |     ^^^^^^^^^^^^^^^^
+
+warning: unused import: `smart_leds_trait::SmartLedsWriteAsync`
+  --> firmware/src/tasks/lidar.rs:40:5
+   |
+40 | use smart_leds_trait::SmartLedsWriteAsync;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Rgb` and `Ws2812`
+  --> firmware/src/tasks/lidar.rs:41:20
+   |
+41 | use ws2812_async::{Rgb, Ws2812};
+   |                    ^^^  ^^^^^^
+
+warning: unused imports: `AIRSPEED_UPDATED_SIGNAL`, `DESIRED_UPDATE_SIGNAL`, `IMU_BUFFER_FULL_SIGNAL`, `IMU_UPDATED_SIGNAL`, `airspeed::AirspeedControl`, `battery::get_battery_info`, `edf::EdfDshot`, `imu_spi::ImuSpi`, `lidar_uart::LidarUart`, `madgwick::MadgwickAhrs`, `magnus::density_kg_per_m3`, `motion_fft::compute_motion_fft`, `pitot::calculate_airspeed`, `pitot_i2c::Airspeed`, `send_message`, `servo::Servo`, and `tasks::*`
+  --> firmware/src/tasks/serial/uart_rx.rs:3:9
+   |
+ 3 |         airspeed::AirspeedControl, madgwick::MadgwickAhrs, motion_fft::compute_motion_fft,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |     },
+ 5 |     executors::{edf::EdfDshot, servo::Servo},
+   |                 ^^^^^^^^^^^^^  ^^^^^^^^^^^^
+ 6 |     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+   |               ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+ 7 |     state::{
+ 8 |         AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+...
+11 |     tasks::*,
+   |     ^^^^^^^^
+12 |     utils::{
+13 |         battery::get_battery_info, magnus::density_kg_per_m3, pitot::calculate_airspeed,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+14 |         send_message,
+   |         ^^^^^^^^^^^^
+
+warning: unused import: `aerosmart_shared::serial::SerialMessage`
+  --> firmware/src/tasks/serial/uart_rx.rs:20:5
+   |
+20 | use aerosmart_shared::serial::SerialMessage;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `defmt::info`
+  --> firmware/src/tasks/serial/uart_rx.rs:21:5
+   |
+21 | use defmt::info;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `embassy_executor::Spawner`
+  --> firmware/src/tasks/serial/uart_rx.rs:22:5
+   |
+22 | use embassy_executor::Spawner;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AdcChannel`, `Adc`, `I2c`, `IWDG1`, `Level`, `Output`, `Peri`, `Pull`, `PwmPin`, `SimplePwm`, `Speed`, `Spi`, `UartTx`, `Uart`, `bind_interrupts`, `exti::ExtiInput`, `self`, `self`, `self`, `time::Hertz`, and `wdg::IndependentWatchdog`
+  --> firmware/src/tasks/serial/uart_rx.rs:24:5
+   |
+24 |     Peri,
+   |     ^^^^
+25 |     adc::{Adc, AdcChannel},
+   |           ^^^  ^^^^^^^^^^
+26 |     bind_interrupts,
+   |     ^^^^^^^^^^^^^^^
+27 |     exti::ExtiInput,
+   |     ^^^^^^^^^^^^^^^
+28 |     gpio::{Level, Output, Pull, Speed},
+   |            ^^^^^  ^^^^^^  ^^^^  ^^^^^
+29 |     i2c::{self, I2c},
+   |           ^^^^  ^^^
+30 |     mode::Async,
+31 |     peripherals::{self, IWDG1},
+   |                   ^^^^  ^^^^^
+32 |     spi::{self, Spi},
+   |           ^^^^  ^^^
+33 |     time::Hertz,
+   |     ^^^^^^^^^^^
+34 |     timer::simple_pwm::{PwmPin, SimplePwm},
+   |                         ^^^^^^  ^^^^^^^^^
+35 |     usart::{Uart, UartRx, UartTx},
+   |             ^^^^          ^^^^^^
+36 |     wdg::IndependentWatchdog,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Duration`, `Instant`, `TICK_HZ`, and `Timer`
+  --> firmware/src/tasks/serial/uart_rx.rs:38:20
+   |
+38 | use embassy_time::{Duration, Instant, TICK_HZ, Timer};
+   |                    ^^^^^^^^  ^^^^^^^  ^^^^^^^  ^^^^^
+
+warning: unused import: `smart_leds::RGB8`
+  --> firmware/src/tasks/serial/uart_rx.rs:39:5
+   |
+39 | use smart_leds::RGB8;
+   |     ^^^^^^^^^^^^^^^^
+
+warning: unused import: `smart_leds_trait::SmartLedsWriteAsync`
+  --> firmware/src/tasks/serial/uart_rx.rs:40:5
+   |
+40 | use smart_leds_trait::SmartLedsWriteAsync;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Rgb` and `Ws2812`
+  --> firmware/src/tasks/serial/uart_rx.rs:41:20
+   |
+41 | use ws2812_async::{Rgb, Ws2812};
+   |                    ^^^  ^^^^^^
+
+warning: unused imports: `AIRSPEED_UPDATED_SIGNAL`, `DESIRED_UPDATE_SIGNAL`, `IMU_BUFFER_FULL_SIGNAL`, `IMU_UPDATED_SIGNAL`, `MachineStatus`, `STATUS_UPDATED_SIGNAL`, `airspeed::AirspeedControl`, `battery::get_battery_info`, `edf::EdfDshot`, `imu_spi::ImuSpi`, `lidar_uart::LidarUart`, `madgwick::MadgwickAhrs`, `magnus::density_kg_per_m3`, `motion_fft::compute_motion_fft`, `pitot::calculate_airspeed`, `pitot_i2c::Airspeed`, `servo::Servo`, and `tasks::*`
+  --> firmware/src/tasks/serial/uart_tx.rs:3:9
+   |
+ 3 |         airspeed::AirspeedControl, madgwick::MadgwickAhrs, motion_fft::compute_motion_fft,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |     },
+ 5 |     executors::{edf::EdfDshot, servo::Servo},
+   |                 ^^^^^^^^^^^^^  ^^^^^^^^^^^^
+ 6 |     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+   |               ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+ 7 |     state::{
+ 8 |         AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+ 9 |         MachineStatus, STATUS_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+10 |     },
+11 |     tasks::*,
+   |     ^^^^^^^^
+12 |     utils::{
+13 |         battery::get_battery_info, magnus::density_kg_per_m3, pitot::calculate_airspeed,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `aerosmart_shared::serial::SerialMessage`
+  --> firmware/src/tasks/serial/uart_tx.rs:20:5
+   |
+20 | use aerosmart_shared::serial::SerialMessage;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `defmt::info`
+  --> firmware/src/tasks/serial/uart_tx.rs:21:5
+   |
+21 | use defmt::info;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `embassy_executor::Spawner`
+  --> firmware/src/tasks/serial/uart_tx.rs:22:5
+   |
+22 | use embassy_executor::Spawner;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AdcChannel`, `Adc`, `I2c`, `IWDG1`, `Level`, `Output`, `Peri`, `Pull`, `PwmPin`, `SimplePwm`, `Speed`, `Spi`, `UartRx`, `Uart`, `bind_interrupts`, `exti::ExtiInput`, `self`, `self`, `self`, `time::Hertz`, and `wdg::IndependentWatchdog`
+  --> firmware/src/tasks/serial/uart_tx.rs:24:5
+   |
+24 |     Peri,
+   |     ^^^^
+25 |     adc::{Adc, AdcChannel},
+   |           ^^^  ^^^^^^^^^^
+26 |     bind_interrupts,
+   |     ^^^^^^^^^^^^^^^
+27 |     exti::ExtiInput,
+   |     ^^^^^^^^^^^^^^^
+28 |     gpio::{Level, Output, Pull, Speed},
+   |            ^^^^^  ^^^^^^  ^^^^  ^^^^^
+29 |     i2c::{self, I2c},
+   |           ^^^^  ^^^
+30 |     mode::Async,
+31 |     peripherals::{self, IWDG1},
+   |                   ^^^^  ^^^^^
+32 |     spi::{self, Spi},
+   |           ^^^^  ^^^
+33 |     time::Hertz,
+   |     ^^^^^^^^^^^
+34 |     timer::simple_pwm::{PwmPin, SimplePwm},
+   |                         ^^^^^^  ^^^^^^^^^
+35 |     usart::{Uart, UartRx, UartTx},
+   |             ^^^^  ^^^^^^
+36 |     wdg::IndependentWatchdog,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `TICK_HZ`
+  --> firmware/src/tasks/serial/uart_tx.rs:38:39
+   |
+38 | use embassy_time::{Duration, Instant, TICK_HZ, Timer};
+   |                                       ^^^^^^^
+
+warning: unused import: `smart_leds::RGB8`
+  --> firmware/src/tasks/serial/uart_tx.rs:39:5
+   |
+39 | use smart_leds::RGB8;
+   |     ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Rgb` and `Ws2812`
+  --> firmware/src/tasks/serial/uart_tx.rs:41:20
+   |
+41 | use ws2812_async::{Rgb, Ws2812};
+   |                    ^^^  ^^^^^^
+
+warning: unused imports: `AIRSPEED_UPDATED_SIGNAL`, `IMU_BUFFER_FULL_SIGNAL`, `IMU_UPDATED_SIGNAL`, `MachineStatus`, `STATUS_UPDATED_SIGNAL`, `airspeed::AirspeedControl`, `battery::get_battery_info`, `edf::EdfDshot`, `imu_spi::ImuSpi`, `lidar_uart::LidarUart`, `madgwick::MadgwickAhrs`, `magnus::density_kg_per_m3`, `motion_fft::compute_motion_fft`, `pitot::calculate_airspeed`, `pitot_i2c::Airspeed`, `send_message`, and `tasks::*`
+  --> firmware/src/tasks/servo.rs:3:9
+   |
+ 3 |         airspeed::AirspeedControl, madgwick::MadgwickAhrs, motion_fft::compute_motion_fft,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |     },
+ 5 |     executors::{edf::EdfDshot, servo::Servo},
+   |                 ^^^^^^^^^^^^^
+ 6 |     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+   |               ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+ 7 |     state::{
+ 8 |         AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^                         ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+ 9 |         MachineStatus, STATUS_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+10 |     },
+11 |     tasks::*,
+   |     ^^^^^^^^
+12 |     utils::{
+13 |         battery::get_battery_info, magnus::density_kg_per_m3, pitot::calculate_airspeed,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+14 |         send_message,
+   |         ^^^^^^^^^^^^
+
+warning: unused import: `aerosmart_shared::serial::SerialMessage`
+  --> firmware/src/tasks/servo.rs:20:5
+   |
+20 | use aerosmart_shared::serial::SerialMessage;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `defmt::info`
+  --> firmware/src/tasks/servo.rs:21:5
+   |
+21 | use defmt::info;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `embassy_executor::Spawner`
+  --> firmware/src/tasks/servo.rs:22:5
+   |
+22 | use embassy_executor::Spawner;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AdcChannel`, `Adc`, `I2c`, `IWDG1`, `Level`, `Output`, `Peri`, `Pull`, `PwmPin`, `SimplePwm`, `Speed`, `Spi`, `UartRx`, `UartTx`, `Uart`, `bind_interrupts`, `exti::ExtiInput`, `mode::Async`, `self`, `self`, `self`, `time::Hertz`, and `wdg::IndependentWatchdog`
+  --> firmware/src/tasks/servo.rs:24:5
+   |
+24 |     Peri,
+   |     ^^^^
+25 |     adc::{Adc, AdcChannel},
+   |           ^^^  ^^^^^^^^^^
+26 |     bind_interrupts,
+   |     ^^^^^^^^^^^^^^^
+27 |     exti::ExtiInput,
+   |     ^^^^^^^^^^^^^^^
+28 |     gpio::{Level, Output, Pull, Speed},
+   |            ^^^^^  ^^^^^^  ^^^^  ^^^^^
+29 |     i2c::{self, I2c},
+   |           ^^^^  ^^^
+30 |     mode::Async,
+   |     ^^^^^^^^^^^
+31 |     peripherals::{self, IWDG1},
+   |                   ^^^^  ^^^^^
+32 |     spi::{self, Spi},
+   |           ^^^^  ^^^
+33 |     time::Hertz,
+   |     ^^^^^^^^^^^
+34 |     timer::simple_pwm::{PwmPin, SimplePwm},
+   |                         ^^^^^^  ^^^^^^^^^
+35 |     usart::{Uart, UartRx, UartTx},
+   |             ^^^^  ^^^^^^  ^^^^^^
+36 |     wdg::IndependentWatchdog,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Duration`, `Instant`, `TICK_HZ`, and `Timer`
+  --> firmware/src/tasks/servo.rs:38:20
+   |
+38 | use embassy_time::{Duration, Instant, TICK_HZ, Timer};
+   |                    ^^^^^^^^  ^^^^^^^  ^^^^^^^  ^^^^^
+
+warning: unused import: `smart_leds::RGB8`
+  --> firmware/src/tasks/servo.rs:39:5
+   |
+39 | use smart_leds::RGB8;
+   |     ^^^^^^^^^^^^^^^^
+
+warning: unused import: `smart_leds_trait::SmartLedsWriteAsync`
+  --> firmware/src/tasks/servo.rs:40:5
+   |
+40 | use smart_leds_trait::SmartLedsWriteAsync;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Rgb` and `Ws2812`
+  --> firmware/src/tasks/servo.rs:41:20
+   |
+41 | use ws2812_async::{Rgb, Ws2812};
+   |                    ^^^  ^^^^^^
+
+warning: unused imports: `AIRSPEED_UPDATED_SIGNAL`, `DESIRED_UPDATE_SIGNAL`, `IMU_BUFFER_FULL_SIGNAL`, `IMU_UPDATED_SIGNAL`, `MachineStatus`, `STATUS_UPDATED_SIGNAL`, `airspeed::AirspeedControl`, `battery::get_battery_info`, `edf::EdfDshot`, `imu_spi::ImuSpi`, `lidar_uart::LidarUart`, `madgwick::MadgwickAhrs`, `magnus::density_kg_per_m3`, `motion_fft::compute_motion_fft`, `pitot::calculate_airspeed`, `pitot_i2c::Airspeed`, `send_message`, `servo::Servo`, and `tasks::*`
+  --> firmware/src/tasks/watchdog.rs:3:9
+   |
+ 3 |         airspeed::AirspeedControl, madgwick::MadgwickAhrs, motion_fft::compute_motion_fft,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 4 |     },
+ 5 |     executors::{edf::EdfDshot, servo::Servo},
+   |                 ^^^^^^^^^^^^^  ^^^^^^^^^^^^
+ 6 |     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+   |               ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+ 7 |     state::{
+ 8 |         AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+ 9 |         MachineStatus, STATUS_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+10 |     },
+11 |     tasks::*,
+   |     ^^^^^^^^
+12 |     utils::{
+13 |         battery::get_battery_info, magnus::density_kg_per_m3, pitot::calculate_airspeed,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+14 |         send_message,
+   |         ^^^^^^^^^^^^
+
+warning: unused import: `aerosmart_shared::serial::SerialMessage`
+  --> firmware/src/tasks/watchdog.rs:20:5
+   |
+20 | use aerosmart_shared::serial::SerialMessage;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `defmt::info`
+  --> firmware/src/tasks/watchdog.rs:21:5
+   |
+21 | use defmt::info;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `embassy_executor::Spawner`
+  --> firmware/src/tasks/watchdog.rs:22:5
+   |
+22 | use embassy_executor::Spawner;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AdcChannel`, `Adc`, `I2c`, `Level`, `Output`, `Peri`, `Pull`, `PwmPin`, `SimplePwm`, `Speed`, `Spi`, `UartRx`, `UartTx`, `Uart`, `bind_interrupts`, `exti::ExtiInput`, `mode::Async`, `self`, `self`, `self`, and `time::Hertz`
+  --> firmware/src/tasks/watchdog.rs:24:5
+   |
+24 |     Peri,
+   |     ^^^^
+25 |     adc::{Adc, AdcChannel},
+   |           ^^^  ^^^^^^^^^^
+26 |     bind_interrupts,
+   |     ^^^^^^^^^^^^^^^
+27 |     exti::ExtiInput,
+   |     ^^^^^^^^^^^^^^^
+28 |     gpio::{Level, Output, Pull, Speed},
+   |            ^^^^^  ^^^^^^  ^^^^  ^^^^^
+29 |     i2c::{self, I2c},
+   |           ^^^^  ^^^
+30 |     mode::Async,
+   |     ^^^^^^^^^^^
+31 |     peripherals::{self, IWDG1},
+   |                   ^^^^
+32 |     spi::{self, Spi},
+   |           ^^^^  ^^^
+33 |     time::Hertz,
+   |     ^^^^^^^^^^^
+34 |     timer::simple_pwm::{PwmPin, SimplePwm},
+   |                         ^^^^^^  ^^^^^^^^^
+35 |     usart::{Uart, UartRx, UartTx},
+   |             ^^^^  ^^^^^^  ^^^^^^
+
+warning: unused imports: `Instant` and `TICK_HZ`
+  --> firmware/src/tasks/watchdog.rs:38:30
+   |
+38 | use embassy_time::{Duration, Instant, TICK_HZ, Timer};
+   |                              ^^^^^^^  ^^^^^^^
+
+warning: unused import: `smart_leds::RGB8`
+  --> firmware/src/tasks/watchdog.rs:39:5
+   |
+39 | use smart_leds::RGB8;
+   |     ^^^^^^^^^^^^^^^^
+
+warning: unused import: `smart_leds_trait::SmartLedsWriteAsync`
+  --> firmware/src/tasks/watchdog.rs:40:5
+   |
+40 | use smart_leds_trait::SmartLedsWriteAsync;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Rgb` and `Ws2812`
+  --> firmware/src/tasks/watchdog.rs:41:20
+   |
+41 | use ws2812_async::{Rgb, Ws2812};
+   |                    ^^^  ^^^^^^
+
+warning: unused imports: `AIRSPEED_UPDATED_SIGNAL`, `DESIRED_UPDATE_SIGNAL`, `IMU_BUFFER_FULL_SIGNAL`, `IMU_UPDATED_SIGNAL`, `MachineStatus`, `STATUS_UPDATED_SIGNAL`, `battery::get_battery_info`, `magnus::density_kg_per_m3`, `motion_fft::compute_motion_fft`, `pitot::calculate_airspeed`, and `send_message`
+  --> firmware/src/main.rs:14:60
+   |
+14 |         airspeed::AirspeedControl, madgwick::MadgwickAhrs, motion_fft::compute_motion_fft,
+   |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+19 |         AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+20 |         MachineStatus, STATUS_UPDATED_SIGNAL,
+   |         ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^
+...
+24 |         battery::get_battery_info, magnus::density_kg_per_m3, pitot::calculate_airspeed,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+25 |         send_message,
+   |         ^^^^^^^^^^^^
+
+warning: unused imports: `AdcChannel`, `IWDG1`, `Peri`, `UartRx`, `UartTx`, `mode::Async`, and `self`
+  --> firmware/src/main.rs:35:5
+   |
+35 |     Peri,
+   |     ^^^^
+36 |     adc::{Adc, AdcChannel},
+   |                ^^^^^^^^^^
+...
+41 |     mode::Async,
+   |     ^^^^^^^^^^^
+42 |     peripherals::{self, IWDG1},
+   |                   ^^^^  ^^^^^
+...
+46 |     usart::{Uart, UartRx, UartTx},
+   |                   ^^^^^^  ^^^^^^
+
+warning: unused import: `Instant`
+  --> firmware/src/main.rs:49:30
+   |
+49 | use embassy_time::{Duration, Instant, TICK_HZ, Timer};
+   |                              ^^^^^^^
+
+warning: unused import: `smart_leds::RGB8`
+  --> firmware/src/main.rs:50:5
+   |
+50 | use smart_leds::RGB8;
+   |     ^^^^^^^^^^^^^^^^
+
+warning: unused import: `smart_leds_trait::SmartLedsWriteAsync`
+  --> firmware/src/main.rs:51:5
+   |
+51 | use smart_leds_trait::SmartLedsWriteAsync;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `state::GLOBAL_STATE`
+  --> firmware/src/main.rs:54:5
+   |
+54 | use state::GLOBAL_STATE;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `nalgebra::geometry::quaternion::<impl nalgebra::Unit<nalgebra::Quaternion<T>>>::to_euler_angles`: This is renamed to use `.euler_angles()`.
+  --> firmware/src/tasks/imu.rs:76:45
+   |
+76 |                 let euler = ahrs.quaternion.to_euler_angles();
+   |                                             ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: unused import: `smart_leds_trait::SmartLedsWriteAsync`
+  --> firmware/src/tasks/serial/uart_tx.rs:40:5
+   |
+40 | use smart_leds_trait::SmartLedsWriteAsync;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `vref_nominal`
+  --> firmware/src/utils/battery.rs:35:59
+   |
+35 | fn adc_to_voltage(adc_reading: u16, vrefint_reading: u16, vref_nominal: f32) -> f32 {
+   |                                                           ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_vref_nominal`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+Some errors have detailed explanations: E0412, E0425, E0432, E0433.
+For more information about an error, try `rustc --explain E0412`.
+warning: `aerosmart-firmware` (bin "aerosmart-firmware") generated 96 warnings
+error: could not compile `aerosmart-firmware` (bin "aerosmart-firmware") due to 19 previous errors; 96 warnings emitted
