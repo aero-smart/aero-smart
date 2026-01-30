@@ -11,7 +11,7 @@ use embassy_stm32::{
     spi::{Error as SpiError, Spi},
 };
 
-use crate::sensors::drivers::icm_42688_p::{AccelConfig0, GyroConfig0, PwrMgmt0};
+use crate::sensors::drivers::icm_42688_p::{AccelConfig0, GyroConfig0, IntSource0, PwrMgmt0};
 
 pub struct ImuSpi<'a> {
     pub spi: Spi<'a, Async>,
@@ -61,6 +61,7 @@ impl<'a> ImuSpi<'a> {
     const ACCEL_CONFIG0: u8 = 0x50;
     const INT_STATUS: u8 = 0x2D;
     const ACCEL_DATA_X1: u8 = 0x1F;
+    const INT_SOURCE0: u8 = 0x66;
 
     pub fn new(spi: Spi<'a, Async>, cs: Output<'a>) -> Self {
         ImuSpi { spi, cs }
@@ -106,6 +107,12 @@ impl<'a> ImuSpi<'a> {
 
         // Configure Accelerometer
         tx_buf = [Self::ACCEL_CONFIG0, AccelConfig0::khz_1().to_byte()]; // Set full scale to ±2g
+        self.spi.write(&tx_buf).await.map_err(ImuError::SpiError)?;
+
+        tx_buf = [
+            Self::INT_SOURCE0,
+            IntSource0::to_byte(&[IntSource0::UiDrdy]),
+        ];
         self.spi.write(&tx_buf).await.map_err(ImuError::SpiError)?;
 
         self.cs.set_high();

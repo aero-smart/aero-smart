@@ -21,7 +21,7 @@ pub async fn serial_uart_tx_task(mut tx: UartTx<'static, Async>) {
         Timer::after(Duration::from_millis(100)).await;
         counter += 1;
         use aerosmart_shared::serial::*;
-        let (airspeed, imu, quat, vibration, baro, lidar) = {
+        let (airspeed, imu, quat, vibration, baro, lidar, voltage_v, soc_p, pressure_analog_pa) = {
             let state = GLOBAL_STATE.lock().await;
             let last_idx =
                 (state.imu_head + state.imu_buffer[0].len() - 1) % state.imu_buffer[0].len();
@@ -35,6 +35,9 @@ pub async fn serial_uart_tx_task(mut tx: UartTx<'static, Async>) {
                 state.vibration_metrics,
                 state.barometer_data,
                 state.lidar_data,
+                state.battery_voltage_volts,
+                state.battery_soc_percent,
+                state.analog_pressure_sensor_data_pa,
             )
         };
         // Send airspeed @ 10 Hz
@@ -46,6 +49,14 @@ pub async fn serial_uart_tx_task(mut tx: UartTx<'static, Async>) {
         });
         let (buffer, len) = send_message(airspeed_message).await;
         tx.write(&buffer[..len]).await.ok();
+
+        // Send analog pressure sensor data @ 10 Hz
+
+        if let Some(pressure_data) = pressure_analog_pa {
+            let analog_pressure_message = SerialMessage::AnalogPressureSensorData(pressure_data);
+            let (buffer, len) = send_message(analog_pressure_message).await;
+            tx.write(&buffer[..len]).await.ok();
+        }
 
         // Send IMU quaternion @ 20 Hz
 
@@ -86,6 +97,18 @@ pub async fn serial_uart_tx_task(mut tx: UartTx<'static, Async>) {
 
             let baro_message = SerialMessage::BarometerData(baro_data);
             let (buffer, len) = send_message(baro_message).await;
+            tx.write(&buffer[..len]).await.ok();
+        }
+
+        if counter % 10 == 0 {
+            // Send battery data @ 1 Hz
+
+            let battery_message = SerialMessage::BatteryData(BatteryData {
+                voltage_v,
+                soc_percent: soc_p,
+                time_elapsed_ms: Instant::now().as_millis(),
+            });
+            let (buffer, len) = send_message(battery_message).await;
             tx.write(&buffer[..len]).await.ok();
         }
 

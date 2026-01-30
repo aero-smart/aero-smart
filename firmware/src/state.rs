@@ -1,4 +1,4 @@
-use aerosmart_shared::serial::{BarometerData, LidarData, SensorConfig};
+use aerosmart_shared::serial::{AnalogPressureSensorData, BarometerData, LidarData, SensorConfig};
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::mutex::Mutex;
 use embassy_sync::signal::Signal;
@@ -29,6 +29,8 @@ pub struct GlobalState {
 
     pub battery_voltage_volts: f32,
     pub battery_soc_percent: f32,
+
+    pub analog_pressure_sensor_data_pa: Option<AnalogPressureSensorData>, // in Pascals
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, defmt::Format)]
@@ -83,6 +85,7 @@ impl GlobalState {
             airspeed_head: 0,
             battery_voltage_volts: 0.0,
             battery_soc_percent: 0.0,
+            analog_pressure_sensor_data_pa: None,
         }
     }
 }
@@ -100,3 +103,4 @@ pub static IMU_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new
 pub static STATUS_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static IMU_BUFFER_FULL_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static DESIRED_UPDATE_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
+pub static ANALOG_PRESSURE_SENSOR_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();

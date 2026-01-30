@@ -7,15 +7,18 @@ use crate::{
 use {defmt_rtt as _, panic_probe as _};
 
 use embassy_stm32::exti::ExtiInput;
-use embassy_time::{Duration, Timer};
 
 use crate::state::GLOBAL_STATE;
 
 #[embassy_executor::task]
-pub async fn imu_task(mut imu: ImuSpi<'static>, input: ExtiInput<'static>, mut ahrs: MadgwickAhrs) {
+pub async fn imu_task(
+    mut imu: ImuSpi<'static>,
+    mut input: ExtiInput<'static>,
+    mut ahrs: MadgwickAhrs,
+) {
     loop {
         // Poll @ 1 kHz
-        Timer::after(Duration::from_millis(1)).await;
+        input.wait_for_falling_edge().await;
         match imu.poll().await {
             Ok(data) => {
                 defmt::info!(

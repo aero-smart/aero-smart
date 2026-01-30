@@ -114,7 +114,7 @@ impl ImuData {
             quad_i,
             quad_j,
             quad_k,
-            time_elapsed_ms
+            time_elapsed_ms,
         }
     }
 }
@@ -208,11 +208,39 @@ pub struct BarometerData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
+pub struct BatteryData {
+    pub voltage_v: f32,
+    pub soc_percent: f32,
+    pub time_elapsed_ms: u64,
+}
+
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[rkyv(derive(Debug))]
+pub struct AnalogPressureSensorData {
+    pub pressures_pa: [f32; 4],
+    /// Bitmask indicating which channels had valid data
+    /// - Bit 7: Channel 1
+    /// - Bit 6: Channel 2
+    /// - Bit 5: Channel 3
+    /// - Bit 4: Channel 4
+    /// - Bit 3-0: Reserved (should be 0)
+    pub valid_bitmask: u8,
+    pub time_elapsed_ms: u64,
+}
+
+#[derive(Debug, Clone, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[rkyv(derive(Debug))]
 pub enum SerialMessage {
+    AcknowledgementConfig(AcknowledgementConfig),
     ThrottleConfig(ThrottleConfig),
     ServoConfig(ServoConfig),
     SensorConfig(SensorConfig),
     Command(Command),
+    AcknowledgementData(AcknowledgementData),
     PitotAirspeedData(PitotAirspeedData),
     ImuData(ImuData),
     AcousticData(AcousticData),
@@ -223,6 +251,8 @@ pub enum SerialMessage {
         gyro_x: ImuVibrationMetrics,
         gyro_y: ImuVibrationMetrics,
     },
+    BatteryData(BatteryData),
+    AnalogPressureSensorData(AnalogPressureSensorData),
 }
 
 #[cfg(test)]

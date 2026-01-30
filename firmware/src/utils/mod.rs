@@ -2,6 +2,7 @@ pub mod battery;
 pub mod magnus;
 pub mod mass_conservation;
 pub mod pitot;
+pub mod pressure_adc;
 
 use core::mem::MaybeUninit;
 

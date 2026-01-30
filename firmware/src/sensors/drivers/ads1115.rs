@@ -1,67 +1,3 @@
-/// - Name: MPXV7002_CONFIG
-/// - Sensor: MPXV7002 Differential Pressure Sensor
-/// - Range: ±2 kPa
-/// - Output: 0.5V to 4.5V (2.5V @ 0 kPa)
-/// - Supply: 5V
-///
-#[derive(defmt::Format, Clone, Copy)]
-pub struct Mpxv7002Config {
-    pub v_min: f32,
-    pub v_max: f32,
-    pub p_min: f32,
-    pub p_max: f32,
-}
-
-impl Default for Mpxv7002Config {
-    fn default() -> Self {
-        Mpxv7002Config {
-            v_min: 0.5,  // V at -2 kPa
-            v_max: 4.5,  // V at +2 kPa
-            p_min: -2.0, // kPa
-            p_max: 2.0,  // kPa
-        }
-    }
-}
-
-impl Mpxv7002Config {
-    pub fn voltage_to_pressure(&self, voltage: f32) -> f32 {
-        ((voltage - self.v_min) / (self.v_max - self.v_min)) * (self.p_max - self.p_min)
-            + self.p_min
-    }
-}
-
-/// - Name: XGZP6847A_CONFIG
-/// - Sensor: XGZP6847A Absolute Pressure Sensor (Analog version)
-/// - Range: 0 to 40 kPa
-/// - Output: 0.5V to 4.5V
-/// - Supply: 5V
-///
-#[derive(defmt::Format, Clone, Copy)]
-pub struct Xgzp6847aConfig {
-    pub v_min: f32,
-    pub v_max: f32,
-    pub p_min: f32,
-    pub p_max: f32,
-}
-
-impl Default for Xgzp6847aConfig {
-    fn default() -> Self {
-        Xgzp6847aConfig {
-            v_min: 0.5,  // V at 0 kPa
-            v_max: 4.5,  // V at 40 kPa
-            p_min: 0.0,  // kPa
-            p_max: 40.0, // kPa
-        }
-    }
-}
-
-impl Xgzp6847aConfig {
-    pub fn voltage_to_pressure(&self, voltage: f32) -> f32 {
-        ((voltage - self.v_min) / (self.v_max - self.v_min)) * (self.p_max - self.p_min)
-            + self.p_min
-    }
-}
-
 /// - Name: ADS1115_CONFIG
 /// - Address: 0x01 (Configuration Register)
 /// - I2C Address: 0x48 (ADDR pin to GND)
@@ -253,26 +189,16 @@ impl Ads1115Config {
         }
     }
 
-    pub fn mpxv7002() -> Self {
-        Ads1115Config {
-            os: true,
-            mux: AdcMux::Ain0Gnd,
-            pga: AdcPga::V4_096,
-            mode: AdcMode::SingleShot,
-            data_rate: AdcDataRate::Sps128,
-            comp_queue: AdcCompQueue::Disable,
-        }
-    }
-
-    pub fn xgzp6847a() -> Self {
-        Ads1115Config {
-            os: true,
-            mux: AdcMux::Ain1Gnd,
-            pga: AdcPga::V4_096,
-            mode: AdcMode::SingleShot,
-            data_rate: AdcDataRate::Sps128,
-            comp_queue: AdcCompQueue::Disable,
-        }
+    pub fn chan(channel: usize) -> Self {
+        let mut config = Ads1115Config::default();
+        config.mux = match channel {
+            0 => AdcMux::Ain0Gnd,
+            1 => AdcMux::Ain1Gnd,
+            2 => AdcMux::Ain2Gnd,
+            3 => AdcMux::Ain3Gnd,
+            _ => AdcMux::Ain0Gnd,
+        };
+        config
     }
 }
 

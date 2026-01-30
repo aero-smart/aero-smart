@@ -1,4 +1,5 @@
 mod airspeed;
+mod analog_pressure;
 mod battery;
 mod edf;
 mod imu;
@@ -10,6 +11,7 @@ mod servo;
 mod watchdog;
 
 pub use airspeed::airspeed_task;
+pub use analog_pressure::analog_pressure_task;
 pub use battery::battery_task;
 pub use edf::edf_task;
 pub use imu::imu_task;

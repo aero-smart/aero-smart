@@ -65,11 +65,7 @@ fn adc_to_voltage(adc_reading: u16, vrefint_reading: u16) -> f32 {
 ///
 /// # Returns
 /// Per-cell voltage in volts
-fn adc_to_cell_voltage(
-    adc_reading: u16,
-    vrefint_reading: u16,
-    num_cells: f32,
-) -> f32 {
+fn adc_to_cell_voltage(adc_reading: u16, vrefint_reading: u16, num_cells: f32) -> f32 {
     let battery_voltage = adc_to_voltage(adc_reading, vrefint_reading);
     battery_voltage / num_cells
 }
@@ -94,10 +90,7 @@ pub fn measured_to_soc(adc_reading: u16, vrefint_reading: u16) -> f32 {
 ///
 /// # Returns
 /// (battery_voltage, cell_voltage, soc_percentage)
-pub fn get_battery_info(
-    adc_reading: u16,
-    vrefint_reading: u16,
-) -> (f32, f32, f32) {
+pub fn get_battery_info(adc_reading: u16, vrefint_reading: u16) -> (f32, f32, f32) {
     const NUM_CELLS: f32 = 4.0;
 
     let battery_voltage = adc_to_voltage(adc_reading, vrefint_reading);

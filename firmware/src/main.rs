@@ -14,11 +14,13 @@ use crate::{
     executors::{edf::EdfDshot, servo::Servo},
     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
     tasks::*,
+    utils::send_message,
 };
 
 use {defmt_rtt as _, panic_probe as _};
 
-use aerosmart_shared::serial::SerialMessage;
+use aerosmart_shared::serial::{AcknowledgementData, ArchivedSerialMessage, SerialMessage};
+use chrono::{Datelike, Timelike, Weekday};
 use defmt::info;
 use embassy_executor::Spawner;
 use embassy_stm32::{
@@ -27,18 +29,21 @@ use embassy_stm32::{
     exti::ExtiInput,
     gpio::{Level, Output, Pull, Speed},
     i2c::{self, I2c},
+    rtc::{DateTime, DayOfWeek, Rtc, RtcConfig},
     spi::{self, Spi},
     time::Hertz,
     timer::simple_pwm::{PwmPin, SimplePwm},
     usart::Uart,
     wdg::IndependentWatchdog,
 };
-use embassy_time::{Duration, TICK_HZ, Timer};
+use embassy_time::{Duration, Instant, TICK_HZ, Timer};
 use ws2812_async::{Rgb, Ws2812};
 
 bind_interrupts!(struct Irqs {
     I2C1_EV => i2c::EventInterruptHandler<embassy_stm32::peripherals::I2C1>;
     I2C1_ER => i2c::ErrorInterruptHandler<embassy_stm32::peripherals::I2C1>;
+    I2C3_EV => i2c::EventInterruptHandler<embassy_stm32::peripherals::I2C3>;
+    I2C3_ER => i2c::ErrorInterruptHandler<embassy_stm32::peripherals::I2C3>;
     USART1 => embassy_stm32::usart::InterruptHandler<embassy_stm32::peripherals::USART1>;
     USART3 => embassy_stm32::usart::InterruptHandler<embassy_stm32::peripherals::USART3>;
 });
@@ -58,9 +63,7 @@ pub struct TestConfig {
     pub ahrs: bool,
     pub ctrl_airspeed: bool,
     pub battery_adc: bool,
-    pub pressure_ads: bool,
-    pub pitot_ads: bool,
-    pub ads: bool,
+    pub analog_pressure: bool,
 }
 
 fn get_stm_config() -> embassy_stm32::Config {
@@ -120,9 +123,7 @@ async fn main(spawner: Spawner) {
         ahrs: false,
         ctrl_airspeed: false,
         battery_adc: false,
-        pressure_ads: false,
-        pitot_ads: false,
-        ads: false,
+        analog_pressure: false,
     };
 
     info!("Configuration: {:?}", config);
@@ -143,14 +144,47 @@ async fn main(spawner: Spawner) {
 
     info!("SPI1 initialized for IMU");
 
-    let mut i2c_config = i2c::Config::default();
-    i2c_config.frequency = Hertz::khz(400);
+    fn i2c_config_with_freq(freq: Hertz) -> i2c::Config {
+        let mut config = i2c::Config::default();
+        config.frequency = freq;
+        config
+    }
 
     let i2c = I2c::new(
-        p.I2C1, p.PB8, p.PB9, Irqs, p.DMA1_CH2, p.DMA1_CH3, i2c_config,
+        p.I2C1,
+        p.PB8,
+        p.PB9,
+        Irqs,
+        p.DMA1_CH2,
+        p.DMA1_CH3,
+        i2c_config_with_freq(Hertz::khz(400)),
     );
 
     info!("I2C1 initialized for Airspeed Sensor & Barometer");
+
+    let i2c_adc = I2c::new(
+        p.I2C3,
+        p.PA8,
+        p.PC9,
+        Irqs,
+        p.DMA2_CH4,
+        p.DMA2_CH5,
+        i2c_config_with_freq(Hertz::khz(400)),
+    );
+
+    info!("I2C4 initialized for ADCs (using ADS1115 chip)");
+
+    let i2c_analog_drdy = ExtiInput::new(p.PC8, p.EXTI8, Pull::Up);
+
+    // The `MPXV7002` hasn't been purchased and we don't have one to test with yet
+    let analog_adc = sensors::adc_i2c::AdcI2c::new(
+        i2c_adc,
+        Some(sensors::adc_i2c::AdcConnection::Xgzp6847aPa3000),
+        Some(sensors::adc_i2c::AdcConnection::Xgzp6847aPa2500),
+        None,
+        None,
+        i2c_analog_drdy,
+    );
 
     fn uart_config_with_baud(baud_rate: u32) -> embassy_stm32::usart::Config {
         let mut config = embassy_stm32::usart::Config::default();
@@ -158,7 +192,7 @@ async fn main(spawner: Spawner) {
         config
     }
 
-    let Ok(usart_upper) = Uart::new(
+    let Ok(mut usart_upper) = Uart::new(
         p.USART1,
         p.PA10,
         p.PA9,
@@ -169,6 +203,56 @@ async fn main(spawner: Spawner) {
     ) else {
         defmt::panic!("Failed to initialize upper USART");
     };
+
+    let mut rtc = Rtc::new(p.RTC, RtcConfig::default());
+
+    if config.uart_upper {
+        // Initialize the serial first to update the RTC timer and synchronize data
+        let ack_packet = SerialMessage::AcknowledgementData(AcknowledgementData {
+            time_elapsed_ms: Instant::now().as_millis(),
+        });
+        let (packet, length) = send_message(ack_packet).await;
+        usart_upper.write(&packet[..length]).await.ok();
+        let mut buffer = [0u8; 256];
+        usart_upper.read(&mut buffer).await.ok();
+        let message = unsafe { rkyv::access_unchecked::<ArchivedSerialMessage>(&buffer) };
+        match message {
+            ArchivedSerialMessage::AcknowledgementConfig(config) => {
+                let current = chrono::DateTime::from_timestamp_micros(
+                    config.unix_timestamp_ms.to_native() as i64,
+                );
+                if let Some(dt) = current {
+                    let new_datetime = DateTime::from(
+                        dt.year() as u16,
+                        dt.month() as u8,
+                        dt.day() as u8,
+                        match dt.weekday() {
+                            Weekday::Mon => DayOfWeek::Monday,
+                            Weekday::Tue => DayOfWeek::Tuesday,
+                            Weekday::Wed => DayOfWeek::Wednesday,
+                            Weekday::Thu => DayOfWeek::Thursday,
+                            Weekday::Fri => DayOfWeek::Friday,
+                            Weekday::Sat => DayOfWeek::Saturday,
+                            Weekday::Sun => DayOfWeek::Sunday,
+                        },
+                        dt.hour() as u8,
+                        dt.minute() as u8,
+                        dt.second() as u8,
+                        dt.nanosecond() * 1000,
+                    )
+                    .unwrap();
+                    rtc.set_datetime(new_datetime).ok();
+                    info!(
+                        "RTC synchronized to UNIX timestamp: {}",
+                        config.unix_timestamp_ms.to_native()
+                    );
+                }
+            }
+            _ => {
+                panic!("Unexpected message received during RTC sync");
+            }
+        }
+    }
 
     let (uart_tx, uart_rx) = usart_upper.split();
 
@@ -345,6 +429,14 @@ async fn main(spawner: Spawner) {
         match spawner.spawn(battery_task(adc1, p.PA3, p.DMA2_CH3)) {
             Ok(_) => info!("Battery Monitoring task spawned"),
             Err(e) => defmt::panic!("Failed to spawn Battery Monitoring task: {:?}", e),
+        }
+    }
+
+    if config.analog_pressure {
+        info!("Starting Analog Pressure Sensor task...");
+        match spawner.spawn(analog_pressure_task(analog_adc)) {
+            Ok(_) => info!("Analog Pressure Sensor task spawned"),
+            Err(e) => defmt::panic!("Failed to spawn Analog Pressure Sensor task: {:?}", e),
         }
     }
 }

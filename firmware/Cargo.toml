@@ -72,6 +72,7 @@ microfft = "0.6.0"
 rkyv = { version = "0.8.14", default-features = false, features = ["bytecheck"] }
 aquamarine = "0.6.0"
 interpn = { version = "0.11.0", default-features = false }
+chrono = { version = "0.4.43", default-features = false }
 
 [[bin]]
 name = "aerosmart-firmware"

@@ -346,3 +346,30 @@ impl AccelConfig0 {
         }
     }
 }
+
+/// - Name: INT_SOURCE0
+/// - Address: 101 (65h)
+/// - Serial IF: R/W
+/// - Reset value: 0x10
+/// - Clock Domain: SCLK_UI
+#[derive(defmt::Format, Clone, Copy)]
+pub enum IntSource0 {
+    Reserved = 0b0000_0001,
+    UiFsync = 0b0000_0010,
+    PllRdy = 0b0000_0100,
+    ResetDone = 0b0000_1000,
+    UiDrdy = 0b0001_0000,
+    FifoThs = 0b0010_0000,
+    FifoFull = 0b0100_0000,
+    UiAgcRdy = 0b1000_0000,
+}
+
+impl IntSource0 {
+    pub fn to_byte(sources: &[IntSource0]) -> u8 {
+        let mut byte = 0u8;
+        for source in sources {
+            byte |= *source as u8;
+        }
+        byte
+    }
+}
