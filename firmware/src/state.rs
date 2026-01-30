@@ -26,6 +26,9 @@ pub struct GlobalState {
 
     pub imu_head: usize,
     pub airspeed_head: usize,
+
+    pub battery_voltage_volts: f32,
+    pub battery_soc_percent: f32,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, defmt::Format)]
@@ -78,6 +81,8 @@ impl GlobalState {
             quaternion: None,
             imu_head: 0,
             airspeed_head: 0,
+            battery_voltage_volts: 0.0,
+            battery_soc_percent: 0.0,
         }
     }
 }

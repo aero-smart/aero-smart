@@ -6,6 +6,7 @@
 use aerosmart_shared::serial::LidarData;
 use defmt::info;
 use embassy_stm32::{mode::Async, usart::Uart};
+use embassy_time::Instant;
 
 pub struct LidarUart<'a> {
     pub uart: Uart<'a, Async>,
@@ -42,6 +43,7 @@ impl<'a> LidarUart<'a> {
         Ok(LidarData {
             distance_cm,
             signal_strength,
+            time_elapsed_ms: Instant::now().as_millis(),
         })
     }
 }

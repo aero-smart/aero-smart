@@ -18,7 +18,10 @@ use crate::{
         AIRSPEED_UPDATED_SIGNAL, DESIRED_UPDATE_SIGNAL, IMU_BUFFER_FULL_SIGNAL, IMU_UPDATED_SIGNAL,
         MachineStatus, STATUS_UPDATED_SIGNAL,
     },
-    utils::{magnus::density_kg_per_m3, pitot::calculate_airspeed, send_message},
+    utils::{
+        battery::get_battery_info, magnus::density_kg_per_m3, pitot::calculate_airspeed,
+        send_message,
+    },
 };
 
 use {defmt_rtt as _, panic_probe as _};
@@ -27,19 +30,21 @@ use aerosmart_shared::serial::SerialMessage;
 use defmt::info;
 use embassy_executor::Spawner;
 use embassy_stm32::{
+    Peri,
+    adc::{Adc, AdcChannel},
     bind_interrupts,
     exti::ExtiInput,
     gpio::{Level, Output, Pull, Speed},
     i2c::{self, I2c},
     mode::Async,
-    peripherals::IWDG1,
+    peripherals::{self, IWDG1},
     spi::{self, Spi},
     time::Hertz,
     timer::simple_pwm::{PwmPin, SimplePwm},
     usart::{Uart, UartRx, UartTx},
     wdg::IndependentWatchdog,
 };
-use embassy_time::{Duration, TICK_HZ, Timer};
+use embassy_time::{Duration, Instant, TICK_HZ, Timer};
 use smart_leds::RGB8;
 use smart_leds_trait::SmartLedsWriteAsync;
 use ws2812_async::{Rgb, Ws2812};
@@ -67,6 +72,10 @@ pub struct TestConfig {
     pub fft: bool,
     pub ahrs: bool,
     pub ctrl_airspeed: bool,
+    pub battery_adc: bool,
+    pub pressure_ads: bool,
+    pub pitot_ads: bool,
+    pub ads: bool,
 }
 
 fn get_stm_config() -> embassy_stm32::Config {
@@ -125,6 +134,10 @@ async fn main(spawner: Spawner) {
         fft: false,
         ahrs: false,
         ctrl_airspeed: false,
+        battery_adc: false,
+        pressure_ads: false,
+        pitot_ads: false,
+        ads: false,
     };
 
     info!("Configuration: {:?}", config);
@@ -146,7 +159,7 @@ async fn main(spawner: Spawner) {
     info!("SPI1 initialized for IMU");
 
     let mut i2c_config = i2c::Config::default();
-    // i2c_config.frequency = Hertz::khz(400);
+    i2c_config.frequency = Hertz::khz(400);
 
     let i2c = I2c::new(
         p.I2C1, p.PB8, p.PB9, Irqs, p.DMA1_CH2, p.DMA1_CH3, i2c_config,
@@ -240,6 +253,8 @@ async fn main(spawner: Spawner) {
     let ahrs = MadgwickAhrs::new(1_000.0, 0.033);
 
     info!("Airspeed sensor and EDF driver initialized");
+
+    let adc1 = Adc::new(p.ADC1);
 
     wdt.pet();
 
@@ -339,6 +354,14 @@ async fn main(spawner: Spawner) {
             Err(e) => defmt::panic!("Failed to spawn Serial UART TX task: {:?}", e),
         }
     }
+
+    if config.battery_adc {
+        info!("Starting Battery Monitoring task...");
+        match spawner.spawn(battery_task(adc1, p.PA3, p.DMA2_CH3)) {
+            Ok(_) => info!("Battery Monitoring task spawned"),
+            Err(e) => defmt::panic!("Failed to spawn Battery Monitoring task: {:?}", e),
+        }
+    }
 }
 
 #[embassy_executor::task]
@@ -350,7 +373,7 @@ async fn feed_watchdog(mut wdt: IndependentWatchdog<'static, IWDG1>) {
 }
 
 #[embassy_executor::task]
-async fn imu_task(mut imu: ImuSpi<'static>, mut input: ExtiInput<'static>, mut ahrs: MadgwickAhrs) {
+async fn imu_task(mut imu: ImuSpi<'static>, input: ExtiInput<'static>, mut ahrs: MadgwickAhrs) {
     loop {
         // Poll @ 1 kHz
         Timer::after(Duration::from_millis(1)).await;
@@ -683,6 +706,7 @@ async fn serial_uart_tx_task(mut tx: UartTx<'static, Async>) {
             splitter_left: 0f32,
             splitter_right: 0f32,
             static_port: airspeed,
+            time_elapsed_ms: Instant::now().as_millis(),
         });
         let (buffer, len) = send_message(airspeed_message).await;
         tx.write(&buffer[..len]).await.ok();
@@ -700,6 +724,7 @@ async fn serial_uart_tx_task(mut tx: UartTx<'static, Async>) {
                 quad_i: quat.i,
                 quad_j: quat.j,
                 quad_k: quat.k,
+                time_elapsed_ms: Instant::now().as_millis(),
             });
             let (buffer, len) = send_message(imu_message).await;
             tx.write(&buffer[..len]).await.ok();
@@ -740,6 +765,52 @@ async fn serial_uart_tx_task(mut tx: UartTx<'static, Async>) {
 
         if counter >= 100 {
             counter = 0;
+        }
+    }
+}
+
+#[embassy_executor::task]
+async fn battery_task(
+    mut adc: Adc<'static, peripherals::ADC1>,
+    input_chan: Peri<'static, peripherals::PA3>,
+    mut dma_chan: Peri<'static, peripherals::DMA2_CH3>,
+) {
+    let mut refchan = adc.enable_vrefint().degrade_adc();
+    let mut battchan = input_chan.degrade_adc();
+    loop {
+        Timer::after(Duration::from_hz(1)).await;
+        let mut sum = [0u32; 2];
+        // For better accuracy, average 4 samples
+        for _ in 0..4 {
+            let mut buffer = [0u16; 2];
+            adc.read(
+                dma_chan.reborrow(),
+                [
+                    (&mut refchan, embassy_stm32::adc::SampleTime::CYCLES810_5),
+                    (&mut battchan, embassy_stm32::adc::SampleTime::CYCLES387_5),
+                ]
+                .into_iter(),
+                &mut buffer,
+            )
+            .await;
+            sum[0] += buffer[0] as u32;
+            sum[1] += buffer[1] as u32;
+        }
+        let vrefint_raw = (sum[0] / 4) as u16;
+        let battery_raw = (sum[1] / 4) as u16;
+        // 4S LiPo, voltage divider: 5k/1k from the battery to ground
+        // Vref is 3V3.
+        let (battery_voltage, cell_voltage, soc) = get_battery_info(battery_raw, vrefint_raw, 3.3);
+        defmt::info!(
+            "Battery Voltage: {} V | Cell Voltage: {} V | State of Charge: {} %",
+            battery_voltage,
+            cell_voltage,
+            soc * 100.0
+        );
+        {
+            let mut state = GLOBAL_STATE.lock().await;
+            state.battery_voltage_volts = battery_voltage;
+            state.battery_soc_percent = soc * 100.0;
         }
     }
 }

@@ -12,7 +12,7 @@ use embassy_stm32::{
     i2c::{Error, I2c, Master},
     mode::Async,
 };
-use embassy_time::{Duration, Timer};
+use embassy_time::{Duration, Instant, Timer};
 use num_traits::float::Float;
 
 use crate::sensors::drivers::bme_280::CtrlMeas;
@@ -102,12 +102,13 @@ impl<'a> Airspeed<'a> {
             pressure_pa,
             temperature_c,
             humidity_percent,
+            time_elapsed_ms: Instant::now().as_millis(),
         })
     }
 
     pub async fn init(&mut self) -> Result<(), AirspeedError> {
         // Initialization sequence for MS4525DO and BME280 if needed
-        let mut buf = [Self::BME280_CTRL_MEAS, CtrlMeas::enabled().to_byte()];
+        let buf = [Self::BME280_CTRL_MEAS, CtrlMeas::enabled().to_byte()];
         self.i2c
             .write(Self::BME280_ADDR, &buf)
             .await

@@ -1,4 +1,5 @@
 use aerosmart_shared::serial;
+use embassy_time::Instant;
 use microfft::real::rfft_1024;
 
 mod windows {
@@ -21,6 +22,7 @@ impl From<VibrationMetrics> for serial::ImuVibrationMetrics {
             rms_vibration: metrics.rms_vibration,
             dominant_frequency_hz: metrics.dominant_frequency_hz,
             peak_magnitude: metrics.peak_magnitude,
+            time_elapsed_ms: Instant::now().as_millis(),
         }
     }
 }
