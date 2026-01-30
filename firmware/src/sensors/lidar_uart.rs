@@ -4,6 +4,7 @@
 //! - Data Frame: 9 bytes
 
 use aerosmart_shared::serial::LidarData;
+use defmt::info;
 use embassy_stm32::{mode::Async, usart::Uart};
 
 pub struct LidarUart<'a> {
@@ -27,6 +28,8 @@ impl<'a> LidarUart<'a> {
             .read(&mut buffer)
             .await
             .map_err(|_| LidarError::UartError)?;
+
+        info!("Raw LiDAR data: {:?}", buffer);
 
         // Validate frame header
         if buffer[0] != 0x59 || buffer[1] != 0x59 {

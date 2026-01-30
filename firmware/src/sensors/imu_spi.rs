@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+use defmt::info;
 /// IMU SPI interface
 ///
 /// ICM-42688-P
@@ -9,6 +10,8 @@ use embassy_stm32::{
     mode::Async,
     spi::{Error as SpiError, Spi},
 };
+
+use crate::sensors::drivers::icm_42688_p::{AccelConfig0, GyroConfig0, PwrMgmt0};
 
 pub struct ImuSpi<'a> {
     pub spi: Spi<'a, Async>,
@@ -75,6 +78,8 @@ impl<'a> ImuSpi<'a> {
             .map_err(ImuError::SpiError)?;
         self.cs.set_high();
 
+        info!("IMU Raw Data: {:?}", buffer);
+
         // TODO make it correct
         let accel_x = ((buffer[1] as i16) << 8 | (buffer[2] as i16)) as f32 / 16384.0;
         let accel_y = ((buffer[3] as i16) << 8 | (buffer[4] as i16)) as f32 / 16384.0;
@@ -92,15 +97,15 @@ impl<'a> ImuSpi<'a> {
         self.cs.set_low();
 
         // Wake up the IMU
-        let mut tx_buf = [Self::PWR_MGMT0 & 0x7F, 0x01];
+        let mut tx_buf = [Self::PWR_MGMT0, PwrMgmt0::enabled().to_byte()];
         self.spi.write(&tx_buf).await.map_err(ImuError::SpiError)?;
 
         // Configure Gyroscope
-        tx_buf = [Self::GYRO_CONFIG0 & 0x7F, 0x00]; // Set full scale to ±250 dps
+        tx_buf = [Self::GYRO_CONFIG0, GyroConfig0::khz_1().to_byte()]; // Set full scale to ±250 dps
         self.spi.write(&tx_buf).await.map_err(ImuError::SpiError)?;
 
         // Configure Accelerometer
-        tx_buf = [Self::ACCEL_CONFIG0 & 0x7F, 0x00]; // Set full scale to ±2g
+        tx_buf = [Self::ACCEL_CONFIG0, AccelConfig0::khz_1().to_byte()]; // Set full scale to ±2g
         self.spi.write(&tx_buf).await.map_err(ImuError::SpiError)?;
 
         self.cs.set_high();

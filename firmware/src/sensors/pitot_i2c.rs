@@ -7,13 +7,15 @@
 ///
 /// Poll pitot @ 100 Hz and barometer @ 10 Hz over I2C
 use aerosmart_shared::serial::BarometerData;
+use defmt::{debug, info};
 use embassy_stm32::{
     i2c::{Error, I2c, Master},
     mode::Async,
 };
 use embassy_time::{Duration, Timer};
 use num_traits::float::Float;
-use defmt::{debug, info};
+
+use crate::sensors::drivers::bme_280::CtrlMeas;
 
 #[derive(defmt::Format)]
 pub enum AirspeedError {
@@ -30,6 +32,7 @@ impl<'a> Airspeed<'a> {
     pub const BME280_ADDR: u8 = 0x76;
     pub const BME280_CHIP_ID: u8 = 0x60;
     pub const BME280_REGISTER_PRESSUREDATA: u8 = 0xf7;
+    pub const BME280_CTRL_MEAS: u8 = 0xf4;
 
     pub fn new(i2c: I2c<'a, Async, Master>) -> Self {
         Self { i2c }
@@ -100,6 +103,16 @@ impl<'a> Airspeed<'a> {
             temperature_c,
             humidity_percent,
         })
+    }
+
+    pub async fn init(&mut self) -> Result<(), AirspeedError> {
+        // Initialization sequence for MS4525DO and BME280 if needed
+        let mut buf = [Self::BME280_CTRL_MEAS, CtrlMeas::enabled().to_byte()];
+        self.i2c
+            .write(Self::BME280_ADDR, &buf)
+            .await
+            .map_err(AirspeedError::I2cError)?;
+        Ok(())
     }
 
     #[inline]

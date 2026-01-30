@@ -118,7 +118,7 @@ async fn main(spawner: Spawner) {
         spi_ws2812: false,
         uart_upper: false,
         uart_lidar: false,
-        i2c: true,
+        i2c: false,
         pwm_edf: false,
         pwm_servo: false,
         wdt: false,
@@ -255,6 +255,16 @@ async fn main(spawner: Spawner) {
         }
     }
 
+    if config.i2c {
+        info!("Starting Airspeed Sensor initialization...");
+        match sensors.init().await {
+            Ok(_) => info!("Airspeed Sensor initialized successfully"),
+            Err(e) => defmt::panic!("Failed to initialize Airspeed Sensor: {:?}", e),
+        }
+    }
+
+    Timer::after(Duration::from_micros(200)).await;
+
     match spawner.spawn(feed_watchdog(wdt)) {
         Ok(_) => info!("Watchdog task spawned"),
         Err(e) => defmt::panic!("Failed to spawn watchdog task: {:?}", e),
@@ -342,8 +352,8 @@ async fn feed_watchdog(mut wdt: IndependentWatchdog<'static, IWDG1>) {
 #[embassy_executor::task]
 async fn imu_task(mut imu: ImuSpi<'static>, mut input: ExtiInput<'static>, mut ahrs: MadgwickAhrs) {
     loop {
-        input.wait_for_rising_edge().await;
-        // Poll @ 4 kHz
+        // Poll @ 1 kHz
+        Timer::after(Duration::from_millis(1)).await;
         match imu.poll().await {
             Ok(data) => {
                 defmt::info!(
@@ -520,7 +530,7 @@ async fn lidar_task(mut lidar: LidarUart<'static>) {
                 defmt::error!("LIDAR Error: {:?}", e);
             }
         }
-        Timer::after(Duration::from_millis(100)).await;
+        Timer::after(Duration::from_secs(3)).await;
     }
 }
 
