@@ -42,10 +42,28 @@ pub enum Command {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
+pub struct AcknowledgementConfig {
+    pub ack: bool,
+    pub unix_timestamp_ms: u64,
+}
+
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[rkyv(derive(Debug))]
+pub struct AcknowledgementData {
+    pub time_elapsed_ms: u64,
+}
+
+#[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[rkyv(derive(Debug))]
 pub struct PitotAirspeedData {
     pub splitter_left: f32,
     pub splitter_right: f32,
     pub static_port: f32,
+    pub time_elapsed_ms: u64,
 }
 
 #[cfg(feature = "sql")]
@@ -74,6 +92,7 @@ pub struct ImuData {
     pub quad_i: f32,
     pub quad_j: f32,
     pub quad_k: f32,
+    pub time_elapsed_ms: u64,
 }
 
 impl ImuData {
@@ -85,6 +104,7 @@ impl ImuData {
         quad_i: f32,
         quad_j: f32,
         quad_k: f32,
+        time_elapsed_ms: u64,
     ) -> Self {
         Self {
             accel_z,
@@ -94,6 +114,7 @@ impl ImuData {
             quad_i,
             quad_j,
             quad_k,
+            time_elapsed_ms
         }
     }
 }
@@ -124,6 +145,7 @@ pub struct ImuVibrationMetrics {
     pub rms_vibration: f32,
     pub dominant_frequency_hz: f32,
     pub peak_magnitude: f32,
+    pub time_elapsed_ms: u64,
 }
 
 #[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
@@ -142,6 +164,8 @@ pub struct AcousticData {
 
     /// Ratio of broadband noise to tonal noise for AI optimization
     pub turbulence_index: f32,
+
+    pub time_elapsed_ms: u64,
 }
 
 #[cfg(feature = "sql")]
@@ -166,6 +190,7 @@ impl AcousticData {
 pub struct LidarData {
     pub distance_cm: u16,
     pub signal_strength: u16,
+    pub time_elapsed_ms: u64,
 }
 
 #[derive(Debug, Clone, Copy, Archive, RkyvSerialize, RkyvDeserialize, PartialEq, Default)]
@@ -176,6 +201,7 @@ pub struct BarometerData {
     pub pressure_pa: f32,
     pub temperature_c: f32,
     pub humidity_percent: f32,
+    pub time_elapsed_ms: u64,
 }
 
 #[derive(Debug, Clone, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
@@ -222,6 +248,7 @@ mod tests {
             quad_j: 0.2,
             quad_k: 0.3,
             quad_w: 0.4,
+            time_elapsed_ms: 123456,
         };
         let serialized = rkyv::to_bytes::<Error>(&imu_data).unwrap();
         assert_eq!(serialized.len() > 0, true);
@@ -242,6 +269,7 @@ mod tests {
             splitter_left: 12.5,
             splitter_right: 13.5,
             static_port: 14.5,
+            time_elapsed_ms: 654321,
         };
         let serialized = rkyv::to_bytes::<Error>(&data).unwrap();
         assert_eq!(serialized.len() > 0, true);
@@ -255,6 +283,7 @@ mod tests {
             peak_frequency: 1500.0,
             spectral_shape: [0.0; 4],
             turbulence_index: 0.5,
+            time_elapsed_ms: 789012,
         };
         let serialized = rkyv::to_bytes::<Error>(&data).unwrap();
         assert_eq!(serialized.len() > 0, true);
