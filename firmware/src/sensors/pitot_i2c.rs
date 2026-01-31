@@ -1,11 +1,9 @@
-#![allow(dead_code)]
-
-/// Pitot tube and barometer I2C interface
-///
-/// MS4525DO Pitot tube differential pressure sensor
-/// BME280 Barometric pressure sensor
-///
-/// Poll pitot @ 100 Hz and barometer @ 10 Hz over I2C
+//! Pitot tube and barometer I2C interface
+//!
+//! MS4525DO Pitot tube differential pressure sensor
+//! BME280 Barometric pressure sensor
+//!
+//! Poll pitot @ 100 Hz and barometer @ 10 Hz over I2C
 use aerosmart_shared::serial::BarometerData;
 use defmt::{debug, info};
 use embassy_stm32::{
@@ -13,7 +11,6 @@ use embassy_stm32::{
     mode::Async,
 };
 use embassy_time::Instant;
-use num_traits::float::Float;
 
 use crate::sensors::drivers::bme_280::CtrlMeas;
 
@@ -139,36 +136,5 @@ impl<'a> Airspeed<'a> {
         // Temperature formula from datasheet
         // Temp (°C) = (raw * 200 / 2047) - 50
         (raw as f32 * 200.0 / 2047.0) - 50.0
-    }
-
-    #[inline]
-    fn calculate_air_density(temp_celsius: f32) -> f32 {
-        // Simplified air density calculation at sea level
-        // ρ = P / (R × T)
-        // Where:
-        //   P = atmospheric pressure (Pa) = 101325 Pa at sea level
-        //   R = specific gas constant for dry air = 287.05 J/(kg·K)
-        //   T = absolute temperature (K)
-
-        const P_ATM: f32 = 101325.0; // Pa
-        const R_AIR: f32 = 287.05; // J/(kg·K)
-
-        let temp_kelvin = temp_celsius + 273.15;
-        P_ATM / (R_AIR * temp_kelvin)
-    }
-
-    #[inline]
-    fn calculate_airspeed(pressure_pa: f32, air_density: f32) -> f32 {
-        // Bernoulli's equation: v = sqrt(2 * ΔP / ρ)
-        if pressure_pa.abs() < f32::EPSILON {
-            0.0
-        } else {
-            let velocity = (2.0 * pressure_pa / air_density).sqrt();
-            if pressure_pa < 0.0 {
-                -velocity
-            } else {
-                velocity
-            }
-        }
     }
 }

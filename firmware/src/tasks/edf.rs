@@ -12,13 +12,14 @@ use crate::state::GLOBAL_STATE;
 pub async fn edf_task(mut edf: EdfDshot<'static>, mut pid: AirspeedControl) {
     loop {
         AIRSPEED_UPDATED_SIGNAL.wait().await;
-        let (measured, setpoint, status, density) = {
+        let (measured, setpoint, status, density, voltage_v) = {
             let state = GLOBAL_STATE.lock().await;
             (
                 state.airspeed_meters_per_second,
                 state.desired_airspeed_meters_per_second,
                 state.machine_status,
                 state.air_density_kg_per_cubic_meter,
+                state.battery_voltage_volts,
             )
         };
 
@@ -30,7 +31,7 @@ pub async fn edf_task(mut edf: EdfDshot<'static>, mut pid: AirspeedControl) {
                     setpoint
                 );
                 pid.update_setpoint(setpoint);
-                let edf_airspeed = pid.compute_throttle(measured, density);
+                let edf_airspeed = pid.compute_throttle(measured, density, voltage_v);
                 match edf.set_throttle_symmetric(edf_airspeed).await {
                     Ok(_) => {}
                     Err(e) => {

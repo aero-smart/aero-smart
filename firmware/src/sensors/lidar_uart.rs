@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 //! TFmini-S LiDAR sensor over UART interface.
 //! - Baud Rate: 115200
 //! - Data Frame: 9 bytes

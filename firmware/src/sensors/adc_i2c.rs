@@ -101,10 +101,12 @@ impl<'a> AdcI2c<'a> {
 
     pub async fn poll_all(&mut self) -> Result<AnalogPressureSensorData, AdcI2cError> {
         let mut results = [None; 4];
-        for channel in 0..4 {
-            if self.channels[channel].is_some() {
-                let pressure_pa = self.poll_chan(channel).await?;
-                results[channel] = Some(pressure_pa);
+        for (i, res) in results.iter_mut().enumerate() {
+            if self.channels[i].is_some() {
+                match self.poll_chan(i).await {
+                    Ok(value) => *res = Some(value),
+                    Err(e) => return Err(e),
+                }
             }
         }
         Ok(option_arr_to_messsage(results))

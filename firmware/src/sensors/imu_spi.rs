@@ -1,17 +1,15 @@
-#![allow(dead_code)]
+//! IMU SPI interface
+//!
+//! ICM-42688-P
+//!
+//! Poll @ 1 kHz at 1 MHz SPIuse defmt::info;
+use crate::sensors::drivers::icm_42688_p::{AccelConfig0, GyroConfig0, IntSource0, PwrMgmt0};
 use defmt::info;
-/// IMU SPI interface
-///
-/// ICM-42688-P
-///
-/// Poll @ 1 kHz at 1 MHz SPI
 use embassy_stm32::{
     gpio::Output,
     mode::Async,
     spi::{Error as SpiError, Spi},
 };
-
-use crate::sensors::drivers::icm_42688_p::{AccelConfig0, GyroConfig0, IntSource0, PwrMgmt0};
 
 pub struct ImuSpi<'a> {
     pub spi: Spi<'a, Async>,
@@ -55,11 +53,9 @@ impl ImuData {
 }
 
 impl<'a> ImuSpi<'a> {
-    const WHO_AM_I: u8 = 0x75;
     const PWR_MGMT0: u8 = 0x4E;
     const GYRO_CONFIG0: u8 = 0x4F;
     const ACCEL_CONFIG0: u8 = 0x50;
-    const INT_STATUS: u8 = 0x2D;
     const ACCEL_DATA_X1: u8 = 0x1F;
     const INT_SOURCE0: u8 = 0x66;
 

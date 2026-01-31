@@ -6,7 +6,7 @@ pub fn voltage_v_to_pressure_pa(
     voltage_v: f32,
     pressure_range_pa_min_left_max_right: (f32, f32),
 ) -> f32 {
-    if voltage_v < 0.5 || voltage_v > 4.5 {
+    if !(0.5..=4.5).contains(&voltage_v) {
         defmt::warn!("XGZP6847A voltage out of range: {} V", voltage_v);
     }
 
@@ -18,9 +18,7 @@ pub fn voltage_v_to_pressure_pa(
         return pressure_max_pa;
     }
 
-    let pressure_pa =
-        ((voltage_v - 0.5) / 4.0) * (pressure_max_pa - pressure_min_pa) + pressure_min_pa;
-    pressure_pa
+    ((voltage_v - 0.5) / 4.0) * (pressure_max_pa - pressure_min_pa) + pressure_min_pa
 }
 
 pub fn option_arr_to_messsage(input: [Option<f32>; 4]) -> AnalogPressureSensorData {

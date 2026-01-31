@@ -110,20 +110,20 @@ async fn main(spawner: Spawner) {
     info!("AeroSmart Firmware Starting...");
 
     let config = TestConfig {
-        i2s: false,
-        spi_imu: false,
-        spi_ws2812: false,
-        uart_upper: false,
-        uart_lidar: false,
-        i2c: false,
-        pwm_edf: false,
-        pwm_servo: false,
-        wdt: false,
-        fft: false,
-        ahrs: false,
-        ctrl_airspeed: false,
-        battery_adc: false,
-        analog_pressure: false,
+        i2s: true,
+        spi_imu: true,
+        spi_ws2812: true,
+        uart_upper: true,
+        uart_lidar: true,
+        i2c: true,
+        pwm_edf: true,
+        pwm_servo: true,
+        wdt: true,
+        fft: true,
+        ahrs: true,
+        ctrl_airspeed: true,
+        battery_adc: true,
+        analog_pressure: true,
     };
 
     info!("Configuration: {:?}", config);
@@ -318,7 +318,7 @@ async fn main(spawner: Spawner) {
 
     let mut sensors = Airspeed::new(i2c);
     let edf = EdfDshot::new(edf_pwm, p.DMA1_CH5);
-    let pid = AirspeedControl::new(1.0, 0.1, 0.05);
+    let pid = AirspeedControl::new(0.0, 1.0, 0.1, 0.05);
     let ahrs = MadgwickAhrs::new(1_000.0, 0.033);
 
     info!("Airspeed sensor and EDF driver initialized");

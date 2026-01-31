@@ -190,15 +190,16 @@ impl Ads1115Config {
     }
 
     pub fn chan(channel: usize) -> Self {
-        let mut config = Ads1115Config::default();
-        config.mux = match channel {
-            0 => AdcMux::Ain0Gnd,
-            1 => AdcMux::Ain1Gnd,
-            2 => AdcMux::Ain2Gnd,
-            3 => AdcMux::Ain3Gnd,
-            _ => AdcMux::Ain0Gnd,
-        };
-        config
+        Ads1115Config {
+            mux: match channel {
+                0 => AdcMux::Ain0Gnd,
+                1 => AdcMux::Ain1Gnd,
+                2 => AdcMux::Ain2Gnd,
+                3 => AdcMux::Ain3Gnd,
+                _ => AdcMux::Ain0Gnd, // Default case, should not happen
+            },
+            ..Default::default()
+        }
     }
 }
 

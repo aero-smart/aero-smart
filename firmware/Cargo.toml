@@ -6,7 +6,17 @@ version.workspace = true
 name = "aerosmart-firmware"
 
 [features]
-default = ["airspeed-control", "fft", "ahrs", "microphone", "imu", "lidar", "serial", "pwm-edf", "pwm-servo"]
+default = [
+  "airspeed-control",
+  "fft",
+  "ahrs",
+  "microphone",
+  "imu",
+  "lidar",
+  "serial",
+  "pwm-edf",
+  "pwm-servo",
+]
 microphone = []
 airspeed = []
 imu = []
@@ -69,7 +79,9 @@ ahrs = { version = "0.8.0", default-features = false }
 libm = "0.2.16"
 nalgebra = { version = "0.34.1", default-features = false }
 microfft = "0.6.0"
-rkyv = { version = "0.8.14", default-features = false, features = ["bytecheck"] }
+rkyv = { version = "0.8.14", default-features = false, features = [
+  "bytecheck",
+] }
 aquamarine = "0.6.0"
 interpn = { version = "0.11.0", default-features = false }
 chrono = { version = "0.4.43", default-features = false }

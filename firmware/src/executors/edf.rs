@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 //! pwm control by Dshot protocol
 //!
 //! This module implements the Electric Ducted Fan (pwm) control using the Dshot protocol.

@@ -95,6 +95,7 @@ pub struct ImuData {
     pub time_elapsed_ms: u64,
 }
 
+#[allow(clippy::too_many_arguments)]
 impl ImuData {
     pub fn new(
         accel_z: f32,

@@ -50,9 +50,7 @@ fn adc_to_voltage(adc_reading: u16, vrefint_reading: u16) -> f32 {
     let battery_adc_voltage = (adc_reading as f32 / ADC_MAX) * vdda;
 
     // Calculate actual battery voltage (compensate for voltage divider)
-    let battery_voltage = battery_adc_voltage * VOLTAGE_DIVIDER_RATIO;
-
-    battery_voltage
+    battery_adc_voltage * VOLTAGE_DIVIDER_RATIO
 }
 
 /// Convert ADC reading to battery cell voltage in volts
