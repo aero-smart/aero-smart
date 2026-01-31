@@ -14,13 +14,11 @@ use crate::{
     executors::{edf::EdfDshot, servo::Servo},
     sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
     tasks::*,
-    utils::send_message,
 };
 
 use {defmt_rtt as _, panic_probe as _};
 
-use aerosmart_shared::serial::{AcknowledgementData, ArchivedSerialMessage, SerialMessage};
-use chrono::{Datelike, Timelike, Weekday};
+use aerosmart_shared::serial::SerialMessage;
 use defmt::info;
 use embassy_executor::Spawner;
 use embassy_stm32::{
@@ -29,14 +27,14 @@ use embassy_stm32::{
     exti::ExtiInput,
     gpio::{Level, Output, Pull, Speed},
     i2c::{self, I2c},
-    rtc::{DateTime, DayOfWeek, Rtc, RtcConfig},
+    rtc::{Rtc, RtcConfig},
     spi::{self, Spi},
     time::Hertz,
     timer::simple_pwm::{PwmPin, SimplePwm},
     usart::Uart,
     wdg::IndependentWatchdog,
 };
-use embassy_time::{Duration, Instant, TICK_HZ, Timer};
+use embassy_time::{Duration, TICK_HZ, Timer};
 use ws2812_async::{Rgb, Ws2812};
 
 bind_interrupts!(struct Irqs {
@@ -206,53 +204,7 @@ async fn main(spawner: Spawner) {
 
     let mut rtc = Rtc::new(p.RTC, RtcConfig::default());
 
-    if config.uart_upper {
-        // Initialize the serial first to update the RTC timer and synchronize data
-        let ack_packet = SerialMessage::AcknowledgementData(AcknowledgementData {
-            time_elapsed_ms: Instant::now().as_millis(),
-        });
-        let (packet, length) = send_message(ack_packet).await;
-        usart_upper.write(&packet[..length]).await.ok();
-        let mut buffer = [0u8; 256];
-        usart_upper.read(&mut buffer).await.ok();
-        let message = unsafe { rkyv::access_unchecked::<ArchivedSerialMessage>(&buffer) };
-        match message {
-            ArchivedSerialMessage::AcknowledgementConfig(config) => {
-                let current = chrono::DateTime::from_timestamp_micros(
-                    config.unix_timestamp_ms.to_native() as i64,
-                );
-                if let Some(dt) = current {
-                    let new_datetime = DateTime::from(
-                        dt.year() as u16,
-                        dt.month() as u8,
-                        dt.day() as u8,
-                        match dt.weekday() {
-                            Weekday::Mon => DayOfWeek::Monday,
-                            Weekday::Tue => DayOfWeek::Tuesday,
-                            Weekday::Wed => DayOfWeek::Wednesday,
-                            Weekday::Thu => DayOfWeek::Thursday,
-                            Weekday::Fri => DayOfWeek::Friday,
-                            Weekday::Sat => DayOfWeek::Saturday,
-                            Weekday::Sun => DayOfWeek::Sunday,
-                        },
-                        dt.hour() as u8,
-                        dt.minute() as u8,
-                        dt.second() as u8,
-                        dt.nanosecond() * 1000,
-                    )
-                    .unwrap();
-                    rtc.set_datetime(new_datetime).ok();
-                    info!(
-                        "RTC synchronized to UNIX timestamp: {}",
-                        config.unix_timestamp_ms.to_native()
-                    );
-                }
-            }
-            _ => {
-                panic!("Unexpected message received during RTC sync");
-            }
-        }
-    }
+    serial_initialize(&mut usart_upper, &mut rtc).await;
 
     let (uart_tx, uart_rx) = usart_upper.split();
 
