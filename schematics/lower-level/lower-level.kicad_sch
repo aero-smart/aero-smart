@@ -3,7 +3,7 @@
 	(generator "eeschema")
 	(generator_version "9.0")
 	(uuid "f15b48e6-6a5e-48d7-8222-23e5546a1fc9")
-	(paper "A4")
+	(paper "A3")
 	(title_block
 		(title "AeroSmart Lower Level Schematics")
 		(date "2026-01-21")
@@ -715,8 +715,8 @@
 			)
 			(symbol "BME280_0_0"
 				(rectangle
-					(start -10.16 -12.7)
-					(end 10.16 12.7)
+					(start -10.16 12.7)
+					(end 10.16 -12.7)
 					(stroke
 						(width 0.4064)
 						(type default)
@@ -736,42 +736,6 @@
 						)
 					)
 					(number "2"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin input clock
-					(at -15.24 0 0)
-					(length 5.08)
-					(name "SCK"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin bidirectional line
-					(at -15.24 -2.54 0)
-					(length 5.08)
-					(name "SDI"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "3"
 						(effects
 							(font
 								(size 1.016 1.016)
@@ -863,6 +827,44 @@
 						)
 					)
 					(number "7"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+			)
+			(symbol "BME280_1_0"
+				(pin input clock
+					(at -15.24 0 0)
+					(length 5.08)
+					(name "SCK/SCL"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at -15.24 -2.54 0)
+					(length 5.08)
+					(name "SDI/SDA"
+						(effects
+							(font
+								(size 1.016 1.016)
+							)
+						)
+					)
+					(number "3"
 						(effects
 							(font
 								(size 1.016 1.016)
@@ -6253,6 +6255,285 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Regulator_Linear:L7805"
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at -3.81 3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "L7805"
+				(at 0 3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0.635 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+						(italic yes)
+					)
+					(justify left)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "http://www.st.com/content/ccc/resource/technical/document/datasheet/41/4f/b3/b0/12/d4/47/88/CD00000444.pdf/files/CD00000444.pdf/jcr:content/translations/en.CD00000444.pdf"
+				(at 0 -1.27 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Positive 1.5A 35V Linear Regulator, Fixed Output 5V, TO-220/TO-263/TO-252"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "Voltage Regulator 1.5A Positive"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "TO?252* TO?263* TO?220*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "L7805_0_1"
+				(rectangle
+					(start -5.08 1.905)
+					(end 5.08 -5.08)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "L7805_1_1"
+				(pin power_in line
+					(at -7.62 0 0)
+					(length 2.54)
+					(name "IN"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -7.62 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_out line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name "OUT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Regulator_Linear:LD1117V33"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at -3.81 3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "LD1117V33"
+				(at 0 3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://www.st.com/resource/en/datasheet/ld1117.pdf"
+				(at 2.54 -6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "800 mA Fixed Low Drop Positive Voltage Regulator (ldo). Max input 15V. Fixed Output 3.3V. TO-220-3"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "low-dropout-regulator ldo"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "*TO?220*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "LD1117V33_0_1"
+				(rectangle
+					(start -5.08 -5.08)
+					(end 5.08 1.905)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "LD1117V33_1_1"
+				(pin power_in line
+					(at -7.62 0 0)
+					(length 2.54)
+					(name "VI"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -7.62 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_out line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name "VO"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Sensor_Pressure:XGZP6857A"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -6448,256 +6729,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "power:+3V3"
-			(power)
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "#PWR"
-				(at 0 -3.81 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Value" "+3V3"
-				(at 0 3.556 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Power symbol creates a global label with name \"+3V3\""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "global power"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "+3V3_0_1"
-				(polyline
-					(pts
-						(xy -0.762 1.27) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 0) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "+3V3_1_1"
-				(pin power_in line
-					(at 0 0 90)
-					(length 0)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "power:+5V"
-			(power)
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "#PWR"
-				(at 0 -3.81 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Value" "+5V"
-				(at 0 3.556 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Power symbol creates a global label with name \"+5V\""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "global power"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "+5V_0_1"
-				(polyline
-					(pts
-						(xy -0.762 1.27) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 0) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "+5V_1_1"
-				(pin power_in line
-					(at 0 0 90)
-					(length 0)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "power:GND"
 			(power)
 			(pin_numbers
@@ -6799,20 +6830,353 @@
 			)
 			(embedded_fonts no)
 		)
-	)
-	(label "TODO: Interrupt-driven"
-		(at 144.78 62.23 0)
-		(effects
-			(font
-				(size 1.27 1.27)
+		(symbol "power:VDD"
+			(power)
+			(pin_numbers
+				(hide yes)
 			)
-			(justify left bottom)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "VDD"
+				(at 0 3.556 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"VDD\""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "VDD_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "VDD_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
 		)
-		(uuid "874783ae-8ed5-4b9d-af3e-18962c81bd60")
+	)
+	(junction
+		(at 166.37 41.91)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "02e4dad8-db51-4d1b-9ff2-d81895af2dcf")
+	)
+	(junction
+		(at 171.45 41.91)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "3672d43b-1d11-4d7d-b917-af54171f9634")
+	)
+	(junction
+		(at 173.99 41.91)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "90cf17fa-a9b5-475f-b489-5c0406cee384")
+	)
+	(junction
+		(at 179.07 41.91)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "c6518b14-8dc2-408b-8f26-c91ecfae7778")
+	)
+	(junction
+		(at 35.56 52.07)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "c75756c7-c53f-426b-8572-d299126bc079")
+	)
+	(junction
+		(at 168.91 41.91)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "c98e9abf-e8a1-46cb-9363-721541d68ee7")
+	)
+	(junction
+		(at 19.05 24.13)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "dbf2d930-51ea-44e4-b442-951e8e3f360d")
+	)
+	(junction
+		(at 176.53 41.91)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "e1ee3e54-4d92-4f84-8d10-26d52aadd40b")
+	)
+	(wire
+		(pts
+			(xy 43.18 41.91) (xy 166.37 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0a50326f-9eb5-44fa-af37-033454f8d958")
+	)
+	(wire
+		(pts
+			(xy 179.07 41.91) (xy 181.61 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1721eaff-b897-4947-8ebe-4b217876648f")
+	)
+	(wire
+		(pts
+			(xy 33.02 52.07) (xy 35.56 52.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "258433ac-ce72-45e5-b516-8a5d66057a58")
+	)
+	(wire
+		(pts
+			(xy 19.05 24.13) (xy 27.94 24.13)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "339be4d7-586f-4384-abe4-b30c931a9e0b")
+	)
+	(wire
+		(pts
+			(xy 168.91 41.91) (xy 171.45 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "34df07f3-cfab-4ca5-bf9d-9335ff383500")
+	)
+	(wire
+		(pts
+			(xy 19.05 44.45) (xy 19.05 24.13)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4379d04f-eada-4295-b0f7-d399a9edba0c")
+	)
+	(wire
+		(pts
+			(xy 19.05 19.05) (xy 19.05 24.13)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "585b3195-7f33-4e7a-a98e-5b21d5bbcb97")
+	)
+	(wire
+		(pts
+			(xy 173.99 41.91) (xy 176.53 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "616e6359-694e-4590-94af-a5e9b83c7d68")
+	)
+	(wire
+		(pts
+			(xy 166.37 41.91) (xy 168.91 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7390ff30-9a65-4976-8899-b40475e1b407")
+	)
+	(wire
+		(pts
+			(xy 171.45 41.91) (xy 173.99 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7cd9fcc0-92be-40d6-8817-b4f36cd40291")
+	)
+	(wire
+		(pts
+			(xy 43.18 44.45) (xy 43.18 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8c1d5b79-d9ca-4858-90d7-ed63405fac94")
+	)
+	(wire
+		(pts
+			(xy 17.78 276.86) (xy 35.56 276.86)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a94f46a1-fa2f-415f-91db-fe9935940677")
+	)
+	(wire
+		(pts
+			(xy 33.02 31.75) (xy 33.02 52.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b1a10e77-85fe-4c6a-ae02-dcc92abd6c49")
+	)
+	(wire
+		(pts
+			(xy 35.56 52.07) (xy 35.56 276.86)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c8e2f8a7-a8c6-48f4-b415-bd15fa649f83")
+	)
+	(wire
+		(pts
+			(xy 35.56 31.75) (xy 33.02 31.75)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c9269b36-24ec-4cfd-8090-9656c0661344")
+	)
+	(wire
+		(pts
+			(xy 27.94 44.45) (xy 19.05 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5b62edf-302e-4a4b-84a8-642d4325ba46")
+	)
+	(wire
+		(pts
+			(xy 176.53 41.91) (xy 179.07 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fa5149a7-8ec4-43b7-b024-a414e8f16506")
 	)
 	(symbol
 		(lib_id "Connector_Generic_MountingPin:Benewake TFmini-S")
-		(at 187.96 140.97 0)
+		(at 199.39 238.76 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6821,7 +7185,7 @@
 		(fields_autoplaced yes)
 		(uuid "09564397-9e60-4f63-8220-1c26496ed2b3")
 		(property "Reference" "J1"
-			(at 190.5 141.3255 0)
+			(at 201.93 239.1155 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6830,7 +7194,7 @@
 			)
 		)
 		(property "Value" "TFmini-S"
-			(at 190.5 143.8655 0)
+			(at 201.93 241.6555 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6839,7 +7203,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 187.96 140.97 0)
+			(at 199.39 238.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6848,7 +7212,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 187.96 140.97 0)
+			(at 199.39 238.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6857,7 +7221,7 @@
 			)
 		)
 		(property "Description" "Benewake's TFmini-S, usually use GH1.25 4pin layout when plugging into the board."
-			(at 187.96 140.97 0)
+			(at 199.39 238.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6891,7 +7255,7 @@
 	)
 	(symbol
 		(lib_id "Motor:Motor_Servo")
-		(at 237.49 100.33 0)
+		(at 248.92 198.12 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6900,7 +7264,7 @@
 		(fields_autoplaced yes)
 		(uuid "0f27c3b4-d521-4c7a-ad99-ee02a3a866a3")
 		(property "Reference" "M3"
-			(at 246.38 98.6268 0)
+			(at 257.81 196.4168 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6909,7 +7273,7 @@
 			)
 		)
 		(property "Value" "AoA Servo MG996R"
-			(at 246.38 101.1668 0)
+			(at 257.81 198.9568 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6918,7 +7282,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 237.49 105.156 0)
+			(at 248.92 202.946 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6927,7 +7291,7 @@
 			)
 		)
 		(property "Datasheet" "http://forums.parallax.com/uploads/attachments/46831/74481.png"
-			(at 237.49 105.156 0)
+			(at 248.92 202.946 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6936,7 +7300,7 @@
 			)
 		)
 		(property "Description" "Servo Motor (Futaba, HiTec, JR connector)"
-			(at 237.49 100.33 0)
+			(at 248.92 198.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6964,7 +7328,7 @@
 	)
 	(symbol
 		(lib_id "Interface:PCA9306")
-		(at 246.38 123.19 0)
+		(at 257.81 220.98 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6972,7 +7336,7 @@
 		(dnp no)
 		(uuid "134eee5a-a3cf-4c4c-9edd-8c240626659a")
 		(property "Reference" "U12"
-			(at 247.65 129.54 0)
+			(at 259.08 227.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6981,7 +7345,7 @@
 			)
 		)
 		(property "Value" "PCA9306"
-			(at 247.65 132.08 0)
+			(at 259.08 229.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6990,7 +7354,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 236.22 114.3 0)
+			(at 247.65 212.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6999,7 +7363,7 @@
 			)
 		)
 		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/pca9306.pdf"
-			(at 238.76 111.76 0)
+			(at 250.19 209.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7008,7 +7372,7 @@
 			)
 		)
 		(property "Description" "Dual bidirectional I2C Bus and SMBus voltage level translator"
-			(at 246.38 123.19 0)
+			(at 257.81 220.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7050,74 +7414,8 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+5V")
-		(at 34.29 21.59 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "1b08e152-4412-4f58-b19f-fc3571dfd1b1")
-		(property "Reference" "#PWR01"
-			(at 34.29 25.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+5V"
-			(at 34.29 16.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 34.29 21.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 34.29 21.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 34.29 21.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "12bb4160-fd77-4e31-8941-9608778d722b")
-		)
-		(instances
-			(project ""
-				(path "/f15b48e6-6a5e-48d7-8222-23e5546a1fc9"
-					(reference "#PWR01")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R_US")
-		(at 88.9 44.45 0)
+		(at 100.33 142.24 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7126,7 +7424,7 @@
 		(fields_autoplaced yes)
 		(uuid "239e6639-529d-46b8-bc48-7d8f938e36cc")
 		(property "Reference" "R3"
-			(at 91.44 43.1799 0)
+			(at 102.87 140.9699 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7135,7 +7433,7 @@
 			)
 		)
 		(property "Value" "4.7k"
-			(at 91.44 45.7199 0)
+			(at 102.87 143.5099 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7144,7 +7442,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 89.916 44.704 90)
+			(at 101.346 142.494 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7153,7 +7451,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 88.9 44.45 0)
+			(at 100.33 142.24 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7162,7 +7460,7 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
-			(at 88.9 44.45 0)
+			(at 100.33 142.24 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7187,7 +7485,7 @@
 	)
 	(symbol
 		(lib_id "MCU_ST_STM32H7:STM32H743VGTx")
-		(at 58.42 102.87 0)
+		(at 173.99 115.57 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7195,7 +7493,7 @@
 		(dnp no)
 		(uuid "2e039dc7-7a0a-4bb1-885c-b35fd6c5830e")
 		(property "Reference" "U1"
-			(at 57.15 102.87 0)
+			(at 172.72 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7204,7 +7502,7 @@
 			)
 		)
 		(property "Value" "STM32H743VGTx"
-			(at 50.8 110.49 0)
+			(at 166.37 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7213,7 +7511,7 @@
 			)
 		)
 		(property "Footprint" "Package_QFP:LQFP-100_14x14mm_P0.5mm"
-			(at 40.64 168.91 0)
+			(at 156.21 181.61 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7223,7 +7521,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.st.com/resource/en/datasheet/stm32h743vg.pdf"
-			(at 58.42 102.87 0)
+			(at 173.99 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7232,7 +7530,7 @@
 			)
 		)
 		(property "Description" "STMicroelectronics Arm Cortex-M7 MCU, 1024KB flash, 1024KB RAM, 480 MHz, 1.71-3.6V, 82 GPIO, LQFP100"
-			(at 58.42 102.87 0)
+			(at 173.99 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7550,8 +7848,81 @@
 		)
 	)
 	(symbol
+		(lib_id "Regulator_Linear:L7805")
+		(at 35.56 24.13 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "2fd0f55d-1af0-48be-b652-0e65e0adbbce")
+		(property "Reference" "U8"
+			(at 35.56 17.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "L7805"
+			(at 35.56 20.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 36.195 27.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "http://www.st.com/content/ccc/resource/technical/document/datasheet/41/4f/b3/b0/12/d4/47/88/CD00000444.pdf/files/CD00000444.pdf/jcr:content/translations/en.CD00000444.pdf"
+			(at 35.56 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Positive 1.5A 35V Linear Regulator, Fixed Output 5V, TO-220/TO-263/TO-252"
+			(at 35.56 24.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ac2e9805-24f7-4813-9f9d-8af6a9b7c294")
+		)
+		(pin "2"
+			(uuid "78132b35-edba-4868-a4ca-ba184e461994")
+		)
+		(pin "3"
+			(uuid "4b7dfa4c-d49c-444e-8e72-9d5cab0c7fc9")
+		)
+		(instances
+			(project ""
+				(path "/f15b48e6-6a5e-48d7-8222-23e5546a1fc9"
+					(reference "U8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "ICS-43434:ICS-43434")
-		(at 201.93 54.61 0)
+		(at 213.36 152.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7559,7 +7930,7 @@
 		(dnp no)
 		(uuid "33254619-9f32-40d6-96bc-fc9d39f542d2")
 		(property "Reference" "MK1"
-			(at 201.93 58.42 0)
+			(at 213.36 156.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7567,7 +7938,7 @@
 			)
 		)
 		(property "Value" "ICS-43434"
-			(at 201.93 62.23 0)
+			(at 213.36 160.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7575,7 +7946,7 @@
 			)
 		)
 		(property "Footprint" "ICS-43434:MIC_ICS-43434"
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7585,7 +7956,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7594,7 +7965,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7603,7 +7974,7 @@
 			)
 		)
 		(property "MF" "TDK InvenSense"
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7613,7 +7984,7 @@
 			)
 		)
 		(property "DESCRIPTION" "Multi-Mode Microphone with I2S Digital Output"
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7623,7 +7994,7 @@
 			)
 		)
 		(property "PACKAGE" "LGA-6 TDK-InvenSense"
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7633,7 +8004,7 @@
 			)
 		)
 		(property "PRICE" "2.43 USD"
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7643,7 +8014,7 @@
 			)
 		)
 		(property "Package" "Custom Package TDK InvenSense"
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7653,7 +8024,7 @@
 			)
 		)
 		(property "Check_prices" "https://www.snapeda.com/parts/ICS-43434/TDK+InvenSense/view-part/?ref=eda"
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7663,7 +8034,7 @@
 			)
 		)
 		(property "Price" "None"
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7673,7 +8044,7 @@
 			)
 		)
 		(property "SnapEDA_Link" "https://www.snapeda.com/parts/ICS-43434/TDK+InvenSense/view-part/?ref=snap"
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7683,7 +8054,7 @@
 			)
 		)
 		(property "MP" "ICS-43434"
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7693,7 +8064,7 @@
 			)
 		)
 		(property "Availability" "In Stock"
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7703,7 +8074,7 @@
 			)
 		)
 		(property "AVAILABILITY" "Bad"
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7713,7 +8084,7 @@
 			)
 		)
 		(property "Description_1" "60 Hz ~ 20 kHz Digital, I2S Microphone MEMS (Silicon) 1.65 V ~ 3.63 V Omnidirectional (-26 ±1dB @ 94dB SPL) Solder Pads"
-			(at 201.93 54.61 0)
+			(at 213.36 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7750,8 +8121,287 @@
 		)
 	)
 	(symbol
+		(lib_id "Regulator_Linear:LD1117V33")
+		(at 35.56 44.45 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "414e178b-0d00-4961-bfbc-f9460e8bba09")
+		(property "Reference" "U13"
+			(at 35.56 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "LD1117V33"
+			(at 35.56 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
+			(at 35.56 39.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.st.com/resource/en/datasheet/ld1117.pdf"
+			(at 38.1 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "800 mA Fixed Low Drop Positive Voltage Regulator (ldo). Max input 15V. Fixed Output 3.3V. TO-220-3"
+			(at 35.56 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "3"
+			(uuid "7962e3c3-d9bf-45ad-940d-1dc0bd8f9989")
+		)
+		(pin "1"
+			(uuid "76082199-f634-41f8-9252-1b9d96ce972c")
+		)
+		(pin "2"
+			(uuid "70436acd-fd56-47df-acca-c6fd8f22155b")
+		)
+		(instances
+			(project ""
+				(path "/f15b48e6-6a5e-48d7-8222-23e5546a1fc9"
+					(reference "U13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "BME280:BME280")
+		(at 231.14 105.41 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "550892e8-6a64-4b43-8324-112fd71a5538")
+		(property "Reference" "U6"
+			(at 231.14 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "BME280"
+			(at 231.14 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "BME280:PSON65P250X250X100-8N"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Integrated pressure, humidity and temperature sensor; 8-pin 2.5x2.5x0.93mm LGA"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "MF" "Bosch"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "PACKAGE" "LGA-8 Bosch"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "PRICE" "4.94 USD"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Package" "LGA-8 Bosch"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Check_prices" "https://www.snapeda.com/parts/BME280/Bosch/view-part/?ref=eda"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "STANDARD" "IPC-7351B"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "SnapEDA_Link" "https://www.snapeda.com/parts/BME280/Bosch/view-part/?ref=snap"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "MP" "BME280"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Price" "None"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Availability" "In Stock"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "AVAILABILITY" "Good"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Description_1" "Board Mount Humidity Sensors MEMS humidity, pressure and temperature sensor"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(pin "6"
+			(uuid "4815ee02-87ea-4e7b-8fe7-521737cc920b")
+		)
+		(pin "1"
+			(uuid "20110594-9031-425b-9a34-767b01bf7fa2")
+		)
+		(pin "3"
+			(uuid "a47a4d1b-a1c9-4053-a23b-fe1ced10ed71")
+		)
+		(pin "2"
+			(uuid "697099d5-f47f-4f7a-92ee-228b3ff5ca06")
+		)
+		(pin "4"
+			(uuid "c436d579-e949-417f-a1f3-af267f21dd45")
+		)
+		(pin "7"
+			(uuid "eb7c5fa4-11e0-4c88-9c2a-6aee3f8dd470")
+		)
+		(pin "8"
+			(uuid "b22cc836-7c4b-44aa-b4c3-9ca52be59a59")
+		)
+		(pin "5"
+			(uuid "9032d602-848d-4a78-9cb6-a9d2fcbafb85")
+		)
+		(instances
+			(project ""
+				(path "/f15b48e6-6a5e-48d7-8222-23e5546a1fc9"
+					(reference "U6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:RotaryEncoder")
-		(at 243.84 60.96 0)
+		(at 255.27 158.75 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7759,7 +8409,7 @@
 		(dnp no)
 		(uuid "5ad5fce8-230d-41f3-878b-d6eb6a2a0a14")
 		(property "Reference" "SW1"
-			(at 245.11 57.15 0)
+			(at 256.54 154.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7768,7 +8418,7 @@
 			)
 		)
 		(property "Value" "RotaryEncoder"
-			(at 237.49 64.77 0)
+			(at 248.92 162.56 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7777,7 +8427,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 240.03 56.896 0)
+			(at 251.46 154.686 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7786,7 +8436,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 243.84 54.356 0)
+			(at 255.27 152.146 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7795,7 +8445,7 @@
 			)
 		)
 		(property "Description" "Rotary encoder, dual channel, incremental quadrate outputs"
-			(at 243.84 60.96 0)
+			(at 255.27 158.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7823,7 +8473,7 @@
 	)
 	(symbol
 		(lib_id "Sensor_Pressure:XGZP6857A")
-		(at 153.67 97.79 0)
+		(at 165.1 195.58 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7831,7 +8481,7 @@
 		(dnp no)
 		(uuid "62a1ffc1-94ec-4a6e-bbbd-9c05fde34d1d")
 		(property "Reference" "U2"
-			(at 156.21 91.44 0)
+			(at 167.64 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7840,7 +8490,7 @@
 			)
 		)
 		(property "Value" "XGZP6847A"
-			(at 148.59 106.68 0)
+			(at 160.02 204.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7849,7 +8499,7 @@
 			)
 		)
 		(property "Footprint" "Sensor_Pressure:CFSensor_XGZP6847A_7x7mm"
-			(at 156.21 113.03 0)
+			(at 167.64 210.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7858,7 +8508,7 @@
 			)
 		)
 		(property "Datasheet" "https://cfsensor.com/wp-content/uploads/2022/11/XGZP6847A-Pressure-Sensor-V2.7.pdf"
-			(at 153.67 110.49 0)
+			(at 165.1 208.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7867,7 +8517,7 @@
 			)
 		)
 		(property "Description" "Analog pressure sensor, 24-bit, 2.5..5.5V supply"
-			(at 156.21 107.95 0)
+			(at 167.64 205.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7904,7 +8554,7 @@
 	)
 	(symbol
 		(lib_id "4525DO-DS5AI001DP:4525DO-DS5AI001DP")
-		(at 115.57 105.41 0)
+		(at 265.43 73.66 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7912,7 +8562,7 @@
 		(dnp no)
 		(uuid "67615123-9081-4c6c-9e94-7983959101e7")
 		(property "Reference" "U4"
-			(at 115.57 100.33 0)
+			(at 265.43 68.58 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7920,7 +8570,7 @@
 			)
 		)
 		(property "Value" "4525DO-DS5AI001DP"
-			(at 115.57 110.49 0)
+			(at 265.43 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7928,7 +8578,7 @@
 			)
 		)
 		(property "Footprint" "4525DO-DS5AI001DP:TE_4525DO-DS5AI001DP"
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7938,7 +8588,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7947,7 +8597,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7956,7 +8606,7 @@
 			)
 		)
 		(property "Comment" "4525DO-DS5AI001DP"
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7966,7 +8616,7 @@
 			)
 		)
 		(property "MF" "TE Connectivity"
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7976,7 +8626,7 @@
 			)
 		)
 		(property "Description_1" "Pressure Sensors, Differential, PCB Mount, 5V, 20 psi, 4525DO Series | TE Connectivity 4525DO-DS5AI001DP"
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7986,7 +8636,7 @@
 			)
 		)
 		(property "Package" "DIP-8 TE Connectivity ALCOSWITCH Switches"
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7996,7 +8646,7 @@
 			)
 		)
 		(property "Price" "None"
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8006,7 +8656,7 @@
 			)
 		)
 		(property "Check_prices" "https://www.snapeda.com/parts/4525DO-DS5AI001DP/TE+Connectivity+Alcoswitch+Switches/view-part/?ref=eda"
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8016,7 +8666,7 @@
 			)
 		)
 		(property "STANDARD" "IPC-7251"
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8026,7 +8676,7 @@
 			)
 		)
 		(property "SnapEDA_Link" "https://www.snapeda.com/parts/4525DO-DS5AI001DP/TE+Connectivity+Alcoswitch+Switches/view-part/?ref=snap"
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8036,7 +8686,7 @@
 			)
 		)
 		(property "MP" "4525DO-DS5AI001DP"
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8046,7 +8696,7 @@
 			)
 		)
 		(property "Availability" "In Stock"
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8056,7 +8706,7 @@
 			)
 		)
 		(property "MANUFACTURER" "TE Connectivity"
-			(at 115.57 105.41 0)
+			(at 265.43 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8091,7 +8741,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic_Shielded:Conn_01x03_Shielded")
-		(at 107.95 30.48 0)
+		(at 119.38 128.27 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8100,7 +8750,7 @@
 		(fields_autoplaced yes)
 		(uuid "716c357c-d778-4b96-a572-7b5da867cc6e")
 		(property "Reference" "J2"
-			(at 110.49 29.2099 0)
+			(at 121.92 126.9999 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8109,7 +8759,7 @@
 			)
 		)
 		(property "Value" "UART to Application Chip"
-			(at 110.49 31.7499 0)
+			(at 121.92 129.5399 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8118,7 +8768,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 107.95 30.48 0)
+			(at 119.38 128.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8127,7 +8777,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 107.95 30.48 0)
+			(at 119.38 128.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8136,7 +8786,7 @@
 			)
 		)
 		(property "Description" "Generic shielded connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 107.95 30.48 0)
+			(at 119.38 128.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8166,74 +8816,8 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+3V3")
-		(at 46.99 21.59 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "7bcba528-19e9-4c16-aeb1-049cd3a922e9")
-		(property "Reference" "#PWR02"
-			(at 46.99 25.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3V3"
-			(at 46.99 16.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 46.99 21.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 46.99 21.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+3V3\""
-			(at 46.99 21.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "35072146-dc90-46a2-b8a3-3cb7f6b7bb1e")
-		)
-		(instances
-			(project ""
-				(path "/f15b48e6-6a5e-48d7-8222-23e5546a1fc9"
-					(reference "#PWR02")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "ICM-42688-P:ICM-42688-P")
-		(at 121.92 68.58 0)
+		(at 99.06 171.45 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8241,7 +8825,7 @@
 		(dnp no)
 		(uuid "9f2d4854-962a-4235-81c6-4c38e27afb87")
 		(property "Reference" "U5"
-			(at 121.92 80.01 0)
+			(at 99.06 182.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8249,7 +8833,7 @@
 			)
 		)
 		(property "Value" "ICM-42688-P"
-			(at 121.92 83.82 0)
+			(at 99.06 186.69 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8257,7 +8841,7 @@
 			)
 		)
 		(property "Footprint" "ICM-42688-P:PQFN50P300X250X97-14N"
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8267,7 +8851,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8276,7 +8860,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8285,7 +8869,7 @@
 			)
 		)
 		(property "MF" "TDK InvenSense"
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8295,7 +8879,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" "0.97mm"
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8305,7 +8889,7 @@
 			)
 		)
 		(property "Package" "LGA-14 TDK InvenSense"
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8315,7 +8899,7 @@
 			)
 		)
 		(property "Price" "None"
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8325,7 +8909,7 @@
 			)
 		)
 		(property "Check_prices" "https://www.snapeda.com/parts/ICM-42688-P/TDK+InvenSense/view-part/?ref=eda"
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8335,7 +8919,7 @@
 			)
 		)
 		(property "STANDARD" "IPC-7351B"
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8345,7 +8929,7 @@
 			)
 		)
 		(property "PARTREV" "1.2"
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8355,7 +8939,7 @@
 			)
 		)
 		(property "SnapEDA_Link" "https://www.snapeda.com/parts/ICM-42688-P/TDK+InvenSense/view-part/?ref=snap"
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8365,7 +8949,7 @@
 			)
 		)
 		(property "MP" "ICM-42688-P"
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8375,7 +8959,7 @@
 			)
 		)
 		(property "Description_1" "Accelerometer, Gyroscope, 6 Axis Sensor - Output"
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8385,7 +8969,7 @@
 			)
 		)
 		(property "Availability" "In Stock"
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8395,7 +8979,7 @@
 			)
 		)
 		(property "MANUFACTURER" "TDK InvenSense"
-			(at 121.92 68.58 0)
+			(at 99.06 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8457,7 +9041,7 @@
 	)
 	(symbol
 		(lib_id "Motor:Motor_Servo")
-		(at 237.49 82.55 0)
+		(at 248.92 180.34 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8466,7 +9050,7 @@
 		(fields_autoplaced yes)
 		(uuid "a640aee6-5b59-45de-ac23-e9e47cb0a087")
 		(property "Reference" "M1"
-			(at 246.38 80.8468 0)
+			(at 257.81 178.6368 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8475,7 +9059,7 @@
 			)
 		)
 		(property "Value" "Left EDF"
-			(at 246.38 83.3868 0)
+			(at 257.81 181.1768 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8484,7 +9068,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 237.49 87.376 0)
+			(at 248.92 185.166 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8493,7 +9077,7 @@
 			)
 		)
 		(property "Datasheet" "http://forums.parallax.com/uploads/attachments/46831/74481.png"
-			(at 237.49 87.376 0)
+			(at 248.92 185.166 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8502,7 +9086,7 @@
 			)
 		)
 		(property "Description" "Servo Motor (Futaba, HiTec, JR connector)"
-			(at 237.49 82.55 0)
+			(at 248.92 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8530,7 +9114,7 @@
 	)
 	(symbol
 		(lib_id "LED:WS2812")
-		(at 151.13 124.46 0)
+		(at 162.56 222.25 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8538,7 +9122,7 @@
 		(dnp no)
 		(uuid "a93f0fdd-fe83-4091-ac15-d6df0b3c8cdc")
 		(property "Reference" "D1"
-			(at 161.29 118.0398 0)
+			(at 172.72 215.8298 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8547,7 +9131,7 @@
 			)
 		)
 		(property "Value" "WS2812"
-			(at 156.21 120.65 0)
+			(at 167.64 218.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8555,7 +9139,7 @@
 			)
 		)
 		(property "Footprint" "LED_SMD:LED_WS2812_PLCC6_5.0x5.0mm_P1.6mm"
-			(at 152.4 132.08 0)
+			(at 163.83 229.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8565,7 +9149,7 @@
 			)
 		)
 		(property "Datasheet" "https://cdn-shop.adafruit.com/datasheets/WS2812.pdf"
-			(at 153.67 133.985 0)
+			(at 165.1 231.775 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8575,7 +9159,7 @@
 			)
 		)
 		(property "Description" "RGB LED with integrated controller"
-			(at 151.13 124.46 0)
+			(at 162.56 222.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8612,7 +9196,7 @@
 	)
 	(symbol
 		(lib_id "Analog_ADC:ADS1115IDGS")
-		(at 199.39 121.92 0)
+		(at 210.82 219.71 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8620,7 +9204,7 @@
 		(dnp no)
 		(uuid "adeb9894-9c4c-4d43-9612-b39cd800efdf")
 		(property "Reference" "U9"
-			(at 193.04 113.03 0)
+			(at 204.47 210.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8629,7 +9213,7 @@
 			)
 		)
 		(property "Value" "ADS1115IDGS"
-			(at 200.66 113.03 0)
+			(at 212.09 210.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8638,7 +9222,7 @@
 			)
 		)
 		(property "Footprint" "Package_SO:TSSOP-10_3x3mm_P0.5mm"
-			(at 199.39 134.62 0)
+			(at 210.82 232.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8647,7 +9231,7 @@
 			)
 		)
 		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/ads1113.pdf"
-			(at 198.12 144.78 0)
+			(at 209.55 242.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8656,7 +9240,7 @@
 			)
 		)
 		(property "Description" "Ultra-Small, Low-Power, I2C-Compatible, 860-SPS, 16-Bit ADCs With Internal Reference, Oscillator, and Programmable Comparator, VSSOP-10"
-			(at 199.39 121.92 0)
+			(at 210.82 219.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8705,7 +9289,7 @@
 	)
 	(symbol
 		(lib_id "MPXV7002DP:MPXV7002DP")
-		(at 191.77 91.44 0)
+		(at 203.2 189.23 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8713,7 +9297,7 @@
 		(dnp no)
 		(uuid "b51d2259-3f62-4104-a29c-ebcc26bc895d")
 		(property "Reference" "U10"
-			(at 191.77 87.63 0)
+			(at 203.2 185.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8721,7 +9305,7 @@
 			)
 		)
 		(property "Value" "MPXV7002DP"
-			(at 191.77 93.98 0)
+			(at 203.2 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8729,7 +9313,7 @@
 			)
 		)
 		(property "Footprint" "MPXV7002DP:XDCR_MPXV7002DP"
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8739,7 +9323,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8748,7 +9332,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8757,7 +9341,7 @@
 			)
 		)
 		(property "MF" "NXP Semiconductors"
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8767,7 +9351,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" "9.91 mm"
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8777,7 +9361,7 @@
 			)
 		)
 		(property "Package" "NON STANDARD Freescale Semiconductor"
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8787,7 +9371,7 @@
 			)
 		)
 		(property "Price" "None"
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8797,7 +9381,7 @@
 			)
 		)
 		(property "Check_prices" "https://www.snapeda.com/parts/MPXV7002DP/NXP+Semiconductors/view-part/?ref=eda"
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8807,7 +9391,7 @@
 			)
 		)
 		(property "STANDARD" "Manufacturer Recommendations"
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8817,7 +9401,7 @@
 			)
 		)
 		(property "PARTREV" "4"
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8827,7 +9411,7 @@
 			)
 		)
 		(property "SnapEDA_Link" "https://www.snapeda.com/parts/MPXV7002DP/NXP+Semiconductors/view-part/?ref=snap"
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8837,7 +9421,7 @@
 			)
 		)
 		(property "MP" "MPXV7002DP"
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8847,7 +9431,7 @@
 			)
 		)
 		(property "Description_1" "Pressure Sensor ±0.29PSI (±2kPa) Differential Male - 0.13 (3.3mm) Tube, Dual 0.5 V ~ 4.5 V 8-BSOP (0.475, 12.06mm Width) Dual Ports, Same Side"
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8857,7 +9441,7 @@
 			)
 		)
 		(property "Availability" "In Stock"
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8867,7 +9451,7 @@
 			)
 		)
 		(property "MANUFACTURER" "NXP Semiconductors"
-			(at 191.77 91.44 0)
+			(at 203.2 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8896,7 +9480,7 @@
 	)
 	(symbol
 		(lib_id "Interface:PCA9306")
-		(at 104.14 128.27 0)
+		(at 228.6 73.66 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8904,7 +9488,7 @@
 		(dnp no)
 		(uuid "b7432e52-0662-44ae-927b-1f753898e980")
 		(property "Reference" "U11"
-			(at 105.41 134.62 0)
+			(at 229.87 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8913,7 +9497,7 @@
 			)
 		)
 		(property "Value" "PCA9306"
-			(at 105.41 137.16 0)
+			(at 229.87 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8922,7 +9506,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 93.98 119.38 0)
+			(at 218.44 64.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8931,7 +9515,7 @@
 			)
 		)
 		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/pca9306.pdf"
-			(at 96.52 116.84 0)
+			(at 220.98 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8940,7 +9524,7 @@
 			)
 		)
 		(property "Description" "Dual bidirectional I2C Bus and SMBus voltage level translator"
-			(at 104.14 128.27 0)
+			(at 228.6 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8982,8 +9566,74 @@
 		)
 	)
 	(symbol
+		(lib_id "power:VDD")
+		(at 19.05 19.05 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c635f88d-efdb-418f-af0a-6ca4a23bd8dd")
+		(property "Reference" "#PWR01"
+			(at 19.05 22.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VDD"
+			(at 19.05 13.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 19.05 19.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 19.05 19.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"VDD\""
+			(at 19.05 19.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f033f9b6-e030-4343-8286-eea70135c0be")
+		)
+		(instances
+			(project ""
+				(path "/f15b48e6-6a5e-48d7-8222-23e5546a1fc9"
+					(reference "#PWR01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Motor:Motor_Servo")
-		(at 237.49 91.44 0)
+		(at 248.92 189.23 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8992,7 +9642,7 @@
 		(fields_autoplaced yes)
 		(uuid "c9f9fddd-024e-492b-a92b-adb55986c6fc")
 		(property "Reference" "M2"
-			(at 246.38 89.7368 0)
+			(at 257.81 187.5268 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9001,7 +9651,7 @@
 			)
 		)
 		(property "Value" "Right EDF"
-			(at 246.38 92.2768 0)
+			(at 257.81 190.0668 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9010,7 +9660,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 237.49 96.266 0)
+			(at 248.92 194.056 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9019,7 +9669,7 @@
 			)
 		)
 		(property "Datasheet" "http://forums.parallax.com/uploads/attachments/46831/74481.png"
-			(at 237.49 96.266 0)
+			(at 248.92 194.056 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9028,7 +9678,7 @@
 			)
 		)
 		(property "Description" "Servo Motor (Futaba, HiTec, JR connector)"
-			(at 237.49 91.44 0)
+			(at 248.92 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9055,224 +9705,8 @@
 		)
 	)
 	(symbol
-		(lib_id "BME280:BME280")
-		(at 107.95 156.21 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "cc7147be-e1d7-42ac-a33f-afe4bd4e999a")
-		(property "Reference" "U8"
-			(at 107.95 154.94 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "BME280"
-			(at 107.95 158.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "BME280:PSON65P250X250X100-8N"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MF" "Bosch"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "DESCRIPTION" "Integrated pressure, humidity and temperature sensor; 8-pin 2.5x2.5x0.93mm LGA"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "PACKAGE" "LGA-8 Bosch"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "PRICE" "4.94 USD"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Package" "LGA-8 Bosch"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Check_prices" "https://www.snapeda.com/parts/BME280/Bosch/view-part/?ref=eda"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "STANDARD" "IPC-7351B"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "SnapEDA_Link" "https://www.snapeda.com/parts/BME280/Bosch/view-part/?ref=snap"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "MP" "BME280"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Price" "None"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Availability" "In Stock"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "AVAILABILITY" "Good"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Description_1" "Board Mount Humidity Sensors MEMS humidity, pressure and temperature sensor"
-			(at 107.95 156.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(pin "8"
-			(uuid "9d064b84-b466-4220-8669-5a3069a0e983")
-		)
-		(pin "6"
-			(uuid "b26e698f-b783-4467-82ca-335e5a2d1b74")
-		)
-		(pin "5"
-			(uuid "e3798a70-7875-43a1-b51f-d2f2184ec42c")
-		)
-		(pin "3"
-			(uuid "a3960bd1-857b-4fd5-8150-50c7fbabe2fe")
-		)
-		(pin "2"
-			(uuid "2af02511-9fa7-47f0-820a-e85e3d4624ab")
-		)
-		(pin "4"
-			(uuid "96083bed-6052-41b0-9e59-4dcf2427c904")
-		)
-		(pin "7"
-			(uuid "6c475693-f5c1-4c4b-b435-a93f18a5650d")
-		)
-		(pin "1"
-			(uuid "593f4091-be24-4df1-a236-692258973a7b")
-		)
-		(instances
-			(project ""
-				(path "/f15b48e6-6a5e-48d7-8222-23e5546a1fc9"
-					(reference "U8")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Sensor_Pressure:XGZP6857A")
-		(at 139.7 97.79 0)
+		(at 151.13 195.58 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9280,7 +9714,7 @@
 		(dnp no)
 		(uuid "cfb5857e-d6f5-4d85-8a49-76581ef9e008")
 		(property "Reference" "U3"
-			(at 142.24 91.44 0)
+			(at 153.67 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9289,7 +9723,7 @@
 			)
 		)
 		(property "Value" "XGZP6847A"
-			(at 134.62 106.68 0)
+			(at 146.05 204.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9298,7 +9732,7 @@
 			)
 		)
 		(property "Footprint" "Sensor_Pressure:CFSensor_XGZP6847A_7x7mm"
-			(at 142.24 113.03 0)
+			(at 153.67 210.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9307,7 +9741,7 @@
 			)
 		)
 		(property "Datasheet" "https://cfsensor.com/wp-content/uploads/2022/11/XGZP6847A-Pressure-Sensor-V2.7.pdf"
-			(at 139.7 110.49 0)
+			(at 151.13 208.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9316,7 +9750,7 @@
 			)
 		)
 		(property "Description" "Analog pressure sensor, 24-bit, 2.5..5.5V supply"
-			(at 142.24 107.95 0)
+			(at 153.67 205.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9353,7 +9787,7 @@
 	)
 	(symbol
 		(lib_id "MPXV7002DP:MPXV7002DP")
-		(at 214.63 91.44 0)
+		(at 226.06 189.23 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9361,7 +9795,7 @@
 		(dnp no)
 		(uuid "f34d2ad2-6645-4746-a024-0f456d994052")
 		(property "Reference" "U7"
-			(at 214.63 87.63 0)
+			(at 226.06 185.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9369,7 +9803,7 @@
 			)
 		)
 		(property "Value" "MPXV7002DP"
-			(at 214.63 93.98 0)
+			(at 226.06 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9377,7 +9811,7 @@
 			)
 		)
 		(property "Footprint" "MPXV7002DP:XDCR_MPXV7002DP"
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9387,7 +9821,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9396,7 +9830,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9405,7 +9839,7 @@
 			)
 		)
 		(property "MF" "NXP Semiconductors"
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9415,7 +9849,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" "9.91 mm"
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9425,7 +9859,7 @@
 			)
 		)
 		(property "Package" "NON STANDARD Freescale Semiconductor"
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9435,7 +9869,7 @@
 			)
 		)
 		(property "Price" "None"
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9445,7 +9879,7 @@
 			)
 		)
 		(property "Check_prices" "https://www.snapeda.com/parts/MPXV7002DP/NXP+Semiconductors/view-part/?ref=eda"
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9455,7 +9889,7 @@
 			)
 		)
 		(property "STANDARD" "Manufacturer Recommendations"
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9465,7 +9899,7 @@
 			)
 		)
 		(property "PARTREV" "4"
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9475,7 +9909,7 @@
 			)
 		)
 		(property "SnapEDA_Link" "https://www.snapeda.com/parts/MPXV7002DP/NXP+Semiconductors/view-part/?ref=snap"
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9485,7 +9919,7 @@
 			)
 		)
 		(property "MP" "MPXV7002DP"
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9495,7 +9929,7 @@
 			)
 		)
 		(property "Description_1" "Pressure Sensor ±0.29PSI (±2kPa) Differential Male - 0.13 (3.3mm) Tube, Dual 0.5 V ~ 4.5 V 8-BSOP (0.475, 12.06mm Width) Dual Ports, Same Side"
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9505,7 +9939,7 @@
 			)
 		)
 		(property "Availability" "In Stock"
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9515,7 +9949,7 @@
 			)
 		)
 		(property "MANUFACTURER" "NXP Semiconductors"
-			(at 214.63 91.44 0)
+			(at 226.06 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9544,7 +9978,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 63.5 185.42 0)
+		(at 17.78 276.86 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9553,7 +9987,7 @@
 		(fields_autoplaced yes)
 		(uuid "f7ca018a-bbab-4d72-9367-bdb24d1c4449")
 		(property "Reference" "#PWR03"
-			(at 63.5 191.77 0)
+			(at 17.78 283.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9562,7 +9996,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 63.5 190.5 0)
+			(at 17.78 281.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9570,7 +10004,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 63.5 185.42 0)
+			(at 17.78 276.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9579,7 +10013,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 63.5 185.42 0)
+			(at 17.78 276.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9588,7 +10022,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 63.5 185.42 0)
+			(at 17.78 276.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)

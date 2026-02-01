@@ -158,10 +158,12 @@ pub struct AcousticData {
     pub overall_spl: f32,
     /// The "white" frequency of the EDF
     pub peak_frequency: f32,
+    /// The peak magnitude 
+    pub peak_magnitude: f32,
 
-    /// The `Spectral Shape` (4 bins for the first implementation)
+    /// The `Spectral Shape` (16 bins for the first implementation)
     /// Map these to 1/3 octave bands or custom interest zones
-    pub spectral_shape: [f32; 4],
+    pub spectral_shape: [f32; 16],
 
     /// Ratio of broadband noise to tonal noise for AI optimization
     pub turbulence_index: f32,
@@ -235,6 +237,18 @@ pub struct AnalogPressureSensorData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[rkyv(derive(Debug))]
+pub struct QeiData {
+    pub position_counts: u16,
+    /// true = upcounting, false = downcounting
+    pub direction: bool,
+    pub pressed: bool,
+    pub time_elapsed_ms: u64,
+}
+
+#[derive(Debug, Clone, Archive, RkyvSerialize, RkyvDeserialize, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[rkyv(derive(Debug))]
 pub enum SerialMessage {
     AcknowledgementConfig(AcknowledgementConfig),
     ThrottleConfig(ThrottleConfig),
@@ -254,6 +268,7 @@ pub enum SerialMessage {
     },
     BatteryData(BatteryData),
     AnalogPressureSensorData(AnalogPressureSensorData),
+    QeiData(QeiData),
 }
 
 #[cfg(test)]
@@ -312,13 +327,14 @@ mod tests {
         let data = AcousticData {
             overall_spl: 85.0,
             peak_frequency: 1500.0,
-            spectral_shape: [0.0; 4],
+            peak_magnitude: 0.8,
+            spectral_shape: [0.0; 16],
             turbulence_index: 0.5,
             time_elapsed_ms: 789012,
         };
         let serialized = rkyv::to_bytes::<Error>(&data).unwrap();
         assert_eq!(serialized.len() > 0, true);
-        assert_eq!(serialized.len(), 4 + 4 + (4 * 32) + 4); // f32 x (1 + 1 + 32 + 1)
+        assert_eq!(serialized.len(), 4 + 4 + (4 * 16) + 4); // f32 x (1 + 1 + 16 + 1)
         let to_be_deserialized = serialized.into_vec();
         let archived = rkyv::access::<ArchivedAcousticData, Error>(&to_be_deserialized).unwrap();
         println!("{:?}", archived);
