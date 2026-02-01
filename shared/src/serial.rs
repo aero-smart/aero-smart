@@ -158,7 +158,7 @@ pub struct AcousticData {
     pub overall_spl: f32,
     /// The "white" frequency of the EDF
     pub peak_frequency: f32,
-    /// The peak magnitude 
+    /// The peak magnitude
     pub peak_magnitude: f32,
 
     /// The `Spectral Shape` (16 bins for the first implementation)
