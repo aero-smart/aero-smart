@@ -1,5 +1,8 @@
-use aerosmart_shared::serial::{AnalogPressureSensorData, BarometerData, LidarData, SensorConfig};
+use aerosmart_shared::serial::{
+    AcousticData, AnalogPressureSensorData, BarometerData, LidarData, SensorConfig,
+};
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::channel::Channel;
 use embassy_sync::mutex::Mutex;
 use embassy_sync::signal::Signal;
 
@@ -31,6 +34,11 @@ pub struct GlobalState {
     pub battery_soc_percent: f32,
 
     pub analog_pressure_sensor_data_pa: Option<AnalogPressureSensorData>, // in Pascals
+
+    pub qei_position_counts: u16,
+    pub qei_direction: bool,
+
+    pub acoustic_data: Option<AcousticData>,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, defmt::Format)]
@@ -86,6 +94,9 @@ impl GlobalState {
             battery_voltage_volts: 0.0,
             battery_soc_percent: 0.0,
             analog_pressure_sensor_data_pa: None,
+            qei_position_counts: 0,
+            qei_direction: true,
+            acoustic_data: None,
         }
     }
 }
@@ -96,6 +107,13 @@ impl Default for GlobalState {
     }
 }
 
+pub const FFT_SIZE: usize = 4096;
+const HALF_DMA_BUFFER_LENGTH: usize = FFT_SIZE * 2; // Stereo: 2 channels
+const DMA_BUFFER_LENGTH: usize = HALF_DMA_BUFFER_LENGTH * 2; // Double buffer
+pub static mut SAI_BUFFER: [u32; DMA_BUFFER_LENGTH + 512] = [0u32; { DMA_BUFFER_LENGTH + 512 }];
+
+pub type AcousticFftInput = [u32; FFT_SIZE];
+
 pub static GLOBAL_STATE: Mutex<CriticalSectionRawMutex, GlobalState> =
     Mutex::new(GlobalState::new());
 pub static AIRSPEED_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
@@ -104,3 +122,5 @@ pub static STATUS_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::
 pub static IMU_BUFFER_FULL_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static DESIRED_UPDATE_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static ANALOG_PRESSURE_SENSOR_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
+pub static QEI_CHANNEL: Channel<CriticalSectionRawMutex, (u16, bool, bool), 2> = Channel::new();
+pub static AUDIO_CHANNEL: Channel<CriticalSectionRawMutex, AcousticFftInput, 2> = Channel::new();

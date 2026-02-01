@@ -12,7 +12,11 @@ pub mod utils;
 use crate::{
     algorithms::{airspeed::AirspeedControl, madgwick::MadgwickAhrs},
     executors::{edf::EdfDshot, servo::Servo},
-    sensors::{imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+    sensors::{
+        audio_i2s::Audio, imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed,
+        qei::QeiOperations,
+    },
+    state::{AUDIO_CHANNEL, QEI_CHANNEL, SAI_BUFFER},
     tasks::*,
 };
 
@@ -28,9 +32,13 @@ use embassy_stm32::{
     gpio::{Level, Output, Pull, Speed},
     i2c::{self, I2c},
     rtc::{Rtc, RtcConfig},
+    sai::{Sai, split_subblocks},
     spi::{self, Spi},
     time::Hertz,
-    timer::simple_pwm::{PwmPin, SimplePwm},
+    timer::{
+        qei::{Qei, QeiPin},
+        simple_pwm::{PwmPin, SimplePwm},
+    },
     usart::Uart,
     wdg::IndependentWatchdog,
 };
@@ -62,6 +70,7 @@ pub struct TestConfig {
     pub ctrl_airspeed: bool,
     pub battery_adc: bool,
     pub analog_pressure: bool,
+    pub qei: bool,
 }
 
 fn get_stm_config() -> embassy_stm32::Config {
@@ -122,6 +131,7 @@ async fn main(spawner: Spawner) {
         ctrl_airspeed: true,
         battery_adc: true,
         analog_pressure: true,
+        qei: true,
     };
 
     info!("Configuration: {:?}", config);
@@ -277,6 +287,33 @@ async fn main(spawner: Spawner) {
 
     let adc1 = Adc::new(p.ADC1);
 
+    let (sai_tx_conf, sai_rx_conf) = sai_config_ltrr();
+
+    let (sai_rx_p, sai_tx_p) = split_subblocks(p.SAI1);
+
+    let (sai_tx_buffer, sai_rx_buffer): (&mut [u32], &mut [u32]) = unsafe {
+        let buf = &mut *core::ptr::addr_of_mut!(SAI_BUFFER);
+        let ptr = buf.as_mut_ptr();
+        let len = buf.len();
+        let slice = core::slice::from_raw_parts_mut(ptr, len);
+        slice.split_at_mut(512)
+    };
+
+    let sai_rx = Sai::new_asynchronous_with_mclk(
+        sai_rx_p,
+        p.PE5,
+        p.PE6,
+        p.PE4,
+        p.PE2,
+        p.DMA2_CH7,
+        sai_rx_buffer,
+        sai_rx_conf,
+    );
+
+    let sai_tx = Sai::new_synchronous(sai_tx_p, p.PE3, p.DMA2_CH6, sai_tx_buffer, sai_tx_conf);
+
+    let microphone = Audio::new(sai_rx, sai_tx);
+
     wdt.pet();
 
     // ws2812.write([RGB8::new(0, 32, 0), RGB8::default()].into_iter()).await.ok();
@@ -362,6 +399,11 @@ async fn main(spawner: Spawner) {
         }
     }
 
+    let qei_tim = Qei::new(p.TIM3, QeiPin::new(p.PC6), QeiPin::new(p.PC7));
+    let qei_btn = ExtiInput::new(p.PC5, p.EXTI5, Pull::Up);
+
+    let qei = QeiOperations::new(qei_tim, qei_btn);
+
     if config.uart_upper {
         info!("Starting Serial UART RX task...");
         match spawner.spawn(serial_uart_rx_task(uart_rx)) {
@@ -370,7 +412,7 @@ async fn main(spawner: Spawner) {
         }
 
         info!("Starting Serial UART TX task...");
-        match spawner.spawn(serial_uart_tx_task(uart_tx)) {
+        match spawner.spawn(serial_uart_tx_task(uart_tx, QEI_CHANNEL.receiver())) {
             Ok(_) => info!("Serial UART TX task spawned"),
             Err(e) => defmt::panic!("Failed to spawn Serial UART TX task: {:?}", e),
         }
@@ -389,6 +431,27 @@ async fn main(spawner: Spawner) {
         match spawner.spawn(analog_pressure_task(analog_adc)) {
             Ok(_) => info!("Analog Pressure Sensor task spawned"),
             Err(e) => defmt::panic!("Failed to spawn Analog Pressure Sensor task: {:?}", e),
+        }
+    }
+
+    if config.qei {
+        info!("Starting QEI task...");
+        match spawner.spawn(qei_task(qei, QEI_CHANNEL.sender())) {
+            Ok(_) => info!("QEI task spawned"),
+            Err(e) => defmt::panic!("Failed to spawn QEI task: {:?}", e),
+        }
+    }
+
+    if config.i2s {
+        info!("Starting Acoustic Sampling task...");
+        match spawner.spawn(acoustic_sampling_task(microphone, AUDIO_CHANNEL.sender())) {
+            Ok(_) => info!("Acoustic Audio task spawned"),
+            Err(e) => defmt::panic!("Failed to spawn Acoustic Audio task: {:?}", e),
+        }
+        info!("Starting Acoustic Analysis task...");
+        match spawner.spawn(acoustic_analysis_task(AUDIO_CHANNEL.receiver())) {
+            Ok(_) => info!("Acoustic Analysis task spawned"),
+            Err(e) => defmt::panic!("Failed to spawn Acoustic Analysis task: {:?}", e),
         }
     }
 }

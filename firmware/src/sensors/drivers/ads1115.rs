@@ -8,7 +8,7 @@
 /// - `15`: OS (Operational Status/Single-shot conversion start)
 ///    - `0` = No effect
 ///    - `1` = Start single conversion
-/// - `14:12`: MUX[2:0] (Input multiplexer configuration)
+/// - `14:12`: MUX\[2:0\] (Input multiplexer configuration)
 ///    - `000` = AIN0 - AIN1 (differential)
 ///    - `001` = AIN0 - AIN3 (differential)
 ///    - `010` = AIN1 - AIN3 (differential)
@@ -17,7 +17,7 @@
 ///    - `101` = AIN1 - GND (single-ended)
 ///    - `110` = AIN2 - GND (single-ended)
 ///    - `111` = AIN3 - GND (single-ended)
-/// - `11:9`: PGA[2:0] (Programmable gain amplifier configuration)
+/// - `11:9`: PGA\[2:0\] (Programmable gain amplifier configuration)
 ///    - `000` = ±6.144V
 ///    - `001` = ±4.096V
 ///    - `010` = ±2.048V (default)
@@ -29,7 +29,7 @@
 /// - `8`: MODE (Device operating mode)
 ///    - `0` = Continuous conversion
 ///    - `1` = Single-shot (default)
-/// - `7:5`: DR[2:0] (Data rate)
+/// - `7:5`: DR\[2:0\] (Data rate)
 ///    - `000` = 8 SPS
 ///    - `001` = 16 SPS
 ///    - `010` = 32 SPS
@@ -41,7 +41,7 @@
 /// - `4`: COMP_MODE (Comparator mode)
 /// - `3`: COMP_POL (Comparator polarity)
 /// - `2`: COMP_LAT (Latching comparator)
-/// - `1:0`: COMP_QUE[1:0] (Comparator queue)
+/// - `1:0`: COMP_QUE\[1:0\] (Comparator queue)
 ///    - `11` = Disable comparator (default)
 ///
 #[derive(defmt::Format, Clone, Copy)]

@@ -1,3 +1,4 @@
+mod acoustic;
 mod airspeed;
 mod analog_pressure;
 mod battery;
@@ -6,10 +7,12 @@ mod imu;
 mod imu_fft;
 mod led;
 mod lidar;
+mod qei;
 mod serial;
 mod servo;
 mod watchdog;
 
+pub use acoustic::{acoustic_analysis_task, acoustic_sampling_task, sai_config_ltrr};
 pub use airspeed::airspeed_task;
 pub use analog_pressure::analog_pressure_task;
 pub use battery::battery_task;
@@ -18,6 +21,7 @@ pub use imu::imu_task;
 pub use imu_fft::imu_fft_task;
 pub use led::led_task;
 pub use lidar::lidar_task;
+pub use qei::qei_task;
 pub use serial::*;
 pub use servo::servo_task;
 pub use watchdog::watchdog_task;

@@ -8,12 +8,12 @@
 /// - `7:6`: Reserved
 /// - `5`: TEMP_DIS, 0 = Temperature sensor enabled, 1 = Temperature sensor disabled
 /// - `4`: IDLE, 0 = Normal operation, 1 = Enter idle
-/// - `3:2`: GYRO_MODE[1:0], Gyroscope operating mode
+/// - `3:2`: GYRO_MODE\[1:0\], Gyroscope operating mode
 ///    - `00` = Gyroscope Off
 ///    - `01` = Standby
 ///    - `10` = Reserved
 ///    - `11` = Low Noise
-/// - `1:0`: ACCEL_MODE[1:0], Accelerometer operating mode
+/// - `1:0`: ACCEL_MODE\[1:0\], Accelerometer operating mode
 ///    - `00` = Accelerometer Off (default)
 ///    - `01` = Accelerometer Off
 ///    - `10` = Low Power
