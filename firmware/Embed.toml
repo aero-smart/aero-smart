@@ -1,7 +1,7 @@
 # This file was automatically generated.
 
 [default.general]
-chip = "STM32H743VGHx"
+chip = "STM32H743VGTx"
 connect_under_reset = true
 
 [default.rtt]

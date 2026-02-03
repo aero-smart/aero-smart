@@ -99,6 +99,14 @@ fn get_stm_config() -> embassy_stm32::Config {
             divq: Some(PllDiv::DIV1),
             divr: None,
         });
+        config.rcc.pll2 = Some(Pll {
+            source: PllSource::HSI,
+            prediv: PllPreDiv::DIV4,
+            mul: PllMul::MUL50,
+            divp: Some(PllDiv::DIV8), // 100mhz
+            divq: None,
+            divr: None,
+        });
         config.rcc.sys = Sysclk::PLL1_P; // 400 Mhz
         config.rcc.ahb_pre = AHBPrescaler::DIV2; // 200 Mhz
         config.rcc.apb1_pre = APBPrescaler::DIV2; // 100 Mhz
@@ -117,21 +125,21 @@ async fn main(spawner: Spawner) {
     info!("AeroSmart Firmware Starting...");
 
     let config = TestConfig {
-        i2s: true,
-        spi_imu: true,
-        spi_ws2812: true,
-        uart_upper: true,
-        uart_lidar: true,
+        i2s: false,
+        spi_imu: false,
+        spi_ws2812: false,
+        uart_upper: false,
+        uart_lidar: false,
         i2c: true,
-        pwm_edf: true,
-        pwm_servo: true,
+        pwm_edf: false,
+        pwm_servo: false,
         wdt: true,
-        fft: true,
-        ahrs: true,
-        ctrl_airspeed: true,
-        battery_adc: true,
-        analog_pressure: true,
-        qei: true,
+        fft: false,
+        ahrs: false,
+        ctrl_airspeed: false,
+        battery_adc: false,
+        analog_pressure: false,
+        qei: false,
     };
 
     info!("Configuration: {:?}", config);
@@ -214,7 +222,9 @@ async fn main(spawner: Spawner) {
 
     let mut rtc = Rtc::new(p.RTC, RtcConfig::default());
 
-    serial_initialize(&mut usart_upper, &mut rtc).await;
+    if config.uart_upper {
+        serial_initialize(&mut usart_upper, &mut rtc).await;
+    }
 
     let (uart_tx, uart_rx) = usart_upper.split();
 
