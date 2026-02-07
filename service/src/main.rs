@@ -3,13 +3,13 @@ use aerosmart_shared::serial::{
 };
 use anyhow::Context;
 use axum::{
+    Router,
     extract::{
-        ws::{Message, WebSocket, WebSocketUpgrade},
         State,
+        ws::{Message, WebSocket, WebSocketUpgrade},
     },
     response::IntoResponse,
     routing::get,
-    Router,
 };
 use clap::Parser;
 use futures::{sink::SinkExt, stream::StreamExt};
@@ -60,7 +60,10 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let args = Args::parse();
-    info!("Starting AeroSmart Service on port {} @ {}", args.port, args.baud);
+    info!(
+        "Starting AeroSmart Service on port {} @ {}",
+        args.port, args.baud
+    );
 
     // Channels
     // Broadcast: Serial -> WebSockets (Telemetry JSON)
@@ -79,7 +82,8 @@ async fn main() -> anyhow::Result<()> {
     tokio::spawn(async move {
         // Retry loop for serial connection
         loop {
-            if let Err(e) = serial_task(port_name.clone(), baud_rate, tx.clone(), &mut cmd_rx).await {
+            if let Err(e) = serial_task(port_name.clone(), baud_rate, tx.clone(), &mut cmd_rx).await
+            {
                 error!("Serial task failed: {:?}. Retrying in 5s...", e);
                 tokio::time::sleep(Duration::from_secs(5)).await;
             }
@@ -124,8 +128,8 @@ async fn serial_task(
         let len = match timeout(Duration::from_secs(2), port.read_u32_le()).await {
             Ok(Ok(len)) => len as usize,
             Ok(Err(e)) => {
-                 warn!("Handshake read error: {:?}", e);
-                 continue;
+                warn!("Handshake read error: {:?}", e);
+                continue;
             }
             Err(_) => {
                 // Timeout, waiting for firmware
@@ -140,19 +144,21 @@ async fn serial_task(
         }
 
         let mut buf = vec![0u8; len];
-        port.read_exact(&mut buf).await.context("Failed to read handshake payload")?;
+        port.read_exact(&mut buf)
+            .await
+            .context("Failed to read handshake payload")?;
 
         let valid_ping = match rkyv::access::<ArchivedSerialMessage, rkyv::rancor::Error>(&buf) {
             Ok(archived) => match archived {
-                 ArchivedSerialMessage::AcknowledgementData(_) => true,
-                 _ => false,
+                ArchivedSerialMessage::AcknowledgementData(_) => true,
+                _ => false,
             },
             Err(_) => false,
         };
 
         if valid_ping {
             info!("Received Ping. Sending Pong...");
-            
+
             let now = SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .unwrap()
@@ -184,10 +190,10 @@ async fn serial_task(
                         return Err(anyhow::anyhow!("Serial read error: {:?}", e));
                     }
                 };
-                
+
                 if len > 4096 {
                      warn!("Oversized packet: {}. Skipping...", len);
-                     // In a real stream, we would need to re-sync. 
+                     // In a real stream, we would need to re-sync.
                      // Since we read exactly 4 bytes, we might be misaligned.
                      // But with length-prefix, if we are aligned, we stay aligned.
                      continue;
@@ -245,10 +251,7 @@ fn serialize_message(message: &SerialMessage) -> anyhow::Result<Vec<u8>> {
     Ok(framed)
 }
 
-async fn ws_handler(
-    ws: WebSocketUpgrade,
-    State(state): State<AppState>,
-) -> impl IntoResponse {
+async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> impl IntoResponse {
     ws.on_upgrade(|socket| handle_socket(socket, state))
 }
 

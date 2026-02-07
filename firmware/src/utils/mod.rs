@@ -28,14 +28,14 @@ pub async fn send_message(message: SerialMessage) -> ([u8; 256], usize) {
 
     let mut buffer = [0u8; 256];
     let len = bytes.len();
-    
+
     // Add Length Prefix (u32 little endian)
     // First 4 bytes = length
     let len_bytes = (len as u32).to_le_bytes();
     buffer[0..4].copy_from_slice(&len_bytes);
-    
+
     // Payload follows
-    buffer[4..4+len].copy_from_slice(&bytes);
-    
+    buffer[4..4 + len].copy_from_slice(&bytes);
+
     (buffer, 4 + len)
 }
