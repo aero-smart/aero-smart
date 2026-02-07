@@ -1,5 +1,7 @@
 <template>
-  <div class="flex h-screen w-screen bg-background text-slate-200 overflow-hidden font-sans selection:bg-primary selection:text-white">
+  <div
+    class="flex h-screen w-screen bg-background text-slate-200 overflow-hidden font-sans selection:bg-primary selection:text-white"
+  >
     <Sidebar />
     <main class="flex-1 flex flex-col h-full overflow-hidden relative">
       <router-view v-slot="{ Component }">
@@ -12,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import Sidebar from './Sidebar.vue';
+import Sidebar from './Sidebar.vue'
 </script>
 
 <style>
