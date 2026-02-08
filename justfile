@@ -6,4 +6,6 @@ gen-ts-schema:
   mv shared/bindings/generated/*.ts panel/src/types/
   @echo "Removing old generated files..."
   rm -rf shared/bindings/generated/*.ts
+  @echo "Format the moved TypeScript files..."
+  cd panel && pnpm run format
   @echo "TypeScript schema generation completed."
