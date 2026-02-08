@@ -1,31 +1,51 @@
 #![deny(clippy::all)]
 
+use std::fs::File;
+
 use aerosmart_shared::serial::*;
-use aerosmart_shared::sql::*;
 
 use ts_rs::TS;
 
+use std::fmt::Write;
+
+macro_rules! export_schema {
+    ($($structure:ident),*) => {
+        {
+            let mut index_string = String::new();
+            $(
+                $structure::export_all().expect(concat!("Failed to export TS definitions for ", stringify!($structure)));
+                write!(
+                    index_string,
+                    "export type {{ {} }} from './{}';\n",
+                    stringify!($structure),
+                    stringify!($structure)
+                ).expect("Failed to write to index string");
+            )*
+            index_string
+        }
+    };
+}
+
 fn main() {
-    ThrottleConfig::export_all().expect("Failed to export TS definitions for ThrottleConfig");
-    SerialMessage::export_all().expect("Failed to export TS definitions for SerialMessage");
-    SensorConfig::export_all().expect("Failed to export TS definitions for SensorConfig");
-    AcknowledgementConfig::export_all()
-        .expect("Failed to export TS definitions for AcknowledgementConfig");
-    Command::export_all().expect("Failed to export TS definitions for Command");
-    AcknowledgementData::export_all()
-        .expect("Failed to export TS definitions for AcknowledgementData");
-    PitotAirspeedData::export_all().expect("Failed to export TS definitions for PitotAirspeedData");
-    ImuData::export_all().expect("Failed to export TS definitions for ImuData");
-    AcousticData::export_all().expect("Failed to export TS definitions for AcousticData");
-    BarometerData::export_all().expect("Failed to export TS definitions for BarometerData");
-    AnalogPressureSensorData::export_all()
-        .expect("Failed to export TS definitions for AnalogPressureSensorData");
-    QeiData::export_all().expect("Failed to export TS definitions for QeiData");
-    ImuVibrationMetrics::export_all()
-        .expect("Failed to export TS definitions for ImuVibrationMetrics");
-    LidarData::export_all().expect("Failed to export TS definitions for LidarData");
-    BatteryData::export_all().expect("Failed to export TS definitions for BatteryData");
-    AnalogPressureSensorData::export_all()
-        .expect("Failed to export TS definitions for AnalogPressureSensorData");
-    SerialMessage::export_all().expect("Failed to export TS definitions for SerialMessage");
+    let ts_index = export_schema!(
+        ThrottleConfig,
+        SerialMessage,
+        SensorConfig,
+        AcknowledgementConfig,
+        Command,
+        AcknowledgementData,
+        PitotAirspeedData,
+        ImuData,
+        AcousticData,
+        BarometerData,
+        AnalogPressureSensorData,
+        QeiData,
+        ImuVibrationMetrics,
+        LidarData,
+        BatteryData
+    );
+
+    File::create("bindings/generated/index.ts")
+        .and_then(|mut file| std::io::Write::write_all(&mut file, ts_index.as_bytes()))
+        .expect("Failed to write index.ts file");
 }
