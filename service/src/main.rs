@@ -1,5 +1,5 @@
 use aerosmart_shared::serial::{
-    AcknowledgementConfig, AcknowledgementData, ArchivedSerialMessage, SerialMessage,
+    AcknowledgementConfig, ArchivedSerialMessage, SerialMessage,
 };
 use anyhow::Context;
 use axum::{
@@ -12,18 +12,8 @@ use axum::{
     routing::get,
 };
 use clap::Parser;
-use futures::{sink::SinkExt, stream::StreamExt};
-use rkyv::{
-    api::low::to_bytes_in_with_alloc,
-    rancor::Failure,
-    ser::{allocator::SubAllocator, writer::Buffer},
-    util::Align,
-};
-use serde::{Deserialize, Serialize};
 use std::{
-    mem::MaybeUninit,
     net::SocketAddr,
-    sync::Arc,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 use tokio::{
@@ -31,7 +21,7 @@ use tokio::{
     sync::{broadcast, mpsc},
     time::timeout,
 };
-use tokio_serial::{SerialPortBuilderExt, SerialStream};
+use tokio_serial::SerialPortBuilderExt;
 use tower_http::cors::CorsLayer;
 use tracing::{error, info, warn};
 
@@ -169,7 +159,9 @@ async fn serial_task(
                 unix_timestamp_ms: now,
             });
 
-            let bytes = serialize_message(&pong)?;
+            // let bytes = serialize_message(&pong)?;
+            let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&pong)
+                .map_err(|e| anyhow::anyhow!("Serialization error: {:?}", e))?;
             port.write_all(&bytes).await?;
             info!("Pong sent. Handshake complete. Entering Main Loop.");
             break;
@@ -224,31 +216,12 @@ async fn serial_task(
 
             // Downlink: WebSocket -> Serial
             Some(msg) = cmd_rx.recv() => {
-                let bytes = serialize_message(&msg)?;
+                let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&msg)
+                    .map_err(|e| anyhow::anyhow!("Serialization error: {:?}", e))?;
                 port.write_all(&bytes).await?;
             }
         }
     }
-}
-
-fn serialize_message(message: &SerialMessage) -> anyhow::Result<Vec<u8>> {
-    let mut output = Align([MaybeUninit::<u8>::uninit(); 256]);
-    let mut alloc = [MaybeUninit::<u8>::uninit(); 256];
-
-    let bytes = to_bytes_in_with_alloc::<_, _, Failure>(
-        message,
-        Buffer::from(&mut *output),
-        SubAllocator::new(&mut alloc),
-    )
-    .map_err(|e| anyhow::anyhow!("Serialization error: {:?}", e))?;
-
-    // Add Length Prefix
-    let len = bytes.len() as u32;
-    let mut framed = Vec::with_capacity(4 + bytes.len());
-    framed.extend_from_slice(&len.to_le_bytes());
-    framed.extend_from_slice(&bytes);
-
-    Ok(framed)
 }
 
 async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> impl IntoResponse {
