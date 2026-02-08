@@ -9,13 +9,13 @@ license = "MIT"
 version = "0.1.0"
 
 [profile.dev.package.aerosmart-firmware]
-debug = true
-opt-level = "z"
+debug       = true
+opt-level   = "z"
 incremental = true
 
 [profile.release.package.aerosmart-firmware]
-debug = false
-opt-level = "z"
+debug       = false
+opt-level   = "z"
 incremental = true
 
 [profile.dev]

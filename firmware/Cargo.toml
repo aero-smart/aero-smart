@@ -3,7 +3,7 @@
 [package]
 edition.workspace = true
 version.workspace = true
-name = "aerosmart-firmware"
+name              = "aerosmart-firmware"
 
 [features]
 default = [
@@ -55,7 +55,7 @@ embassy-sync = { version = "0.7.2", features = ["defmt"] }
 embassy-time = { version = "0.5.0", features = [
   "defmt",
   "defmt-timestamp-uptime",
-  "tick-hz-48_000_000",
+  "tick-hz-96_000_000",
 ] }
 heapless = { version = "0.8", default-features = false, features = [
   "defmt-03",
@@ -87,8 +87,8 @@ interpn = { version = "0.11.0", default-features = false }
 chrono = { version = "0.4.43", default-features = false }
 
 [[bin]]
-name = "aerosmart-firmware"
-test = false
+name  = "aerosmart-firmware"
+test  = false
 bench = false
 
 [package.metadata.docs.rs]

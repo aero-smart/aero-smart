@@ -67,6 +67,6 @@ pub async fn airspeed_task(mut sensors: Airspeed<'static>) {
             counter = 0;
         }
 
-        Timer::after(Duration::from_millis(10)).await;
+        Timer::after(Duration::from_hz(100)).await;
     }
 }

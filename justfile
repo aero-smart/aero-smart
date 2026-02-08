@@ -1,3 +1,6 @@
+setup:
+  cargo install taplo-cli cargo-shear --locked
+
 gen-ts-schema:
   @echo "Generating TypeScript schema..."
   cd shared && cargo run --bin gen-ts-schemas -F ts-rs,sql

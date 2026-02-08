@@ -12,7 +12,7 @@ pub async fn qei_task(
     loop {
         let qei_fut = select(
             qei_ops.press_btn.wait_for_any_edge(),
-            Timer::after(Duration::from_millis(50)),
+            Timer::after(Duration::from_hz(20)),
         )
         .await;
 
