@@ -1,0 +1,31 @@
+# AeroSmart Service 配置文件
+# 修改此文件后需要重启服务生效
+
+# [serial] 串口通信配置
+[serial]
+# 串口端口名称 (例如: /dev/tty.usbmodem1234, COM3, /dev/ttyUSB0)
+port = "/dev/tty.usbmodem1234"
+
+# 波特率 (默认: 915200)
+baud_rate = 915200
+
+# 握手超时时间 (秒)
+# 在启动时等待下位机响应 Ping 的时间
+handshake_timeout_secs = 2
+
+# 失败重试间隔 (秒)
+# 当串口连接断开或初始化失败时，等待多久后重试
+retry_interval_secs = 5
+
+# [server] WebSocket 服务配置
+[server]
+# 监听端口
+port = 3000
+
+# 监听地址 (0.0.0.0 表示允许局域网访问，127.0.0.1 仅限本机)
+host = "0.0.0.0"
+
+# [rules] 高级规则配置
+[rules]
+# 是否开启调试模式 (会输出更多日志)
+debug_mode = false
