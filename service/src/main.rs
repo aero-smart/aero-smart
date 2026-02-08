@@ -162,6 +162,11 @@ async fn serial_task(
             // let bytes = serialize_message(&pong)?;
             let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&pong)
                 .map_err(|e| anyhow::anyhow!("Serialization error: {:?}", e))?;
+            
+            // Send Length Prefix (u32 little-endian)
+            let len = bytes.len() as u32;
+            port.write_all(&len.to_le_bytes()).await.context("Failed to write handshake length prefix")?;
+            
             port.write_all(&bytes).await?;
             info!("Pong sent. Handshake complete. Entering Main Loop.");
             break;
@@ -218,6 +223,12 @@ async fn serial_task(
             Some(msg) = cmd_rx.recv() => {
                 let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&msg)
                     .map_err(|e| anyhow::anyhow!("Serialization error: {:?}", e))?;
+
+                // Send Length Prefix (u32 little-endian)
+                // Added for optimization to help the firmware know exactly how many bytes to read.
+                let len = bytes.len() as u32;
+                port.write_all(&len.to_le_bytes()).await.context("Failed to write command length prefix")?;
+
                 port.write_all(&bytes).await?;
             }
         }

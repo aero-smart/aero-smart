@@ -22,9 +22,23 @@ pub async fn serial_initialize<'a>(uart: &mut Uart<'a, Async>, rtc: &mut Rtc) {
     });
     let (packet, length) = send_message(ack_packet).await;
     uart.write(&packet[..length]).await.ok();
+
+    // Read Length Prefix (4 bytes)
+    let mut len_buf = [0u8; 4];
+    uart.read(&mut len_buf).await.ok();
+    let len = u32::from_le_bytes(len_buf) as usize;
+
+    if len == 0 || len > 256 {
+        defmt::error!("Invalid handshake message length: {}", len);
+        return;
+    }
+
+    // Read Payload
     let mut buffer = [0u8; 256];
-    uart.read(&mut buffer).await.ok();
-    let message = unsafe { rkyv::access_unchecked::<ArchivedSerialMessage>(&buffer) };
+    uart.read(&mut buffer[..len]).await.ok();
+    
+    // Deserialize
+    let message = unsafe { rkyv::access_unchecked::<ArchivedSerialMessage>(&buffer[..len]) };
     match message {
         ArchivedSerialMessage::AcknowledgementConfig(config) => {
             let current = chrono::DateTime::from_timestamp_micros(

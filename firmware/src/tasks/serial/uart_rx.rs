@@ -11,6 +11,8 @@ pub async fn serial_uart_rx_task(mut rx: UartRx<'static, Async>) {
     use aerosmart_shared::serial::*;
     loop {
         // 1. Read Length (4 bytes)
+        // Optimization: The length prefix allows us to read exactly the amount of data needed,
+        // preventing buffer overflows and ensuring correct deserialization boundaries.
         let mut len_buf = [0u8; 4];
         if let Err(e) = rx.read(&mut len_buf).await {
             defmt::error!("UART Read Length Error: {:?}", e);
