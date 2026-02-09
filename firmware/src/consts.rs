@@ -10,7 +10,7 @@ pub mod edf {
     pub const MAX_THROTTLE_KG: f32 = 1.8;
     pub const MAX_THROTTLE_NEWTONS: f32 = MAX_THROTTLE_KG * 9.81;
     // 2800 KV motor with 4S LiPo (14.8V nominal)
-    pub const MAX_RPM: f32 = 2800.0 * 14.8;
+    pub const MAX_RPM: f32 = 2800.0 * 16.8;
     pub const MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND: f32 = (MAX_RPM / 60.0) * 2.0 * PI;
 }
 

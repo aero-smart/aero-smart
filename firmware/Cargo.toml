@@ -55,7 +55,7 @@ embassy-sync = { version = "0.7.2", features = ["defmt"] }
 embassy-time = { version = "0.5.0", features = [
   "defmt",
   "defmt-timestamp-uptime",
-  "tick-hz-96_000_000",
+  "tick-hz-48_000_000",
 ] }
 heapless = { version = "0.8", default-features = false, features = [
   "defmt-03",

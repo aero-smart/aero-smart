@@ -4,6 +4,7 @@
 pub mod algorithms;
 pub mod consts;
 pub mod executors;
+pub mod helpers;
 pub mod sensors;
 pub mod state;
 pub mod tasks;
@@ -103,16 +104,16 @@ fn get_stm_config() -> embassy_stm32::Config {
             source: PllSource::HSI,
             prediv: PllPreDiv::DIV4,
             mul: PllMul::MUL50,
-            divp: Some(PllDiv::DIV8), // 100mhz
+            divp: Some(PllDiv::DIV8),
             divq: None,
             divr: None,
         });
-        config.rcc.sys = Sysclk::PLL1_P; // 400 Mhz
-        config.rcc.ahb_pre = AHBPrescaler::DIV2; // 200 Mhz
-        config.rcc.apb1_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.apb2_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.apb3_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.apb4_pre = APBPrescaler::DIV2; // 100 Mhz
+        config.rcc.sys = Sysclk::PLL1_P;
+        config.rcc.ahb_pre = AHBPrescaler::DIV2;
+        config.rcc.apb1_pre = APBPrescaler::DIV2;
+        config.rcc.apb2_pre = APBPrescaler::DIV2;
+        config.rcc.apb3_pre = APBPrescaler::DIV2;
+        config.rcc.apb4_pre = APBPrescaler::DIV2;
         config.rcc.voltage_scale = VoltageScale::Scale1;
     }
     config
@@ -195,8 +196,12 @@ async fn main(spawner: Spawner) {
     // The `MPXV7002` hasn't been purchased and we don't have one to test with yet
     let analog_adc = sensors::adc_i2c::AdcI2c::new(
         i2c_adc,
-        Some(sensors::adc_i2c::AdcConnection::Xgzp6847aPa3000),
-        Some(sensors::adc_i2c::AdcConnection::Xgzp6847aPa2500),
+        Some(sensors::adc_i2c::AdcConnection::Xgzp6847a {
+            max_pressure_pa: 3_000.0,
+        }),
+        Some(sensors::adc_i2c::AdcConnection::Xgzp6847a {
+            max_pressure_pa: 2_500.0,
+        }),
         None,
         None,
         i2c_analog_drdy,
@@ -256,7 +261,7 @@ async fn main(spawner: Spawner) {
         None,
         None,
         Hertz::khz(600),
-        embassy_stm32::timer::low_level::CountingMode::CenterAlignedBothInterrupts,
+        embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
     );
 
     info!("TIM1 initialized for EDF ESC control");
@@ -377,13 +382,13 @@ async fn main(spawner: Spawner) {
         }
     }
 
-    if config.pwm_edf {
-        info!("Starting EDF task...");
-        match spawner.spawn(edf_task(edf, pid)) {
-            Ok(_) => info!("EDF task spawned"),
-            Err(e) => defmt::panic!("Failed to spawn EDF task: {:?}", e),
-        }
-    }
+    // if config.pwm_edf {
+    //     info!("Starting EDF task...");
+    //     match spawner.spawn(edf_task(edf, pid)) {
+    //         Ok(_) => info!("EDF task spawned"),
+    //         Err(e) => defmt::panic!("Failed to spawn EDF task: {:?}", e),
+    //     }
+    // }
 
     if config.spi_ws2812 {
         info!("Starting LED task...");
@@ -464,4 +469,9 @@ async fn main(spawner: Spawner) {
             Err(e) => defmt::panic!("Failed to spawn Acoustic Analysis task: {:?}", e),
         }
     }
+
+    info!("Starting DShot tasks...");
+
+    spawner.spawn(helpers::dshot::dshot_set_task()).unwrap();
+    spawner.spawn(helpers::dshot::dshot_test_task(edf)).unwrap();
 }

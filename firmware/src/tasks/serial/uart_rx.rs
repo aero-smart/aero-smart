@@ -74,7 +74,7 @@ pub async fn serial_uart_rx_task(mut rx: UartRx<'static, Async>) {
                 }
 
                 ArchivedSerialMessage::AcknowledgementConfig(ArchivedAcknowledgementConfig {
-                    ack,
+                    ack: _,
                     unix_timestamp_ms,
                 }) => {
                     // Handle Handshake Pong from Service

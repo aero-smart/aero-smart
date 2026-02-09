@@ -38,13 +38,6 @@ impl<'a> Airspeed<'a> {
     pub async fn read_pitot(&mut self) -> Result<(u8, f32, f32), AirspeedError> {
         let mut buf = [0u8; 4];
 
-        for addr in 0x00..=0xFF {
-            debug!("Probing I2C address: 0x{:02X}", addr);
-            if self.i2c.write(addr, &[]).await.is_ok() {
-                info!("Found device at address: 0x{:02X}", addr);
-            }
-        }
-
         debug!("Reading MS4525DO pitot sensor");
         self.i2c
             .read(Self::MS4525DO_ADDR, &mut buf)
