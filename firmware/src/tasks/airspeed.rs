@@ -12,7 +12,7 @@ use crate::state::GLOBAL_STATE;
 
 #[embassy_executor::task]
 /// Poll pitot tube @ 100 Hz and barometer @ 10 Hz
-pub async fn airspeed_task(mut sensors: Airspeed<'static>) {
+pub async fn airspeed_task(mut sensors: Airspeed) {
     let mut counter = 0;
     loop {
         match sensors.read_pitot().await {

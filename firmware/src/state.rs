@@ -1,10 +1,14 @@
 use aerosmart_shared::serial::{
     AcousticData, AnalogPressureSensorData, BarometerData, LidarData, SensorConfig,
 };
+use embassy_stm32::i2c::{I2c, Master};
+use embassy_stm32::mode::Async;
+use embassy_sync::blocking_mutex::NoopMutex;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::channel::Channel;
 use embassy_sync::mutex::Mutex;
 use embassy_sync::signal::Signal;
+use static_cell::StaticCell;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct GlobalState {
@@ -124,3 +128,4 @@ pub static DESIRED_UPDATE_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::
 pub static ANALOG_PRESSURE_SENSOR_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static QEI_CHANNEL: Channel<CriticalSectionRawMutex, (u16, bool, bool), 2> = Channel::new();
 pub static AUDIO_CHANNEL: Channel<CriticalSectionRawMutex, AcousticFftInput, 2> = Channel::new();
+pub static I2C1_BUS: StaticCell<NoopMutex<I2c<'static, Async, Master>>> = StaticCell::new();

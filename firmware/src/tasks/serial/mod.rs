@@ -36,7 +36,7 @@ pub async fn serial_initialize<'a>(uart: &mut Uart<'a, Async>, rtc: &mut Rtc) {
     // Read Payload
     let mut buffer = [0u8; 256];
     uart.read(&mut buffer[..len]).await.ok();
-    
+
     // Deserialize
     let message = unsafe { rkyv::access_unchecked::<ArchivedSerialMessage>(&buffer[..len]) };
     match message {

@@ -8,6 +8,7 @@ pub mod helpers;
 pub mod sensors;
 pub mod state;
 pub mod tasks;
+#[macro_use]
 pub mod utils;
 
 use crate::{

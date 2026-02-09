@@ -1,14 +1,11 @@
 pub mod dshot {
     use crate::executors::edf::EdfDshot;
-    use defmt::{info, warn};
-    use dshot_frame::Command;
-    use embassy_futures::select::{Either, select};
+    use defmt::info;
+
     use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
-    use embassy_sync::channel::{Channel, Receiver, Sender};
+
     use embassy_sync::mutex::Mutex;
     use embassy_time::{Duration, Instant, Ticker, Timer};
-
-    use crate::state::GLOBAL_STATE;
 
     #[embassy_executor::task]
     pub async fn dshot_test_task(mut edf: EdfDshot<'static>) {
