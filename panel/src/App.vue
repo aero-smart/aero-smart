@@ -2,11 +2,17 @@
 import { RouterView } from 'vue-router'
 import { useDeviceStore } from '@/stores/device'
 import { onMounted } from 'vue'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 
 const store = useDeviceStore()
 
-onMounted(() => {
+onMounted(async () => {
   store.connect()
+  try {
+    await getCurrentWindow().setFullscreen(true)
+  } catch (e) {
+    console.error('Failed to set fullscreen:', e)
+  }
 })
 </script>
 
