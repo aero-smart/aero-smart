@@ -53,3 +53,9 @@ build-panel:
   @echo "Building panel application..."
   cd panel && pnpm install
   cd panel && pnpm run build
+
+# Build panel for aarch64 (OrangePi Zero 3)
+build-panel-aarch64:
+  @echo "Building panel application for aarch64 (OrangePi Zero 3)..."
+  cd panel && pnpm install
+  cd panel && pnpm run tauri:build:aarch64

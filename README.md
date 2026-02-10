@@ -97,3 +97,109 @@ The overall structure primarily uses 3D printing and laser cutting:
 | **Phase 4: AI Analysis** | Data accumulation; regression model training. | Automated experimental evaluation reports. |
 
 *Target for the current term: Achieve at least Phase 2 and partially complete Phase 3.*
+
+---
+
+## 5. Development and Deployment
+
+### 5.1 Repository Structure
+
+```
+aero-smart/
+├── firmware/           # STM32H7 embedded Rust firmware (Embassy async runtime)
+├── service/            # Backend service (Axum web framework, GraphQL, PostgreSQL)
+├── shared/             # Shared Rust library (no_std compatible, cross-platform types)
+├── panel/              # Vue.js 3 + Tauri desktop application
+├── schematics/         # Electronic circuit schematics
+├── model/              # CAD models (STEP format)
+└── .github/workflows/  # CI/CD pipelines
+```
+
+### 5.2 CI/CD Pipeline
+
+The repository includes automated CI/CD workflows:
+
+#### Build Pipeline for OrangePi Zero 3 (aarch64)
+
+**Workflow:** `.github/workflows/build-aarch64.yml`
+
+This workflow automatically builds the Tauri desktop application for OrangePi Zero 3 (Cortex-A53, aarch64 architecture) with a 1024x600 display when:
+- Code is pushed to the `main` branch (panel or shared components)
+- Pull requests are created that modify panel or shared code
+- Manually triggered via workflow dispatch
+
+**Features:**
+- Cross-compilation for aarch64-unknown-linux-gnu target
+- Builds .deb packages for easy installation on Debian-based systems
+- Artifacts are automatically uploaded and retained for 30 days
+- Optimized for OrangePi Zero 3 with fullscreen 1024x600 display
+
+**Build artifacts include:**
+- Debian package (.deb) for easy installation
+- Build information with commit details and target platform
+
+#### Continuous Integration Pipeline
+
+**Workflow:** `.github/workflows/ci.yml`
+
+Automatically runs checks on code changes:
+- Detects which components changed (firmware, service, panel, shared)
+- Runs targeted CI tasks for affected components only
+- Performs linting, type checking, and builds
+
+### 5.3 Building for OrangePi Zero 3
+
+The panel application is optimized for OrangePi Zero 3 with specific configurations:
+
+**Display Settings:**
+- Resolution: 1024x600
+- Fullscreen mode enabled
+- Window decorations disabled
+- Always on top for embedded use
+
+**Build Options:**
+
+1. **Using GitHub Actions (Recommended):**
+   - Simply push your code to trigger automatic builds
+   - Download artifacts from the Actions tab
+
+2. **Local Build with Docker:**
+   ```sh
+   ./build_aarch64.sh
+   ```
+
+3. **Local Build with npm:**
+   ```sh
+   cd panel
+   pnpm install
+   pnpm tauri:build:aarch64
+   ```
+
+4. **Using just:**
+   ```sh
+   just build-panel-aarch64
+   ```
+
+For detailed cross-compilation setup instructions, see [panel/README.md](panel/README.md).
+
+### 5.4 Development Workflow
+
+1. **Firmware Development:**
+   ```sh
+   just build-firmware
+   cd firmware && cargo run --release  # Flash to STM32
+   ```
+
+2. **Service Development:**
+   ```sh
+   cargo run -p aerosmart-service
+   ```
+
+3. **Panel Development:**
+   ```sh
+   cd panel
+   pnpm install
+   pnpm tauri:dev  # Development mode with hot-reload
+   ```
+
+For more details, see [CLAUDE.md](CLAUDE.md) for comprehensive development documentation.
