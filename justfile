@@ -12,3 +12,52 @@ gen-ts-schema:
   @echo "Format the moved TypeScript files..."
   cd panel && pnpm run format
   @echo "TypeScript schema generation completed."
+
+# ============================================================================
+# CI Commands
+# ============================================================================
+
+# CI for shared library
+ci-shared:
+  @echo "Running CI for shared library..."
+  cargo check -p aerosmart-shared
+  cargo clippy -p aerosmart-shared --all-targets -- -D warnings
+  cargo build -p aerosmart-shared
+
+# CI for firmware
+ci-firmware:
+  @echo "Running CI for firmware..."
+  cargo check -p aerosmart-firmware --target thumbv7em-none-eabi
+  cargo clippy -p aerosmart-firmware --target thumbv7em-none-eabi -- -D warnings
+  cargo build -p aerosmart-firmware --target thumbv7em-none-eabi
+
+# CI for service
+ci-service:
+  @echo "Running CI for service..."
+  cargo check -p aerosmart-service
+  cargo clippy -p aerosmart-service --all-targets -- -D warnings
+  cargo build -p aerosmart-service
+  cargo test -p aerosmart-service
+
+# CI for panel
+ci-panel:
+  @echo "Running CI for panel..."
+  cd panel && pnpm install
+  cd panel && pnpm run type-check
+  cd panel && pnpm run lint
+  cd panel && pnpm run build
+
+# ============================================================================
+# Build Commands
+# ============================================================================
+
+# Build firmware
+build-firmware:
+  @echo "Building firmware in release mode..."
+  cargo build -p aerosmart-firmware --target thumbv7em-none-eabi --release
+
+# Build panel (Tauri application)
+build-panel:
+  @echo "Building panel application..."
+  cd panel && pnpm install
+  cd panel && pnpm run build

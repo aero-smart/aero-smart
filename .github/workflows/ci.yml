@@ -1,0 +1,201 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Detect which components changed and create dynamic matrix
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      should-run: ${{ steps.set-matrix.outputs.should-run }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed components
+        id: set-matrix
+        run: |
+          # Fetch base branch
+          git fetch origin ${{ github.base_ref || 'main' }}
+
+          # Get list of modified files
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref || 'main' }}...HEAD || echo "")
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No files modified. Skipping CI."
+            echo "should-run=false" >> $GITHUB_OUTPUT
+            echo 'matrix={"component":[]}' >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Modified files:"
+          echo "$CHANGED_FILES"
+          echo ""
+
+          # Initialize component array
+          components=()
+
+          # Flags to track what needs to run
+          run_shared=false
+          run_service=false
+          run_firmware=false
+          run_panel=false
+
+          # Check which components are affected
+          while IFS= read -r file; do
+            case "$file" in
+              shared/*)
+                run_shared=true
+                # If shared is modified, run all Rust CI
+                run_service=true
+                run_firmware=true
+                ;;
+              service/*)
+                run_service=true
+                ;;
+              firmware/*)
+                run_firmware=true
+                ;;
+              panel/*)
+                run_panel=true
+                ;;
+              # Root-level Rust workspace config file changes
+              Cargo.lock|Cargo.toml|rust-toolchain.toml|.cargo/*)
+                # Workspace Rust config changes → Run all Rust CI
+                run_shared=true
+                run_service=true
+                run_firmware=true
+                ;;
+              # Root-level Node workspace config changes
+              pnpm-workspace.yaml|pnpm-lock.yaml|.node-version|package.json)
+                # Workspace Node config changes → Run panel
+                run_panel=true
+                ;;
+              # General repo files
+              justfile|*.md|.github/*|.gitignore)
+                # Just log them, no CI needed
+                ;;
+            esac
+          done <<< "$CHANGED_FILES"
+
+          # Build component array
+          [ "$run_shared" = true ] && components+=("shared")
+          [ "$run_service" = true ] && components+=("service")
+          [ "$run_firmware" = true ] && components+=("firmware")
+          [ "$run_panel" = true ] && components+=("panel")
+
+          if [ ${#components[@]} -eq 0 ]; then
+            echo "No CI tasks needed for these changes."
+            echo "should-run=false" >> $GITHUB_OUTPUT
+            echo 'matrix={"component":[]}' >> $GITHUB_OUTPUT
+          else
+            echo "Components to test: ${components[@]}"
+            # Convert bash array to JSON array
+            json_array=$(printf '%s\n' "${components[@]}" | jq -R . | jq -s -c '{component: .}')
+            echo "matrix=$json_array" >> $GITHUB_OUTPUT
+            echo "should-run=true" >> $GITHUB_OUTPUT
+          fi
+
+  # Run CI for each affected component in parallel
+  ci:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup just
+        uses: extractions/setup-just@v3
+
+      # Rust setup (all Rust components)
+      - name: Install Rust toolchain
+        if: contains(fromJson('["shared", "service", "firmware"]'), matrix.component)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        if: contains(fromJson('["shared", "service", "firmware"]'), matrix.component)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-
+
+      - name: Cache cargo index
+        if: contains(fromJson('["shared", "service", "firmware"]'), matrix.component)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-git-
+
+      - name: Cache cargo build
+        if: contains(fromJson('["shared", "service", "firmware"]'), matrix.component)
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-build-target-
+
+      # Firmware-specific setup
+      - name: Install ARM target for firmware
+        if: matrix.component == 'firmware'
+        run: rustup target add thumbv7em-none-eabi
+
+      # Service-specific setup (requires PostgreSQL for tests)
+      - name: Start PostgreSQL service
+        if: matrix.component == 'service'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql
+          sudo systemctl start postgresql
+          sudo -u postgres createdb aerosmart_test || true
+
+      # Panel-specific setup
+      - name: Install pnpm
+        if: matrix.component == 'panel'
+        uses: pnpm/action-setup@v4
+        with:
+          version: '10.20.0'
+
+      - name: Use Node.js
+        if: matrix.component == 'panel'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+          cache: "pnpm"
+
+      - name: Install Protobuf Compiler
+        if: matrix.component == 'panel' || matrix.component == 'service'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
+      - name: Install Tauri dependencies
+        if: matrix.component == 'panel'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            webkit2gtk-driver \
+            xvfb
+
+      # Run the specific CI task
+      - name: Run CI for ${{ matrix.component }}
+        run: just ci-${{ matrix.component }}
