@@ -10,6 +10,7 @@ use crate::state::GLOBAL_STATE;
 
 #[embassy_executor::task]
 pub async fn edf_task(mut edf: EdfPwm, mut pid: AirspeedControl) {
+    edf.initialize().await;
     loop {
         AIRSPEED_UPDATED_SIGNAL.wait().await;
         let (measured, setpoint, status, density, voltage_v) = {

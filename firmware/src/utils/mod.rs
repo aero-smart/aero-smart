@@ -1,5 +1,4 @@
 pub mod battery;
-pub mod dshot;
 pub mod magnus;
 pub mod mass_conservation;
 pub mod pitot;

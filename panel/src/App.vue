@@ -11,7 +11,7 @@ onMounted(async () => {
   try {
     // Only try to set fullscreen if we are in a Tauri environment
     if (window.__TAURI_INTERNALS__) {
-       await getCurrentWindow().setFullscreen(true)
+      await getCurrentWindow().setFullscreen(true)
     }
   } catch (e) {
     console.error('Failed to set fullscreen:', e)

@@ -15,8 +15,10 @@ pub mod edf {
 }
 
 pub mod test_section {
-    pub const TEST_SECTION_WIDTH_METERS: f32 = 0.160;
-    pub const TEST_SECTION_HEIGHT_METERS: f32 = 0.096;
+    // pub const TEST_SECTION_WIDTH_METERS: f32 = 0.160;
+    // pub const TEST_SECTION_HEIGHT_METERS: f32 = 0.096;
+    pub const TEST_SECTION_WIDTH_METERS: f32 = 0.090;
+    pub const TEST_SECTION_HEIGHT_METERS: f32 = 0.090;
     pub const TEST_SECTION_LENGTH_METERS: f32 = 0.200;
     pub const TEST_SECTION_CROSS_SECTIONAL_AREA_SQ_METERS: f32 =
         TEST_SECTION_WIDTH_METERS * TEST_SECTION_HEIGHT_METERS;

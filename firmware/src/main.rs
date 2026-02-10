@@ -4,7 +4,6 @@
 pub mod algorithms;
 pub mod consts;
 pub mod executors;
-pub mod helpers;
 pub mod sensors;
 pub mod state;
 pub mod tasks;
@@ -14,11 +13,8 @@ pub mod utils;
 use crate::{
     algorithms::{airspeed::AirspeedControl, madgwick::MadgwickAhrs},
     executors::{edf_pwm::EdfPwm, servo::Servo},
-    sensors::{
-        audio_i2s::Audio, imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed,
-        qei::QeiOperations,
-    },
-    state::{AUDIO_CHANNEL, QEI_CHANNEL, SAI_BUFFER},
+    sensors::{audio_i2s::Audio, imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+    state::{AUDIO_CHANNEL, GLOBAL_STATE, SAI_BUFFER},
     tasks::*,
 };
 
@@ -37,14 +33,11 @@ use embassy_stm32::{
     sai::{Sai, split_subblocks},
     spi::{self, Spi},
     time::Hertz,
-    timer::{
-        qei::{Qei, QeiPin},
-        simple_pwm::{PwmPin, PwmPinConfig, SimplePwm},
-    },
+    timer::simple_pwm::{PwmPin, PwmPinConfig, SimplePwm},
     usart::Uart,
     wdg::IndependentWatchdog,
 };
-use embassy_time::TICK_HZ;
+use embassy_time::{Duration, TICK_HZ, Timer};
 use ws2812_async::{Rgb, Ws2812};
 
 bind_interrupts!(struct Irqs {
@@ -72,7 +65,6 @@ pub struct TestConfig {
     pub ctrl_airspeed: bool,
     pub battery_adc: bool,
     pub analog_pressure: bool,
-    pub qei: bool,
 }
 
 fn get_stm_config() -> embassy_stm32::Config {
@@ -130,18 +122,17 @@ async fn main(spawner: Spawner) {
         i2s: false,
         spi_imu: false,
         spi_ws2812: false,
-        uart_upper: true,
+        uart_upper: false,
         uart_lidar: false,
         i2c: true,
-        pwm_edf: false,
+        pwm_edf: true,
         pwm_servo: false,
         wdt: true,
         fft: false,
         ahrs: false,
-        ctrl_airspeed: false,
+        ctrl_airspeed: true,
         battery_adc: false,
         analog_pressure: false,
-        qei: false,
     };
 
     info!("Configuration: {:?}", config);
@@ -304,7 +295,7 @@ async fn main(spawner: Spawner) {
 
     let mut sensors = Airspeed::new(i2c);
     let edf = EdfPwm::new(edf_servo_pwm);
-    let pid = AirspeedControl::new(0.0, 1.0, 0.1, 0.05);
+    let pid = AirspeedControl::new(0.0, 0.24, 0.08, 0.06);
     let ahrs = MadgwickAhrs::new(1_000.0, 0.033);
 
     info!("Airspeed sensor and EDF driver initialized");
@@ -421,11 +412,6 @@ async fn main(spawner: Spawner) {
         }
     }
 
-    let qei_tim = Qei::new(p.TIM3, QeiPin::new(p.PC6), QeiPin::new(p.PC7));
-    let qei_btn = ExtiInput::new(p.PC5, p.EXTI5, Pull::Up);
-
-    let qei = QeiOperations::new(qei_tim, qei_btn);
-
     if config.uart_upper {
         info!("Starting Serial UART RX task...");
         match spawner.spawn(serial_uart_rx_task(uart_rx)) {
@@ -434,7 +420,7 @@ async fn main(spawner: Spawner) {
         }
 
         info!("Starting Serial UART TX task...");
-        match spawner.spawn(serial_uart_tx_task(uart_tx, QEI_CHANNEL.receiver())) {
+        match spawner.spawn(serial_uart_tx_task(uart_tx)) {
             Ok(_) => info!("Serial UART TX task spawned"),
             Err(e) => defmt::panic!("Failed to spawn Serial UART TX task: {:?}", e),
         }
@@ -456,14 +442,6 @@ async fn main(spawner: Spawner) {
         }
     }
 
-    if config.qei {
-        info!("Starting QEI task...");
-        match spawner.spawn(qei_task(qei, QEI_CHANNEL.sender())) {
-            Ok(_) => info!("QEI task spawned"),
-            Err(e) => defmt::panic!("Failed to spawn QEI task: {:?}", e),
-        }
-    }
-
     if config.i2s {
         info!("Starting Acoustic Sampling task...");
         match spawner.spawn(acoustic_sampling_task(microphone, AUDIO_CHANNEL.sender())) {
@@ -475,5 +453,17 @@ async fn main(spawner: Spawner) {
             Ok(_) => info!("Acoustic Analysis task spawned"),
             Err(e) => defmt::panic!("Failed to spawn Acoustic Analysis task: {:?}", e),
         }
+    }
+
+    spawner.spawn(test_pid_task()).unwrap();
+}
+
+#[embassy_executor::task]
+async fn test_pid_task() {
+    Timer::after(Duration::from_secs(5)).await;
+    {
+        let mut state = GLOBAL_STATE.lock().await;
+        state.desired_airspeed_meters_per_second = 13.5;
+        state.machine_status = state::MachineStatus::Running;
     }
 }

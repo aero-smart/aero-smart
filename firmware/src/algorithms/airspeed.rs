@@ -1,3 +1,4 @@
+use defmt::{info, println};
 use nalgebra::clamp;
 use pid::Pid;
 
@@ -21,7 +22,7 @@ impl AirspeedState {
         let error = airspeed - setpoint;
         let abs_error = libm::fabsf(error) / setpoint;
 
-        if abs_error < 0.2 {
+        if abs_error < 0.4 {
             AirspeedState::Cruising
         } else if abs_error < 0.05 {
             AirspeedState::Approaching
@@ -92,13 +93,26 @@ impl AirspeedControl {
         Self {
             pid,
             setpoint,
-            filter: AirspeedFilter::new(1.0f32, 0.001f32, 0.1f32),
-            feedback_gain_max_percent: 0.2f32,
+            filter: AirspeedFilter::new(0.0f32, 0.16f32, 0.96f32),
+            feedback_gain_max_percent: 0.6f32,
         }
     }
 
     fn update_airspeed(&mut self, current_airspeed: f32) -> f32 {
+        // If current airspeed is zero, skip filtering to avoid issues
+        if current_airspeed == 0.0f32 {
+            info!("Airspeed Control | Current airspeed is zero, skipping filter update");
+            self.filter.update(self.filter.state);
+            return self
+                .pid
+                .next_control_output(self.filter.state - self.setpoint)
+                .output;
+        }
         let filtered_airspeed = self.filter.update(current_airspeed);
+        info!(
+            "Airspeed Control | Current Airspeed: {} | Filtered Airspeed: {} | Setpoint: {}",
+            current_airspeed, filtered_airspeed, self.setpoint
+        );
         self.pid
             .next_control_output(filtered_airspeed - self.setpoint)
             .output
@@ -115,21 +129,30 @@ impl AirspeedControl {
         voltage_v: f32,
     ) -> u16 {
         let feedforward = edf_throttle_from_airspeed(self.setpoint, air_density, voltage_v);
+        info!(
+            "Airspeed Control | Feedforward Throttle: {} | Current Airspeed: {} | Setpoint: {}",
+            feedforward, current_airspeed, self.setpoint
+        );
         let feedback_correction = self.update_airspeed(current_airspeed);
         let feedback = feedback_correction / self.pid.output_limit * 2000.0; // Scale to 0-2000 range
         let reaching_state = AirspeedState::from_airspeed(current_airspeed, self.setpoint);
+        info!(
+            "Airspeed Control | Feedback Correction: {} | Reaching State: {:?}",
+            feedback, reaching_state
+        );
         let feedback_gain = match reaching_state {
             AirspeedState::Reaching => 0f32,
-            AirspeedState::Approaching => {
+            AirspeedState::Approaching => self.feedback_gain_max_percent,
+            AirspeedState::Cruising => {
                 let error = libm::fabsf(current_airspeed - self.setpoint) / self.setpoint;
-                let k = 10f32; // Steepness of the sigmoid
+                println!("Airspeed Control | Cruising Error: {}", error);
+                let k = 6f32; // Steepness of the sigmoid
                 self.feedback_gain_max_percent / (1f32 + libm::expf(-k * (error - 0.05f32)))
             }
-            AirspeedState::Cruising => self.feedback_gain_max_percent,
         };
-        let adjusted_throttle =
-            feedforward as f32 * (1.0 - feedback_gain) + feedback * feedback_gain;
-        let clamped_throttle = clamp(adjusted_throttle, 0.0, 2000.0);
+        info!("Airspeed Control | Feedback Gain: {}", feedback_gain);
+        let adjusted_throttle = feedforward as f32 * (1.0 - feedback_gain) + feedback;
+        let clamped_throttle = clamp(adjusted_throttle, 0.0, 1600.0);
         clamped_throttle as u16
     }
 

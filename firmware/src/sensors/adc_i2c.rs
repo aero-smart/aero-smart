@@ -7,7 +7,7 @@ use embassy_stm32::{
 
 use crate::{
     sensors::drivers::ads1115::Ads1115Config,
-    utils::pressure_adc::{option_arr_to_messsage, voltage_v_to_pressure_pa},
+    utils::pressure_adc::{option_arr_to_message, voltage_v_to_pressure_pa},
 };
 
 /// ADS1115 driver over I2C
@@ -107,6 +107,6 @@ impl<'a> AdcI2c<'a> {
                 }
             }
         }
-        Ok(option_arr_to_messsage(results))
+        Ok(option_arr_to_message(results))
     }
 }

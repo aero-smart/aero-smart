@@ -97,16 +97,19 @@ pnpm tauri:build
 The application is optimized for OrangePi Zero 3 with a 1024x600 display. To build for this platform:
 
 **Using npm script:**
+
 ```sh
 pnpm tauri:build:aarch64
 ```
 
 **Using just:**
+
 ```sh
 just build-panel-aarch64
 ```
 
 **Using the build script:**
+
 ```sh
 ../build_aarch64.sh
 ```
@@ -116,16 +119,19 @@ just build-panel-aarch64
 For building aarch64 binaries on x86_64 Linux:
 
 1. Add arm64 architecture:
+
    ```sh
    sudo dpkg --add-architecture arm64
    ```
 
 2. Install cross-compilation toolchain:
+
    ```sh
    sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
    ```
 
 3. Install aarch64 dependencies:
+
    ```sh
    sudo apt-get install \
      libwebkit2gtk-4.1-dev:arm64 \
@@ -138,6 +144,7 @@ For building aarch64 binaries on x86_64 Linux:
    ```
 
 4. Add Rust target:
+
    ```sh
    rustup target add aarch64-unknown-linux-gnu
    ```
@@ -155,10 +162,10 @@ The repository includes a GitHub Actions workflow (`.github/workflows/build-aarc
 #### Display Configuration
 
 The application is configured for a 1024x600 display with:
+
 - Fullscreen mode enabled
 - Window decorations disabled
 - Always on top
 - Skip taskbar
 
 These settings are defined in `src-tauri/tauri.conf.json` and are optimized for embedded display use.
-

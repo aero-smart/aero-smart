@@ -1,14 +1,10 @@
 use aerosmart_shared::serial::{
     AcousticData, AnalogPressureSensorData, BarometerData, LidarData, SensorConfig,
 };
-use embassy_stm32::i2c::{I2c, Master};
-use embassy_stm32::mode::Async;
-use embassy_sync::blocking_mutex::NoopMutex;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::channel::Channel;
 use embassy_sync::mutex::Mutex;
 use embassy_sync::signal::Signal;
-use static_cell::StaticCell;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct GlobalState {
@@ -95,8 +91,8 @@ impl GlobalState {
             quaternion: None,
             imu_head: 0,
             airspeed_head: 0,
-            battery_voltage_volts: 0.0,
-            battery_soc_percent: 0.0,
+            battery_voltage_volts: 16.0,
+            battery_soc_percent: 100.0,
             analog_pressure_sensor_data_pa: None,
             qei_position_counts: 0,
             qei_direction: true,
@@ -126,6 +122,4 @@ pub static STATUS_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::
 pub static IMU_BUFFER_FULL_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static DESIRED_UPDATE_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static ANALOG_PRESSURE_SENSOR_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
-pub static QEI_CHANNEL: Channel<CriticalSectionRawMutex, (u16, bool, bool), 2> = Channel::new();
 pub static AUDIO_CHANNEL: Channel<CriticalSectionRawMutex, AcousticFftInput, 2> = Channel::new();
-pub static I2C1_BUS: StaticCell<NoopMutex<I2c<'static, Async, Master>>> = StaticCell::new();

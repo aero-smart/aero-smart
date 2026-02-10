@@ -14,7 +14,7 @@ use embassy_stm32::{
     i2c::{I2c, Master},
     mode::Async,
 };
-use embassy_time::{Delay, Instant};
+use embassy_time::{Delay, Instant, Timer};
 
 #[derive(defmt::Format)]
 pub enum AirspeedError {
@@ -24,6 +24,9 @@ pub enum AirspeedError {
 
 pub struct Airspeed {
     i2c: AsyncBme280<I2c<'static, Async, Master>, Delay>,
+
+    /// MS4525DO calibration offset in Pascals
+    ms4525do_offset_pa: f32,
 }
 
 impl Airspeed {
@@ -36,7 +39,10 @@ impl Airspeed {
     pub fn new(i2c: I2c<'static, Async, Master>) -> Self {
         let bme280 = AsyncBme280::new(i2c, Delay);
 
-        Airspeed { i2c: bme280 }
+        Airspeed {
+            i2c: bme280,
+            ms4525do_offset_pa: 0.0,
+        }
     }
 
     pub async fn read_pitot(&mut self) -> Result<(u8, f32, f32), AirspeedError> {
@@ -65,7 +71,11 @@ impl Airspeed {
         let pressure_pa = ms4525do_pressure(pressure_raw);
         let temperature_c = ms4525do_temperature(temperature_raw);
 
-        Ok((status, abs(pressure_pa), temperature_c))
+        Ok((
+            status,
+            abs(pressure_pa) - self.ms4525do_offset_pa,
+            temperature_c,
+        ))
     }
 
     /// BME280 barometer reading
@@ -105,14 +115,27 @@ impl Airspeed {
         self.i2c
             .set_sampling_configuration(
                 Configuration::default()
-                    .with_temperature_oversampling(Oversampling::Oversample1)
-                    .with_pressure_oversampling(Oversampling::Oversample1)
-                    .with_humidity_oversampling(Oversampling::Oversample1)
+                    .with_temperature_oversampling(Oversampling::Oversample4)
+                    .with_pressure_oversampling(Oversampling::Oversample4)
+                    .with_humidity_oversampling(Oversampling::Oversample4)
                     .with_sensor_mode(SensorMode::Normal),
             )
             .await
             .map_err(|_| AirspeedError::I2cError)?;
 
+        self.calibrate().await?;
+
+        Ok(())
+    }
+
+    pub async fn calibrate(&mut self) -> Result<(), AirspeedError> {
+        for _attempt in 0..8 {
+            let (_status, pressure_raw, _temperature_raw) = self.read_pitot().await?;
+            self.ms4525do_offset_pa += pressure_raw;
+            Timer::after_millis(100).await;
+        }
+        self.ms4525do_offset_pa /= 8.0;
+        debug!("Calibrated MS4525DO offset: {} Pa", self.ms4525do_offset_pa);
         Ok(())
     }
 }

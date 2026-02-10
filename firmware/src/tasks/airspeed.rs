@@ -43,7 +43,7 @@ pub async fn airspeed_task(mut sensors: Airspeed) {
 
         counter += 1;
 
-        if counter >= 8 {
+        if counter >= 20 {
             match sensors.read_barometer().await {
                 Ok(baro_data) => {
                     defmt::info!(
@@ -71,6 +71,6 @@ pub async fn airspeed_task(mut sensors: Airspeed) {
             counter = 0;
         }
 
-        Timer::after(Duration::from_hz(40)).await;
+        Timer::after(Duration::from_hz(20)).await;
     }
 }

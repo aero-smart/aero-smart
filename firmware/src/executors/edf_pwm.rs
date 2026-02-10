@@ -72,6 +72,12 @@ impl EdfPwm {
 
     pub async fn initialize(&mut self) {
         self.enable();
+        self.set_throttle_compatible(0);
+        Timer::after(Duration::from_secs(5)).await;
+    }
+
+    pub async fn calibrate(&mut self) {
+        self.enable();
 
         // Step 1: Set to zero throttle
         info!("Initializing EDF PWM: Step 1 - Setting to zero throttle");
