@@ -46,7 +46,6 @@ jobs:
 
           # Flags to track what needs to run
           run_shared=false
-          run_service=false
           run_firmware=false
           run_panel=false
 
@@ -56,11 +55,8 @@ jobs:
               shared/*)
                 run_shared=true
                 # If shared is modified, run all Rust CI
-                run_service=true
                 run_firmware=true
-                ;;
-              service/*)
-                run_service=true
+                run_panel=true
                 ;;
               firmware/*)
                 run_firmware=true
@@ -72,8 +68,8 @@ jobs:
               Cargo.lock|Cargo.toml|rust-toolchain.toml|.cargo/*)
                 # Workspace Rust config changes → Run all Rust CI
                 run_shared=true
-                run_service=true
                 run_firmware=true
+                run_panel=true
                 ;;
               # Root-level Node workspace config changes
               pnpm-workspace.yaml|pnpm-lock.yaml|.node-version|package.json)
@@ -89,7 +85,6 @@ jobs:
 
           # Build component array
           [ "$run_shared" = true ] && components+=("shared")
-          [ "$run_service" = true ] && components+=("service")
           [ "$run_firmware" = true ] && components+=("firmware")
           [ "$run_panel" = true ] && components+=("panel")
 
@@ -122,11 +117,11 @@ jobs:
 
       # Rust setup (all Rust components)
       - name: Install Rust toolchain
-        if: contains(fromJson('["shared", "service", "firmware"]'), matrix.component)
+        if: contains(fromJson('["shared", "firmware"]'), matrix.component)
         uses: dtolnay/rust-toolchain@stable
 
       - name: Cache cargo registry
-        if: contains(fromJson('["shared", "service", "firmware"]'), matrix.component)
+        if: contains(fromJson('["shared", "firmware"]'), matrix.component)
         uses: actions/cache@v4
         with:
           path: ~/.cargo/registry
@@ -135,7 +130,7 @@ jobs:
             ${{ runner.os }}-cargo-registry-
 
       - name: Cache cargo index
-        if: contains(fromJson('["shared", "service", "firmware"]'), matrix.component)
+        if: contains(fromJson('["shared", "firmware"]'), matrix.component)
         uses: actions/cache@v4
         with:
           path: ~/.cargo/git
@@ -144,7 +139,7 @@ jobs:
             ${{ runner.os }}-cargo-git-
 
       - name: Cache cargo build
-        if: contains(fromJson('["shared", "service", "firmware"]'), matrix.component)
+        if: contains(fromJson('["shared", "firmware"]'), matrix.component)
         uses: actions/cache@v4
         with:
           path: target
@@ -156,15 +151,6 @@ jobs:
       - name: Install ARM target for firmware
         if: matrix.component == 'firmware'
         run: rustup target add thumbv7em-none-eabi
-
-      # Service-specific setup (requires PostgreSQL for tests)
-      - name: Start PostgreSQL service
-        if: matrix.component == 'service'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql
-          sudo systemctl start postgresql
-          sudo -u postgres createdb aerosmart_test || true
 
       # Panel-specific setup
       - name: Install pnpm
@@ -181,7 +167,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install Protobuf Compiler
-        if: matrix.component == 'panel' || matrix.component == 'service'
+        if: matrix.component == 'panel'
         run: |
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler

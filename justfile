@@ -31,14 +31,6 @@ ci-firmware:
   cargo clippy -p aerosmart-firmware --target thumbv7em-none-eabi -- -D warnings
   cargo build -p aerosmart-firmware --target thumbv7em-none-eabi
 
-# CI for service
-ci-service:
-  @echo "Running CI for service..."
-  cargo check -p aerosmart-service
-  cargo clippy -p aerosmart-service --all-targets -- -D warnings
-  cargo build -p aerosmart-service
-  cargo test -p aerosmart-service
-
 # CI for panel
 ci-panel:
   @echo "Running CI for panel..."
