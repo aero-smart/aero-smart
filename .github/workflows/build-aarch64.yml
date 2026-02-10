@@ -1,0 +1,155 @@
+name: Build Tauri App for OrangePi Zero 3 (aarch64)
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "panel/**"
+      - "shared/**"
+      - ".github/workflows/build-aarch64.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "panel/**"
+      - "shared/**"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-aarch64:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-gnu
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '10.20.0'
+
+      - name: Install cross-compilation dependencies
+        run: |
+          sudo dpkg --add-architecture arm64
+          sudo sed -i 's/^deb /deb [arch=amd64] /' /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          sudo apt-get update || true
+          
+          # Install cross-compilation toolchain
+          sudo apt-get install -y \
+            gcc-aarch64-linux-gnu \
+            g++-aarch64-linux-gnu \
+            pkg-config
+          
+          # Install arm64 libraries
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev:arm64 \
+            libgtk-3-dev:arm64 \
+            libayatana-appindicator3-dev:arm64 \
+            librsvg2-dev:arm64 \
+            libssl-dev:arm64 \
+            libasound2-dev:arm64 \
+            libdbus-1-dev:arm64 || echo "Some packages may have failed to install"
+
+      - name: Configure Cargo for cross-compilation
+        run: |
+          mkdir -p ~/.cargo
+          cat >> ~/.cargo/config.toml << EOF
+          [target.aarch64-unknown-linux-gnu]
+          linker = "aarch64-linux-gnu-gcc"
+          rustflags = ["-C", "link-arg=-Wl,--allow-multiple-definition"]
+          EOF
+          cat ~/.cargo/config.toml
+
+      - name: Setup PKG_CONFIG for cross-compilation
+        run: |
+          echo "PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig" >> $GITHUB_ENV
+          echo "PKG_CONFIG_ALLOW_CROSS=1" >> $GITHUB_ENV
+          echo "PKG_CONFIG_SYSROOT_DIR=/" >> $GITHUB_ENV
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-aarch64-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-aarch64-
+
+      - name: Cache cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-git-aarch64-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-git-aarch64-
+
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: |
+            target
+            panel/src-tauri/target
+          key: ${{ runner.os }}-cargo-build-aarch64-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-build-aarch64-
+
+      - name: Install frontend dependencies
+        working-directory: panel
+        run: pnpm install
+
+      - name: Build Tauri app for aarch64
+        working-directory: panel
+        run: |
+          # Build the Tauri application for aarch64
+          npx tauri build --target aarch64-unknown-linux-gnu --verbose
+
+      - name: List built artifacts
+        run: |
+          echo "=== Listing built artifacts ==="
+          find panel/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle -type f
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p artifacts
+          # Copy .deb packages if they exist
+          if [ -d "panel/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb" ]; then
+            cp -v panel/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb artifacts/ || true
+          fi
+          # Copy AppImage if it exists
+          if [ -d "panel/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage" ]; then
+            cp -v panel/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage artifacts/ || true
+          fi
+          # Copy any other relevant files
+          ls -lh artifacts/
+
+      - name: Create release info
+        run: |
+          echo "# Build Info" > artifacts/BUILD_INFO.txt
+          echo "Branch: ${{ github.ref_name }}" >> artifacts/BUILD_INFO.txt
+          echo "Commit: ${{ github.sha }}" >> artifacts/BUILD_INFO.txt
+          echo "Date: $(date -u)" >> artifacts/BUILD_INFO.txt
+          echo "Target: aarch64-unknown-linux-gnu (OrangePi Zero 3)" >> artifacts/BUILD_INFO.txt
+          echo "Display: 1024x600" >> artifacts/BUILD_INFO.txt
+          cat artifacts/BUILD_INFO.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: aero-smart-panel-aarch64-${{ github.sha }}
+          path: artifacts/*
+          if-no-files-found: warn
+          retention-days: 30

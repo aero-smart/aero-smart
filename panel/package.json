@@ -13,7 +13,11 @@
     "type-check": "vue-tsc --build",
     "lint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
-    "format": "oxfmt -c .prettierrc.json"
+    "format": "oxfmt -c .prettierrc.json",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "tauri:build:aarch64": "tauri build --target aarch64-unknown-linux-gnu"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
