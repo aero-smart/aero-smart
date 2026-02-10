@@ -1,5 +1,4 @@
 use defmt::info;
-use embassy_futures::join;
 use embassy_stm32::{
     peripherals::TIM5,
     timer::{Channel, simple_pwm::SimplePwm},
@@ -39,6 +38,10 @@ impl EdfPwm {
     }
 
     pub fn set_throttle_compatible(&mut self, throttle_dshot: u16) {
+        if !self.pwm.ch1().is_enabled() || !self.pwm.ch2().is_enabled() {
+            defmt::warn!("EDF PWM channels are not enabled. Enabling now.");
+            self.enable();
+        }
         let ratio = throttle_dshot as f32 / 2000.0;
         let max_duty = self.pwm.max_duty_cycle() as f32;
         let duty_cycle = (ratio * max_duty) * 0.05 + (max_duty * 0.05); // 5% min duty cycle, 10% max duty cycle

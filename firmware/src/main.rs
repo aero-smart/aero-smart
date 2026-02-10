@@ -13,7 +13,7 @@ pub mod utils;
 
 use crate::{
     algorithms::{airspeed::AirspeedControl, madgwick::MadgwickAhrs},
-    executors::{edf::EdfDshot, edf_pwm::EdfPwm, servo::Servo},
+    executors::{edf_pwm::EdfPwm, servo::Servo},
     sensors::{
         audio_i2s::Audio, imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed,
         qei::QeiOperations,
@@ -44,7 +44,7 @@ use embassy_stm32::{
     usart::Uart,
     wdg::IndependentWatchdog,
 };
-use embassy_time::{Duration, Instant, TICK_HZ, Timer};
+use embassy_time::TICK_HZ;
 use ws2812_async::{Rgb, Ws2812};
 
 bind_interrupts!(struct Irqs {
@@ -130,9 +130,9 @@ async fn main(spawner: Spawner) {
         i2s: false,
         spi_imu: false,
         spi_ws2812: false,
-        uart_upper: false,
+        uart_upper: true,
         uart_lidar: false,
-        i2c: false,
+        i2c: true,
         pwm_edf: false,
         pwm_servo: false,
         wdt: true,
@@ -214,7 +214,7 @@ async fn main(spawner: Spawner) {
         config
     }
 
-    let Ok(mut usart_upper) = Uart::new(
+    let Ok(usart_upper) = Uart::new(
         p.USART1,
         p.PA10,
         p.PA9,
@@ -226,10 +226,10 @@ async fn main(spawner: Spawner) {
         defmt::panic!("Failed to initialize upper USART");
     };
 
-    let mut rtc = Rtc::new(p.RTC, RtcConfig::default());
+    let rtc = Rtc::new(p.RTC, RtcConfig::default());
 
     if config.uart_upper {
-        serial_initialize(&mut usart_upper, &mut rtc).await;
+        // serial_initialize(&mut usart_upper, &mut rtc).await;
     }
 
     let (uart_tx, uart_rx) = usart_upper.split();
@@ -259,19 +259,6 @@ async fn main(spawner: Spawner) {
             pull: Pull::Down,
         }
     }
-
-    let left_esc_dshot = PwmPin::new_with_config(p.PE9, pull_down_config());
-    let right_esc_dshot = PwmPin::new_with_config(p.PE11, pull_down_config());
-
-    let edf_pwm = SimplePwm::new(
-        p.TIM1,
-        Some(left_esc_dshot),
-        Some(right_esc_dshot),
-        None,
-        None,
-        Hertz::khz(300),
-        embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
-    );
 
     let left_esc_servo = PwmPin::new_with_config(p.PA0, pull_down_config());
     let right_esc_servo = PwmPin::new_with_config(p.PA1, pull_down_config());
@@ -316,7 +303,7 @@ async fn main(spawner: Spawner) {
     info!("IMU SPI interface initialized");
 
     let mut sensors = Airspeed::new(i2c);
-    let mut edf = EdfPwm::new(edf_servo_pwm);
+    let edf = EdfPwm::new(edf_servo_pwm);
     let pid = AirspeedControl::new(0.0, 1.0, 0.1, 0.05);
     let ahrs = MadgwickAhrs::new(1_000.0, 0.033);
 
@@ -402,13 +389,13 @@ async fn main(spawner: Spawner) {
         }
     }
 
-    // if config.pwm_edf {
-    //     info!("Starting EDF task...");
-    //     match spawner.spawn(edf_task(edf, pid)) {
-    //         Ok(_) => info!("EDF task spawned"),
-    //         Err(e) => defmt::panic!("Failed to spawn EDF task: {:?}", e),
-    //     }
-    // }
+    if config.pwm_edf {
+        info!("Starting EDF task...");
+        match spawner.spawn(edf_task(edf, pid)) {
+            Ok(_) => info!("EDF task spawned"),
+            Err(e) => defmt::panic!("Failed to spawn EDF task: {:?}", e),
+        }
+    }
 
     if config.spi_ws2812 {
         info!("Starting LED task...");
@@ -489,9 +476,4 @@ async fn main(spawner: Spawner) {
             Err(e) => defmt::panic!("Failed to spawn Acoustic Analysis task: {:?}", e),
         }
     }
-
-    info!("Starting DShot tasks...");
-
-    spawner.spawn(helpers::dshot::dshot_set_task()).unwrap();
-    spawner.spawn(helpers::dshot::dshot_test_task(edf)).unwrap();
 }

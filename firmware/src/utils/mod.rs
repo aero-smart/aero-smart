@@ -11,6 +11,7 @@ use core::mem::MaybeUninit;
 
 use crate::SerialMessage;
 
+use defmt::info;
 use rkyv::{
     api::low::to_bytes_in_with_alloc,
     rancor::Failure,
@@ -39,6 +40,13 @@ pub async fn send_message(message: SerialMessage) -> ([u8; 256], usize) {
 
     // Payload follows
     buffer[4..4 + len].copy_from_slice(&bytes);
+
+    let data_to_display = &buffer[4..4 + len];
+
+    info!(
+        "Serialized message of length {}; its data {}",
+        len, data_to_display
+    );
 
     (buffer, 4 + len)
 }

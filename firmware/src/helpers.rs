@@ -1,5 +1,5 @@
 pub mod dshot {
-    use crate::executors::{edf::EdfDshot, edf_pwm::EdfPwm};
+    use crate::executors::edf_pwm::EdfPwm;
     use defmt::info;
 
     use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
