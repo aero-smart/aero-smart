@@ -15,10 +15,10 @@ impl<'a> Servo<'a> {
         let period_ms = 20.0; // Standard servo period of 20ms
         let duty_cycle = (pulse_width_ms / period_ms) * 100.0;
 
-        self.pwm.ch1().set_duty_cycle_percent(duty_cycle as u8);
+        self.pwm.ch3().set_duty_cycle_percent(duty_cycle as u8);
     }
 
     pub fn enable(&mut self) {
-        self.pwm.ch1().enable();
+        self.pwm.ch3().enable();
     }
 }

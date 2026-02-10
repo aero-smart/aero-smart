@@ -2,6 +2,10 @@
 pub fn build_dshot_frame(throttle: u16, telemetry: bool, max_duty: u16) -> [u16; 17] {
     let mut frame = [0u16; 17];
 
+    let throttle = throttle + 48; // Offset for DSHOT commands
+
+    let throttle = throttle.clamp(48, 2047);
+
     // DSHOT600 spec: 37.5% for bit 0, 75% for bit 1
     let bit_0_duty = (max_duty as f32 * 0.375) as u16; // ~31 with max_duty=83
     let bit_1_duty = (max_duty as f32 * 0.75) as u16; // ~62 with max_duty=83

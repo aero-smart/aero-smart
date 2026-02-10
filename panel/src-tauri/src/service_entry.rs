@@ -1,16 +1,14 @@
 use crate::config::{self, AppConfig};
-use aerosmart_shared::serial::{
-    AcknowledgementConfig, ArchivedSerialMessage, SerialMessage,
-};
+use aerosmart_shared::serial::{AcknowledgementConfig, ArchivedSerialMessage, SerialMessage};
 use anyhow::Context;
 use axum::{
-    Router,
     extract::{
-        State,
         ws::{Message, WebSocket, WebSocketUpgrade},
+        State,
     },
     response::IntoResponse,
     routing::get,
+    Router,
 };
 // use clap::Parser; // No longer needed
 use std::{
@@ -57,13 +55,16 @@ pub async fn run() -> anyhow::Result<()> {
     // Spawn Serial Task
     let serial_config = config.serial.clone();
     let tx_clone = tx.clone();
-    
+
     tokio::spawn(async move {
         // Retry loop for serial connection
         loop {
             if let Err(e) = serial_task(serial_config.clone(), tx_clone.clone(), &mut cmd_rx).await
             {
-                error!("Serial task failed: {:?}. Retrying in {}s...", e, serial_config.retry_interval_secs);
+                error!(
+                    "Serial task failed: {:?}. Retrying in {}s...",
+                    e, serial_config.retry_interval_secs
+                );
                 tokio::time::sleep(Duration::from_secs(serial_config.retry_interval_secs)).await;
             }
         }
@@ -76,8 +77,9 @@ pub async fn run() -> anyhow::Result<()> {
         .with_state(state);
 
     let addr_str = format!("{}:{}", config.server.host, config.server.port);
-    let addr = SocketAddr::from_str(&addr_str).unwrap_or_else(|_| SocketAddr::from(([0, 0, 0, 0], 3000)));
-    
+    let addr =
+        SocketAddr::from_str(&addr_str).unwrap_or_else(|_| SocketAddr::from(([0, 0, 0, 0], 3000)));
+
     info!("Listening on {}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, app).await?;
@@ -90,7 +92,10 @@ async fn serial_task(
     tx: broadcast::Sender<String>,
     cmd_rx: &mut mpsc::Receiver<SerialMessage>,
 ) -> anyhow::Result<()> {
-    info!("Opening serial port {} @ {}...", config.port, config.baud_rate);
+    info!(
+        "Opening serial port {} @ {}...",
+        config.port, config.baud_rate
+    );
     let mut port = tokio_serial::new(&config.port, config.baud_rate)
         .open_native_async()
         .context("Failed to open serial port")?;
@@ -105,7 +110,12 @@ async fn serial_task(
     // We expect the firmware to send: [u32 len] [payload]
     // The payload should be AcknowledgementData.
     loop {
-        let len = match timeout(Duration::from_secs(config.handshake_timeout_secs), port.read_u32_le()).await {
+        let len = match timeout(
+            Duration::from_secs(config.handshake_timeout_secs),
+            port.read_u32_le(),
+        )
+        .await
+        {
             Ok(Ok(len)) => len as usize,
             Ok(Err(e)) => {
                 warn!("Handshake read error: {:?}", e);
@@ -152,11 +162,13 @@ async fn serial_task(
             // let bytes = serialize_message(&pong)?;
             let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&pong)
                 .map_err(|e| anyhow::anyhow!("Serialization error: {:?}", e))?;
-            
+
             // Send Length Prefix (u32 little-endian)
             let len = bytes.len() as u32;
-            port.write_all(&len.to_le_bytes()).await.context("Failed to write handshake length prefix")?;
-            
+            port.write_all(&len.to_le_bytes())
+                .await
+                .context("Failed to write handshake length prefix")?;
+
             port.write_all(&bytes).await?;
             info!("Pong sent. Handshake complete. Entering Main Loop.");
             break;

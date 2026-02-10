@@ -1,5 +1,5 @@
 pub mod dshot {
-    use crate::executors::edf::EdfDshot;
+    use crate::executors::edf_pwm::EdfPwm;
     use defmt::info;
 
     use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
@@ -8,12 +8,13 @@ pub mod dshot {
     use embassy_time::{Duration, Instant, Ticker, Timer};
 
     #[embassy_executor::task]
-    pub async fn dshot_test_task(mut edf: EdfDshot<'static>) {
-        let mut ticker = Ticker::every(Duration::from_hz(2_400));
+    pub async fn dshot_test_task(mut edf: EdfPwm) {
+        edf.enable();
+        edf.set_throttle_compatible(0);
+        Timer::after_secs(5).await;
+        let mut ticker = Ticker::every(Duration::from_millis(1));
         loop {
-            edf.set_throttle_symmetric(LEFT_THROTTLE.lock().await.clone())
-                .await
-                .unwrap();
+            edf.set_throttle_compatible(LEFT_THROTTLE.lock().await.clone());
             ticker.next().await;
         }
     }
@@ -21,9 +22,9 @@ pub mod dshot {
     #[embassy_executor::task]
     pub async fn dshot_set_task() {
         // Sine curve: 10 seconds period, min 100, max 700.
-        let period = Duration::from_secs(120);
+        let period = Duration::from_secs(45);
         let min_throttle = 200u16;
-        let max_throttle = 800u16;
+        let max_throttle = 600u16;
 
         info!(
             "Starting DShot set task: period: {:?}, min: {}, max: {}",
@@ -48,7 +49,7 @@ pub mod dshot {
                 );
                 LEFT_THROTTLE.lock().await.clone_from(&throttle);
                 RIGHT_THROTTLE.lock().await.clone_from(&throttle);
-                Timer::after(Duration::from_secs(10)).await;
+                Timer::after(Duration::from_millis(200)).await;
                 if elapsed >= period {
                     break;
                 }
