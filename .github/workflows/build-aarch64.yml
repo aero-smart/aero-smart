@@ -134,16 +134,7 @@ jobs:
           # Copy any other relevant files
           ls -lh artifacts/
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: aero-smart-panel-aarch64-${{ github.sha }}
-          path: artifacts/*
-          if-no-files-found: warn
-          retention-days: 30
-
       - name: Create release info
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           echo "# Build Info" > artifacts/BUILD_INFO.txt
           echo "Branch: ${{ github.ref_name }}" >> artifacts/BUILD_INFO.txt
@@ -152,3 +143,11 @@ jobs:
           echo "Target: aarch64-unknown-linux-gnu (OrangePi Zero 3)" >> artifacts/BUILD_INFO.txt
           echo "Display: 1024x600" >> artifacts/BUILD_INFO.txt
           cat artifacts/BUILD_INFO.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: aero-smart-panel-aarch64-${{ github.sha }}
+          path: artifacts/*
+          if-no-files-found: warn
+          retention-days: 30
