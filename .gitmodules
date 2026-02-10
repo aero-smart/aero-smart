@@ -1,3 +1,6 @@
 [submodule "am32"]
 	path = am32
 	url = https://github.com/am32-firmware/AM32.git
+[submodule "px4"]
+	path = px4
+	url = https://github.com/PX4/PX4-Autopilot.git

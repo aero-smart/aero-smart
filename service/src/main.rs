@@ -1,6 +1,4 @@
-use aerosmart_shared::serial::{
-    AcknowledgementConfig, ArchivedSerialMessage, SerialMessage,
-};
+use aerosmart_shared::serial::{AcknowledgementConfig, ArchivedSerialMessage, SerialMessage};
 use anyhow::Context;
 use axum::{
     Router,
@@ -162,11 +160,13 @@ async fn serial_task(
             // let bytes = serialize_message(&pong)?;
             let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&pong)
                 .map_err(|e| anyhow::anyhow!("Serialization error: {:?}", e))?;
-            
+
             // Send Length Prefix (u32 little-endian)
             let len = bytes.len() as u32;
-            port.write_all(&len.to_le_bytes()).await.context("Failed to write handshake length prefix")?;
-            
+            port.write_all(&len.to_le_bytes())
+                .await
+                .context("Failed to write handshake length prefix")?;
+
             port.write_all(&bytes).await?;
             info!("Pong sent. Handshake complete. Entering Main Loop.");
             break;

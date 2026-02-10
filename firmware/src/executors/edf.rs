@@ -5,6 +5,7 @@
 //! The Dshot protocol allows for digital communication with the ESCs, providing better
 //! reliability and performance compared to traditional PWM signals.
 use cortex_m::prelude::_embedded_hal_Pwm;
+use defmt::info;
 use dshot_frame::{Command, Frame, NormalDshot};
 use embassy_stm32::peripherals::TIM1;
 use embassy_stm32::timer::Channel::Ch1;
@@ -38,7 +39,10 @@ impl<'a> EdfDshot<'a> {
 
         let frame = build_dshot_frame(throttle, false, max_duty_cycles);
 
-        // info!("Setting symmetric throttle to {}; its frame: {:?}; max duty cycles: {}", throttle, frame, max_duty_cycles);
+        info!(
+            "Setting symmetric throttle to {}; its frame: {:?}; max duty cycles: {}",
+            throttle, frame, max_duty_cycles
+        );
 
         self.pwm.waveform_up(self.dma.reborrow(), Ch1, &frame).await;
         // info!("Setting symmetric throttle to {} [left]", throttle);

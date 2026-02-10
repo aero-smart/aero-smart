@@ -42,16 +42,14 @@ impl Default for AppConfig {
                 port: 3000,
                 host: "0.0.0.0".to_string(),
             },
-            rules: RulesConfig {
-                debug_mode: false,
-            },
+            rules: RulesConfig { debug_mode: false },
         }
     }
 }
 
 pub fn load_config() -> AppConfig {
     let config_path = "AeroSmart.toml";
-    
+
     if Path::new(config_path).exists() {
         info!("Loading configuration from {}", config_path);
         match fs::read_to_string(config_path) {
@@ -72,7 +70,7 @@ pub fn load_config() -> AppConfig {
                 if let Err(e) = fs::write(config_path, toml_str) {
                     info!("Failed to write default config file: {}", e);
                 }
-            },
+            }
             Err(e) => info!("Failed to serialize default config: {}", e),
         }
         return default_config;

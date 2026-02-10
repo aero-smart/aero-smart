@@ -40,6 +40,8 @@ impl Airspeed {
     }
 
     pub async fn read_pitot(&mut self) -> Result<(u8, f32, f32), AirspeedError> {
+        use libm::fabsf as abs;
+
         let mut buf = [0u8; 4];
 
         debug!("Reading MS4525DO pitot sensor");
@@ -63,7 +65,7 @@ impl Airspeed {
         let pressure_pa = ms4525do_pressure(pressure_raw);
         let temperature_c = ms4525do_temperature(temperature_raw);
 
-        Ok((status, pressure_pa, temperature_c))
+        Ok((status, abs(pressure_pa), temperature_c))
     }
 
     /// BME280 barometer reading

@@ -13,7 +13,7 @@ pub mod utils;
 
 use crate::{
     algorithms::{airspeed::AirspeedControl, madgwick::MadgwickAhrs},
-    executors::{edf::EdfDshot, servo::Servo},
+    executors::{edf::EdfDshot, edf_pwm::EdfPwm, servo::Servo},
     sensors::{
         audio_i2s::Audio, imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed,
         qei::QeiOperations,
@@ -39,12 +39,12 @@ use embassy_stm32::{
     time::Hertz,
     timer::{
         qei::{Qei, QeiPin},
-        simple_pwm::{PwmPin, SimplePwm},
+        simple_pwm::{PwmPin, PwmPinConfig, SimplePwm},
     },
     usart::Uart,
     wdg::IndependentWatchdog,
 };
-use embassy_time::{Duration, TICK_HZ, Timer};
+use embassy_time::{Duration, Instant, TICK_HZ, Timer};
 use ws2812_async::{Rgb, Ws2812};
 
 bind_interrupts!(struct Irqs {
@@ -132,7 +132,7 @@ async fn main(spawner: Spawner) {
         spi_ws2812: false,
         uart_upper: false,
         uart_lidar: false,
-        i2c: true,
+        i2c: false,
         pwm_edf: false,
         pwm_servo: false,
         wdt: true,
@@ -252,28 +252,49 @@ async fn main(spawner: Spawner) {
 
     info!("USART3 initialized for LIDAR communication");
 
-    let left_esc = PwmPin::new(p.PE9, embassy_stm32::gpio::OutputType::PushPull);
-    let right_esc = PwmPin::new(p.PE11, embassy_stm32::gpio::OutputType::PushPull);
+    fn pull_down_config() -> PwmPinConfig {
+        PwmPinConfig {
+            output_type: embassy_stm32::gpio::OutputType::PushPull,
+            speed: Speed::VeryHigh,
+            pull: Pull::Down,
+        }
+    }
+
+    let left_esc_dshot = PwmPin::new_with_config(p.PE9, pull_down_config());
+    let right_esc_dshot = PwmPin::new_with_config(p.PE11, pull_down_config());
 
     let edf_pwm = SimplePwm::new(
         p.TIM1,
-        Some(left_esc),
-        Some(right_esc),
+        Some(left_esc_dshot),
+        Some(right_esc_dshot),
         None,
         None,
-        Hertz::khz(600),
+        Hertz::khz(300),
+        embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
+    );
+
+    let left_esc_servo = PwmPin::new_with_config(p.PA0, pull_down_config());
+    let right_esc_servo = PwmPin::new_with_config(p.PA1, pull_down_config());
+
+    let edf_servo_pwm = SimplePwm::new(
+        p.TIM5,
+        Some(left_esc_servo),
+        Some(right_esc_servo),
+        None,
+        None,
+        Hertz::hz(50),
         embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
     );
 
     info!("TIM1 initialized for EDF ESC control");
 
-    let servo = PwmPin::new(p.PA0, embassy_stm32::gpio::OutputType::PushPull);
+    let servo = PwmPin::new(p.PA2, embassy_stm32::gpio::OutputType::PushPull);
 
     let servo_pwm = SimplePwm::new(
         p.TIM2,
+        None,
+        None,
         Some(servo),
-        None,
-        None,
         None,
         Hertz::hz(50),
         embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
@@ -295,7 +316,7 @@ async fn main(spawner: Spawner) {
     info!("IMU SPI interface initialized");
 
     let mut sensors = Airspeed::new(i2c);
-    let edf = EdfDshot::new(edf_pwm, p.DMA1_CH5);
+    let mut edf = EdfPwm::new(edf_servo_pwm);
     let pid = AirspeedControl::new(0.0, 1.0, 0.1, 0.05);
     let ahrs = MadgwickAhrs::new(1_000.0, 0.033);
 
@@ -351,8 +372,6 @@ async fn main(spawner: Spawner) {
             Err(e) => defmt::panic!("Failed to initialize Airspeed Sensor: {:?}", e),
         }
     }
-
-    Timer::after(Duration::from_micros(200)).await;
 
     match spawner.spawn(watchdog_task(wdt)) {
         Ok(_) => info!("Watchdog task spawned"),
