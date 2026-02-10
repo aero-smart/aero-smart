@@ -27,6 +27,7 @@ export const useDeviceStore = defineStore('device', () => {
 
   // Sensor Data
   const airspeed = ref(0.0) // m/s
+  const pressureDiff = ref(0.0) // Pa
 
   const imu = ref({
     accel: { x: 0, y: 0, z: 0 },
@@ -150,6 +151,7 @@ export const useDeviceStore = defineStore('device', () => {
       // Let's stick to raw values display or simple diff.
       // Update: The UI displays m/s. Let's use a dummy conversion: diff * constant.
       const diff = Math.abs(data.splitter_left - data.static_port)
+      pressureDiff.value = diff
       airspeed.value = Math.sqrt((2 * diff) / 1.225)
     } else if (payload.BatteryData) {
       battery.value = {
@@ -210,6 +212,7 @@ export const useDeviceStore = defineStore('device', () => {
     isConnected,
     lastHeartbeat,
     airspeed,
+    pressureDiff,
     imu,
     battery,
     lidar,

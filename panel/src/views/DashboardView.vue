@@ -1,135 +1,232 @@
 <template>
-  <div class="flex flex-col h-full p-4 gap-4">
+  <div class="flex flex-col h-full p-4 gap-4 bg-[#f5f5f5] text-[#423d3c] font-sans">
     <!-- Top Tabs -->
-    <div class="flex gap-2 mb-2">
+    <div class="flex items-center gap-1 bg-[#e0e0e0] w-fit p-1 rounded-t-lg shadow-sm">
       <button
-        v-for="tab in tabs"
+        v-for="tab in ['Overview', 'Sensor', 'Power']"
         :key="tab"
         @click="currentTab = tab"
-        class="px-6 py-2 rounded-full text-sm font-medium transition-all"
+        class="px-4 py-1.5 text-xs font-medium rounded-md transition-all duration-200"
         :class="
           currentTab === tab
-            ? 'bg-primary text-white shadow-lg shadow-blue-500/30'
-            : 'bg-surface text-slate-400 hover:bg-slate-700'
+            ? 'bg-white text-black shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'
         "
       >
         {{ tab }}
       </button>
     </div>
 
-    <!-- Content -->
+    <!-- Main Content Grid -->
     <div class="flex-1 grid grid-cols-12 gap-4 min-h-0">
-      <!-- Left Column: Flight Data -->
+      <!-- Left Column (Wind Input + Wind Speed) -->
       <div class="col-span-3 flex flex-col gap-4">
-        <!-- Airspeed Card -->
-        <div
-          class="bg-surface rounded-2xl p-4 flex flex-col items-center justify-center flex-1 border border-slate-700/50 shadow-sm"
-        >
-          <span class="text-slate-400 text-xs uppercase tracking-wider mb-2 font-medium"
-            >Airspeed</span
-          >
-          <div class="text-4xl font-bold font-mono text-white tracking-tighter">
-            {{ airspeed.toFixed(1) }}
+        <!-- Wind Input -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4">
+          <div class="text-xs font-bold text-gray-700">Wind Input</div>
+          
+          <div class="flex flex-col gap-2">
+             <div class="flex justify-between items-center">
+               <span class="text-[11px] text-gray-500 font-medium">Target Speed</span>
+               <div class="flex items-baseline gap-1">
+                 <input 
+                   type="number" 
+                   v-model.number="targetSpeed"
+                   @change="updateSpeed"
+                   class="w-12 text-right bg-transparent border-b border-gray-300 text-sm font-bold focus:outline-none focus:border-black transition-colors"
+                   placeholder="0"
+                 />
+                 <span class="text-xs text-gray-400">m/s</span>
+               </div>
+             </div>
           </div>
-          <span class="text-slate-500 text-xs mt-1">m/s</span>
+
+          <div class="bg-gray-100 rounded-lg p-3 flex flex-col gap-2">
+             <div class="flex items-center justify-between">
+               <div class="text-[11px] text-gray-500 font-medium">Current Speed</div>
+               <div class="flex items-baseline gap-1">
+                 <span class="text-xl font-bold text-gray-800">{{ airspeed.toFixed(1) }}</span>
+                 <span class="text-xs text-gray-500">m/s</span>
+               </div>
+             </div>
+             <!-- Segmented Progress Bar (Monochrome) -->
+             <div class="flex gap-[2px] h-4 w-full">
+               <div 
+                 v-for="i in 30" 
+                 :key="i"
+                 class="flex-1 rounded-sm transition-colors duration-200"
+                 :class="i <= (airspeed / 30) * 30 ? 'bg-gray-800' : 'bg-gray-300'"
+               ></div>
+             </div>
+          </div>
         </div>
 
-        <!-- Battery Card -->
-        <div
-          class="bg-surface rounded-2xl p-4 flex flex-col gap-3 border border-slate-700/50 shadow-sm"
-        >
-          <div class="flex justify-between items-center">
-            <span class="text-slate-400 text-xs uppercase tracking-wider font-medium">Battery</span>
-            <span
-              class="text-xs font-mono font-bold"
-              :class="battery.soc > 20 ? 'text-success' : 'text-danger'"
-              >{{ battery.soc.toFixed(0) }}%</span
-            >
-          </div>
-          <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden shadow-inner">
-            <div
-              class="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-500"
-              :style="{ width: `${battery.soc}%` }"
-            ></div>
-          </div>
-          <div class="flex justify-between text-xs text-slate-500 font-mono">
-            <span>{{ battery.voltage.toFixed(1) }}V</span>
-            <span>3S Lipo</span>
-          </div>
+        <!-- Wind Speed Display -->
+        <div class="bg-white rounded-2xl p-3 shadow-sm border border-white flex-1 flex flex-col gap-3">
+           <div class="text-xs font-bold text-gray-700">Wind Speed Display</div>
+           
+           <!-- Gauge -->
+           <div class="flex-1 bg-gray-100 rounded-xl relative min-h-[120px] w-full overflow-hidden">
+              <div ref="gaugeChartEl" class="absolute inset-0 w-full h-full z-0"></div>
+           </div>
+
+           <!-- History Trend -->
+           <div class="h-24 bg-white border border-gray-100 rounded-xl p-2 flex flex-col">
+             <div class="text-[10px] text-gray-400 mb-1 flex-shrink-0">History Trend</div>
+             <div class="flex-1 relative min-h-0 w-full">
+                <div ref="trendChartEl" class="absolute inset-0 w-full h-full"></div>
+             </div>
+           </div>
+
+           <!-- Bottom Info -->
+           <div class="grid grid-cols-2 gap-3">
+             <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
+               <span class="text-[10px] text-gray-500 block">Wind Direction</span>
+               <span class="text-sm font-bold text-gray-800">19°</span>
+             </div>
+             <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
+               <span class="text-[10px] text-gray-500 block">Avg Wind Speed</span>
+               <span class="text-sm font-bold text-gray-800">{{ stats.avgSpeed.toFixed(1) }} m/s</span>
+             </div>
+           </div>
         </div>
       </div>
 
-      <!-- Center Column: Attitude (Placeholder for WebGL/Canvas) -->
-      <div
-        class="col-span-6 bg-slate-900 rounded-2xl border border-slate-800 relative overflow-hidden flex items-center justify-center shadow-inner"
-      >
-        <div
-          class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/10 to-transparent"
-        ></div>
-        <!-- Simple CSS Horizon -->
-        <div
-          class="relative w-48 h-48 rounded-full border-4 border-slate-700 overflow-hidden bg-sky-600/20 shadow-2xl"
-        >
-          <div
-            class="absolute inset-0 bg-amber-600/30 translate-y-1/2 transition-transform duration-100 ease-out origin-center"
-            :style="{
-              transform: `rotate(${-imu.attitude.roll}deg) translateY(${imu.attitude.pitch * 2}px)`,
-            }"
-          ></div>
-          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div class="w-full h-[2px] bg-white/30 shadow-sm"></div>
-            <div class="absolute h-full w-[2px] bg-white/30 shadow-sm"></div>
-            <!-- Center Dot -->
-            <div class="absolute w-2 h-2 bg-white rounded-full shadow-lg"></div>
-          </div>
-        </div>
-        <div class="absolute bottom-4 text-center">
-          <div class="text-xs text-slate-400 uppercase tracking-widest mb-1 font-bold opacity-50">
-            Attitude
-          </div>
-          <div class="font-mono text-xs text-slate-500">
-            R: {{ imu.attitude.roll.toFixed(1) }}° P: {{ imu.attitude.pitch.toFixed(1) }}°
-          </div>
+      <!-- Middle Column (Pressure Monitor) -->
+      <div class="col-span-5 flex flex-col gap-4">
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 h-full">
+           <div class="text-xs font-bold text-gray-700">Pressure Difference Monitor</div>
+           
+           <!-- Big Number -->
+           <div class="bg-gray-100 rounded-xl p-6 flex flex-col items-center justify-center">
+             <div class="text-xs text-gray-500 font-medium mb-1">Current Pressure Diff</div>
+             <div class="flex items-baseline gap-2">
+               <span class="text-4xl font-bold text-gray-800 tracking-tight">{{ pressureDiff.toFixed(2) }}</span>
+               <span class="text-lg text-gray-500 font-medium">Pa</span>
+             </div>
+           </div>
+
+           <!-- Waveform Chart -->
+           <div class="flex-1 min-h-0 bg-white border border-gray-100 rounded-xl p-2 flex flex-col">
+             <div class="text-[10px] text-gray-400 mb-1 flex-shrink-0">Real-time Waveform</div>
+             <div class="flex-1 relative min-h-0 w-full">
+                <div ref="waveformChartEl" class="absolute inset-0 w-full h-full"></div>
+             </div>
+           </div>
+
+           <!-- Data Stats -->
+           <div class="grid grid-cols-3 gap-3 pt-3 border-t border-gray-100">
+            <div>
+              <span class="text-xl font-bold text-gray-900 block tracking-tight">{{ stats.max.toFixed(1) }}</span>
+              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Max Value</span>
+            </div>
+            <div>
+              <span class="text-xl font-bold text-gray-900 block tracking-tight">{{ stats.min.toFixed(1) }}</span>
+              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Min Value</span>
+            </div>
+            <div>
+              <span class="text-xl font-bold text-gray-900 block tracking-tight">{{ stats.avg.toFixed(1) }}</span>
+              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Average</span>
+            </div>
+           </div>
+
+
         </div>
       </div>
 
-      <!-- Right Column: Environment & Status -->
-      <div class="col-span-3 flex flex-col gap-4">
-        <div
-          class="bg-surface rounded-2xl p-4 flex-1 border border-slate-700/50 flex flex-col gap-4 shadow-sm"
-        >
-          <div class="flex items-center justify-between border-b border-slate-700/50 pb-2">
-            <span class="text-xs text-slate-400 uppercase font-medium">Temp</span>
-            <span class="font-mono text-white font-bold">{{ env.temperature.toFixed(1) }}°C</span>
-          </div>
-          <div class="flex items-center justify-between border-b border-slate-700/50 pb-2">
-            <span class="text-xs text-slate-400 uppercase font-medium">Press</span>
-            <span class="font-mono text-white font-bold"
-              >{{ (env.pressure / 100).toFixed(0) }} hPa</span
-            >
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-slate-400 uppercase font-medium">Lidar</span>
-            <span class="font-mono text-primary font-bold">{{ lidar.distance }} cm</span>
+      <!-- Right Column (Sensor Output + IMU) -->
+      <div class="col-span-4 flex flex-col gap-4">
+        <!-- Sensor Output (Refactored to match Reference Card Layout) -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-white relative overflow-hidden">
+          <!-- Decorative Gradient Background (Subtle B&W) -->
+          <div class="absolute inset-0 bg-gradient-to-br from-gray-50 to-white opacity-50 z-0 pointer-events-none"></div>
+
+          <div class="relative z-10 flex flex-col gap-4">
+            <!-- Header -->
+            <div class="text-xs font-bold text-gray-700">Sensor Output</div>
+
+            <!-- Main Big Metric (Pressure 1) -->
+            <div class="flex flex-col gap-2">
+               <div>
+                 <div class="flex items-baseline gap-1">
+                   <span class="text-4xl font-black text-gray-900 tracking-tighter leading-none">{{ (env.pressure).toFixed(0) }}</span>
+                   <span class="text-xs text-gray-500 font-bold mb-1">Pa</span>
+                 </div>
+                 <span class="text-[10px] text-gray-400 font-medium mt-1 block">Main Pressure (Abs)</span>
+               </div>
+               
+               <!-- Decorative Bar Visual -->
+               <div class="flex gap-1 h-8 items-end opacity-20 select-none">
+                  <div class="flex-1 bg-black rounded-sm h-[40%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[70%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[50%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[80%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[60%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[90%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[45%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[75%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[55%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[85%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[65%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[95%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[40%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[70%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[50%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[80%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[60%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[90%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[50%]"></div>
+                  <div class="flex-1 bg-black rounded-sm h-[70%]"></div>
+               </div>
+            </div>
+
+            <!-- Bottom Metrics Row -->
+            <div class="grid grid-cols-3 gap-3 pt-3 border-t border-gray-100">
+               <!-- Pressure 2 -->
+               <div>
+                  <span class="text-xl font-bold text-gray-900 block tracking-tight">{{ (env.pressure - pressureDiff).toFixed(0) }}</span>
+                  <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Pressure 2</span>
+               </div>
+               <!-- Speed 1 -->
+               <div>
+                  <span class="text-xl font-bold text-gray-900 block tracking-tight">{{ airspeed.toFixed(2) }}</span>
+                  <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Speed 1</span>
+               </div>
+               <!-- Speed 2 -->
+               <div>
+                  <span class="text-xl font-bold text-gray-900 block tracking-tight">{{ (airspeed * 1.1).toFixed(2) }}</span>
+                  <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Speed 2</span>
+               </div>
+            </div>
           </div>
         </div>
 
-        <div
-          class="bg-surface rounded-2xl p-4 border border-slate-700/50 shadow-sm flex flex-col justify-center"
-        >
-          <div class="text-xs text-slate-400 uppercase mb-2 text-center font-medium">
-            System Status
+        <!-- IMU Visualization -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 flex-1">
+          <div class="text-xs font-bold text-gray-700">IMU Visualization</div>
+          <div class="flex-1 flex items-center justify-center perspective-container">
+            <div class="cube" :style="cubeStyle">
+              <div class="face front"></div>
+              <div class="face back"></div>
+              <div class="face right"></div>
+              <div class="face left"></div>
+              <div class="face top"></div>
+              <div class="face bottom"></div>
+            </div>
           </div>
-          <div
-            class="px-3 py-2 rounded-lg bg-slate-900 text-center font-bold text-sm tracking-wide border border-slate-800"
-            :class="{
-              'text-green-400 shadow-[0_0_10px_rgba(74,222,128,0.2)]': status === 'Running',
-              'text-yellow-400': status === 'Initializing',
-              'text-blue-400': status === 'Idle',
-              'text-red-400': status === 'Error',
-            }"
-          >
-            {{ status }}
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
+              <div class="text-[10px] text-gray-500 font-medium">Roll</div>
+              <div class="text-sm font-bold">{{ imu.attitude.roll.toFixed(1) }}°</div>
+            </div>
+            <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
+              <div class="text-[10px] text-gray-500 font-medium">Pitch</div>
+              <div class="text-sm font-bold">{{ imu.attitude.pitch.toFixed(1) }}°</div>
+            </div>
+            <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
+              <div class="text-[10px] text-gray-500 font-medium">Yaw</div>
+              <div class="text-sm font-bold">{{ imu.attitude.yaw.toFixed(1) }}°</div>
+            </div>
           </div>
         </div>
       </div>
@@ -138,13 +235,249 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useDeviceStore } from '@/stores/device'
 import { storeToRefs } from 'pinia'
+import * as echarts from 'echarts'
 
 const store = useDeviceStore()
-const { airspeed, battery, imu, env, lidar, status } = storeToRefs(store)
+const { imu, airspeed, pressureDiff, env, isConnected } = storeToRefs(store)
 
-const tabs = ['Overview', 'Sensors', 'Power']
 const currentTab = ref('Overview')
+const targetSpeed = ref(0)
+
+// Simulation for Demo
+let simTimer: number | null = null
+
+function startSimulation() {
+  if (simTimer) return
+  simTimer = window.setInterval(() => {
+    if (isConnected.value) return
+
+    // Simulate Pressure Diff (sine wave + noise)
+    const time = Date.now() / 1000
+    pressureDiff.value = 30 + Math.sin(time) * 10 + (Math.random() - 0.5) * 2
+
+    // Simulate Airspeed (correlated with pressure)
+    airspeed.value = 5 + Math.sin(time * 0.5) * 2 + (Math.random() - 0.5) * 0.5
+
+    // Simulate IMU
+    imu.value.attitude.roll = Math.sin(time * 0.5) * 10
+    imu.value.attitude.pitch = Math.cos(time * 0.3) * 10
+    imu.value.attitude.yaw += 0.1
+  }, 100)
+}
+
+
+// Stats
+const stats = ref({
+  max: 0,
+  min: 0,
+  avg: 0,
+  avgSpeed: 0
+})
+
+const pressureHistory = ref<{ value: number, time: string }[]>([])
+const speedHistory = ref<{ value: number, time: string }[]>([])
+const maxHistoryLength = 100
+
+// Chart Elements
+const waveformChartEl = ref<HTMLElement | null>(null)
+const gaugeChartEl = ref<HTMLElement | null>(null)
+const trendChartEl = ref<HTMLElement | null>(null)
+
+let waveformChart: echarts.ECharts | null = null
+let gaugeChart: echarts.ECharts | null = null
+let trendChart: echarts.ECharts | null = null
+
+// Cube Style for IMU
+const cubeStyle = computed(() => {
+  const { roll, pitch, yaw } = imu.value.attitude
+  return {
+    transform: `rotateX(${-pitch}deg) rotateY(${yaw}deg) rotateZ(${-roll}deg)`
+  }
+})
+
+function updateSpeed() {
+  store.setThrottle(targetSpeed.value)
+}
+
+// Chart Options
+const commonChartOptions = {
+  grid: { top: 15, right: 30, bottom: 25, left: 45 },
+  xAxis: { type: 'category', show: true, axisLabel: { fontSize: 10, color: '#999' }, boundaryGap: false },
+  yAxis: { type: 'value', splitLine: { show: true, lineStyle: { type: 'dashed', color: '#eee' } }, axisLabel: { fontSize: 11, color: '#666', margin: 10 } },
+  animation: false
+}
+
+onMounted(() => {
+  initCharts()
+  window.addEventListener('resize', handleResize)
+  // Start simulation if not connected
+  if (!isConnected.value) {
+    startSimulation()
+  }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  if (simTimer) clearInterval(simTimer)
+  waveformChart?.dispose()
+  gaugeChart?.dispose()
+  trendChart?.dispose()
+})
+
+function handleResize() {
+  waveformChart?.resize()
+  gaugeChart?.resize()
+  trendChart?.resize()
+}
+
+function initCharts() {
+  if (waveformChartEl.value) {
+    waveformChart = echarts.init(waveformChartEl.value)
+    waveformChart.setOption({
+      ...commonChartOptions,
+      series: [{
+        data: [],
+        type: 'line',
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 2, color: '#333333' },
+        areaStyle: { 
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {offset: 0, color: 'rgba(0,0,0,0.1)'}, 
+            {offset: 1, color: 'rgba(0,0,0,0.0)'}
+          ]) 
+        }
+      }]
+    })
+  }
+
+  if (gaugeChartEl.value) {
+    gaugeChart = echarts.init(gaugeChartEl.value)
+    gaugeChart.setOption({
+      series: [{
+        type: 'gauge',
+        center: ['50%', '55%'],
+        radius: '100%',
+        startAngle: 200,
+        endAngle: -20,
+        min: 0,
+        max: 30,
+        splitNumber: 6,
+        itemStyle: { color: '#333' },
+        progress: { show: true, width: 8 },
+        pointer: { show: true, length: '60%', width: 4 },
+        axisLine: { lineStyle: { width: 8, color: [[1, '#e5e7eb']] } },
+        axisTick: { distance: -12, length: 4, lineStyle: { color: '#999', width: 1 } },
+        splitLine: { distance: -12, length: 8, lineStyle: { color: '#999', width: 2 } },
+        axisLabel: { distance: -16, color: '#666', fontSize: 10 },
+        anchor: { show: true, showAbove: true, size: 8, itemStyle: { borderWidth: 2, borderColor: '#333' } },
+        detail: {
+          valueAnimation: true,
+          fontSize: 30,
+          fontWeight: 'bold',
+          color: '#1f2937',
+          offsetCenter: [0, '40%'],
+          formatter: (val: number) => `{value|${val.toFixed(1)}}\n{unit|m/s}`,
+          rich: {
+            value: {
+              fontSize: 30,
+              fontWeight: 'bold',
+              color: '#1f2937',
+              lineHeight: 30
+            },
+            unit: {
+              fontSize: 12,
+              color: '#6b7280',
+              lineHeight: 20,
+              padding: [5, 0, 0, 0]
+            }
+          }
+        },
+        data: [{ value: 0 }]
+      }]
+    })
+  }
+
+  if (trendChartEl.value) {
+    trendChart = echarts.init(trendChartEl.value)
+    trendChart.setOption({
+      ...commonChartOptions,
+      series: [{
+        data: [],
+        type: 'line',
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 1.5, color: '#666' }
+      }]
+    })
+  }
+}
+
+// Update Loops
+watch([pressureDiff, airspeed], () => {
+  const p = pressureDiff.value
+  const s = airspeed.value
+
+  // Update History
+  const now = new Date().toLocaleTimeString('en-US', { hour12: false })
+  pressureHistory.value.push({ value: p, time: now })
+  speedHistory.value.push({ value: s, time: now })
+
+  if (pressureHistory.value.length > maxHistoryLength) pressureHistory.value.shift()
+  if (speedHistory.value.length > maxHistoryLength) speedHistory.value.shift()
+
+  // Update Stats
+  const pValues = pressureHistory.value.map(d => d.value)
+  const sValues = speedHistory.value.map(d => d.value)
+  
+  stats.value.max = Math.max(...pValues)
+  stats.value.min = Math.min(...pValues)
+  stats.value.avg = pValues.reduce((a, b) => a + b, 0) / pValues.length
+  stats.value.avgSpeed = sValues.reduce((a, b) => a + b, 0) / sValues.length
+
+  // Update Charts
+  waveformChart?.setOption({ 
+    xAxis: { data: pressureHistory.value.map(d => d.time) },
+    series: [{ data: pValues }] 
+  })
+  gaugeChart?.setOption({ series: [{ data: [{ value: s }] }] })
+  trendChart?.setOption({ 
+    xAxis: { data: speedHistory.value.map(d => d.time) },
+    series: [{ data: sValues }] 
+  })
+})
+
 </script>
+
+<style scoped>
+.perspective-container {
+  perspective: 800px;
+}
+
+.cube {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.1s linear;
+}
+
+.face {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #333;
+  opacity: 0.8;
+}
+
+.front  { transform: rotateY(0deg) translateZ(50px); }
+.back   { transform: rotateY(180deg) translateZ(50px); }
+.right  { transform: rotateY(90deg) translateZ(50px); }
+.left   { transform: rotateY(-90deg) translateZ(50px); }
+.top    { transform: rotateX(90deg) translateZ(50px); }
+.bottom { transform: rotateX(-90deg) translateZ(50px); }
+</style>
