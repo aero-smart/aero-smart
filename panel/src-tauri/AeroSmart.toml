@@ -4,7 +4,7 @@
 # [serial] 串口通信配置
 [serial]
 # 串口端口名称 (例如: /dev/tty.usbmodem1234, COM3, /dev/ttyUSB0)
-port = "/dev/tty.usbmodem1234"
+port = "/dev/ttyUSB0"
 
 # 波特率 (默认: 915200)
 baud_rate = 915200

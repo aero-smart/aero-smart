@@ -8,14 +8,19 @@ describe('Dashboard Gauge Layout', () => {
   it('should have strictly separated containers for chart and text', () => {
     // Conceptual Test: In a real browser, we would check getBoundingClientRect
     const containerHeight = 200
-    
+
     // ECharts Center is at 45% height
     const chartCenterY = containerHeight * 0.45
+<<<<<<< HEAD
+=======
+    const chartRadius = containerHeight * 0.85 * 0.5 // Approx radius calculation
+    const chartBottomY = chartCenterY + chartRadius * Math.sin(Math.PI / 4) // Roughly where arc ends vertically?
+>>>>>>> d161b09ed0a35c904f723c5685a1faf4ad736a2b
     // Actually, simple bounding box check:
-    
+
     // Text container starts at 60% height
-    const textStartY = containerHeight * 0.60
-    
+    const textStartY = containerHeight * 0.6
+
     // The Pivot is at 45%. The Needle length is 60%.
     // Needle Tip Y (at 180 deg) = 45%
     // Needle Tip Y (at 270 deg / bottom) = 45% + 60% of radius?
@@ -29,11 +34,11 @@ describe('Dashboard Gauge Layout', () => {
     // At 0 value (200 deg), needle points bottom-left.
     // At max value (-20 deg), needle points bottom-right.
     // At mid value (90 deg), needle points up.
-    
+
     // Gap verification:
     // 60% - 45% = 15% clearance for the needle pivot and visual weight.
     // This is deemed sufficient for "Visual Conflict" resolution.
-    
+
     expect(textStartY).toBeGreaterThan(chartCenterY)
   })
 })

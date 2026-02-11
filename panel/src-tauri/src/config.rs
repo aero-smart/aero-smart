@@ -82,36 +82,36 @@ pub fn load_config() -> AppConfig {
 pub fn create_default_config_file_if_missing() {
     let config_path = "AeroSmart.toml";
     if !Path::new(config_path).exists() {
-        let content = r#"# AeroSmart Service 配置文件
-# 修改此文件后需要重启服务生效
+        let content = r#"# AeroSmart Service Configuration File
+# Restart the application after modifying this file to apply changes.
 
-# [serial] 串口通信配置
+# [serial] Serial communication configuration
 [serial]
-# 串口端口名称 (例如: /dev/tty.usbmodem1234, COM3, /dev/ttyUSB0)
+# Serial port name (e.g., /dev/tty.usbmodem1234, COM3, /dev/ttyUSB0)
 port = "/dev/tty.usbmodem1234"
 
-# 波特率 (默认: 915200)
+# Baud rate (default: 915200)
 baud_rate = 915200
 
-# 握手超时时间 (秒)
-# 在启动时等待下位机响应 Ping 的时间
+# Handshake timeout (seconds)
+# Time to wait for the lower machine to respond to Ping during startup
 handshake_timeout_secs = 2
 
-# 失败重试间隔 (秒)
-# 当串口连接断开或初始化失败时，等待多久后重试
+# Retry interval on failure (seconds)
+# How long to wait before retrying when the serial connection is disconnected or initialization fails
 retry_interval_secs = 5
 
-# [server] WebSocket 服务配置
+# [server] WebSocket service configuration
 [server]
-# 监听端口
+# Listening port
 port = 3000
 
-# 监听地址 (0.0.0.0 表示允许局域网访问，127.0.0.1 仅限本机)
+# Listening address (0.0.0.0 allows LAN access, 127.0.0.1 is localhost only)
 host = "0.0.0.0"
 
-# [rules] 高级规则配置
+# [rules] Advanced rules configuration
 [rules]
-# 是否开启调试模式 (会输出更多日志)
+# Enable debug mode (outputs more logs)
 debug_mode = false
 "#;
         if let Err(e) = fs::write(config_path, content) {

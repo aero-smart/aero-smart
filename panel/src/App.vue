@@ -10,7 +10,11 @@ onMounted(async () => {
   store.connect()
   try {
     // Only try to set fullscreen if we are in a Tauri environment
+<<<<<<< HEAD
     if ('__TAURI_INTERNALS__' in window) {
+=======
+    if (window.__TAURI_INTERNALS__) {
+>>>>>>> d161b09ed0a35c904f723c5685a1faf4ad736a2b
       await getCurrentWindow().setFullscreen(true)
     }
   } catch (e) {
