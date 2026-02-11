@@ -152,7 +152,6 @@ jobs:
         with:
           name: aero-smart-panel-aarch64-${{ github.sha }}
           path: |
-            artifacts/*.AppImage
             artifacts/*.deb
             artifacts/BUILD_INFO.txt
           if-no-files-found: warn
