@@ -41,16 +41,29 @@ jobs:
         with:
           version: '10.20.0'
 
-      - name: Configure aarch64 cross-compilation environment
+      - name: Configure arm64 multiarch apt sources
         run: |
-          # Enable arm64 architecture for apt
           sudo dpkg --add-architecture arm64
 
-          # Add arm64 apt sources
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs) main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/arm64.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/arm64.list
-          sudo apt-get update
+          # Restrict all existing sources to amd64 only so they don't try
+          # to serve arm64 packages (security.ubuntu.com doesn't have them)
+          sudo sed -i 's/^deb http/deb [arch=amd64] http/g' /etc/apt/sources.list
+          sudo sed -i 's/^deb https/deb [arch=amd64] https/g' /etc/apt/sources.list
 
+          # Also restrict any extra sources dropped in by the GitHub runner image
+          sudo find /etc/apt/sources.list.d/ -name "*.list" \
+            -exec sudo sed -i 's/^deb http/deb [arch=amd64] http/g' {} \; \
+            -exec sudo sed -i 's/^deb https/deb [arch=amd64] https/g' {} \;
+
+          # Now add arm64-only sources pointing at ports.ubuntu.com
+          sudo tee /etc/apt/sources.list.d/arm64-ports.list << 'EOF'
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy-security main restricted universe multiverse
+          deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy-backports main restricted universe multiverse
+          EOF
+
+          sudo apt-get update
       - name: Install Tauri dependencies
         run: |
           sudo apt-get update &&
