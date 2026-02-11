@@ -11,8 +11,6 @@ describe('Dashboard Gauge Layout', () => {
     
     // ECharts Center is at 45% height
     const chartCenterY = containerHeight * 0.45
-    const chartRadius = containerHeight * 0.85 * 0.5 // Approx radius calculation
-    const chartBottomY = chartCenterY + (chartRadius * Math.sin(Math.PI / 4)) // Roughly where arc ends vertically? 
     // Actually, simple bounding box check:
     
     // Text container starts at 60% height

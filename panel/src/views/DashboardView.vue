@@ -1,16 +1,16 @@
 <template>
   <div class="flex flex-col h-full p-4 gap-4 bg-[#f5f5f5] text-[#423d3c] font-sans">
     <!-- Top Tabs -->
-    <div class="flex items-center gap-1 bg-[#e0e0e0] w-fit p-1 rounded-t-lg shadow-sm">
+    <div class="flex items-center gap-1 bg-white w-fit p-1.5 rounded-full border border-gray-200 shadow-[0_10px_24px_rgba(0,0,0,0.12)]">
       <button
         v-for="tab in ['Overview', 'Sensor', 'Power']"
         :key="tab"
         @click="currentTab = tab"
-        class="px-4 py-1.5 text-xs font-medium rounded-md transition-all duration-200"
+        class="px-4 py-1.5 text-[11px] font-semibold rounded-full transition-all duration-200"
         :class="
           currentTab === tab
-            ? 'bg-white text-black shadow-sm'
-            : 'text-gray-500 hover:text-gray-700'
+            ? 'bg-black text-white shadow-[0_10px_22px_rgba(0,0,0,0.35)]'
+            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
         "
       >
         {{ tab }}
@@ -66,7 +66,7 @@
            <div class="text-xs font-bold text-gray-700">Wind Speed Display</div>
            
            <!-- Gauge -->
-           <div class="flex-1 bg-gray-100 rounded-xl relative min-h-[120px] w-full overflow-hidden">
+           <div class="relative w-full flex-1 min-h-[160px] aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden">
               <div ref="gaugeChartEl" class="absolute inset-0 w-full h-full z-0"></div>
            </div>
 
@@ -98,11 +98,15 @@
            <div class="text-xs font-bold text-gray-700">Pressure Difference Monitor</div>
            
            <!-- Big Number -->
-           <div class="bg-gray-100 rounded-xl p-6 flex flex-col items-center justify-center">
-             <div class="text-xs text-gray-500 font-medium mb-1">Current Pressure Diff</div>
-             <div class="flex items-baseline gap-2">
-               <span class="text-4xl font-bold text-gray-800 tracking-tight">{{ pressureDiff.toFixed(2) }}</span>
-               <span class="text-lg text-gray-500 font-medium">Pa</span>
+           <div class="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-white via-gray-50 to-gray-100 border border-gray-200/70 shadow-[0_6px_20px_rgba(0,0,0,0.06)] flex flex-col items-center justify-center gap-2">
+             <div class="absolute inset-0 pointer-events-none">
+               <div class="absolute -top-12 -left-12 h-28 w-28 rounded-full bg-white/70 blur-2xl"></div>
+               <div class="absolute -bottom-12 -right-12 h-32 w-32 rounded-full bg-white/60 blur-2xl"></div>
+             </div>
+             <div class="relative z-10 text-[10px] uppercase tracking-[0.2em] text-gray-400 font-semibold">Current Pressure Diff</div>
+             <div class="relative z-10 flex items-end gap-3">
+               <span class="text-5xl font-semibold text-gray-900 tracking-tight tabular-nums">{{ pressureDiff.toFixed(2) }}</span>
+               <span class="text-[11px] text-gray-500 font-semibold px-2 py-0.5 rounded-full bg-white/70 border border-gray-200">Pa</span>
              </div>
            </div>
 
@@ -152,31 +156,6 @@
                    <span class="text-4xl font-black text-gray-900 tracking-tighter leading-none">{{ (env.pressure).toFixed(0) }}</span>
                    <span class="text-xs text-gray-500 font-bold mb-1">Pa</span>
                  </div>
-                 <span class="text-[10px] text-gray-400 font-medium mt-1 block">Main Pressure (Abs)</span>
-               </div>
-               
-               <!-- Decorative Bar Visual -->
-               <div class="flex gap-1 h-8 items-end opacity-20 select-none">
-                  <div class="flex-1 bg-black rounded-sm h-[40%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[70%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[50%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[80%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[60%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[90%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[45%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[75%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[55%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[85%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[65%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[95%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[40%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[70%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[50%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[80%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[60%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[90%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[50%]"></div>
-                  <div class="flex-1 bg-black rounded-sm h-[70%]"></div>
                </div>
             </div>
 
@@ -289,6 +268,7 @@ const trendChartEl = ref<HTMLElement | null>(null)
 let waveformChart: echarts.ECharts | null = null
 let gaugeChart: echarts.ECharts | null = null
 let trendChart: echarts.ECharts | null = null
+let resizeObserver: ResizeObserver | null = null
 
 // Cube Style for IMU
 const cubeStyle = computed(() => {
@@ -312,7 +292,18 @@ const commonChartOptions = {
 
 onMounted(() => {
   initCharts()
+  requestAnimationFrame(() => {
+    handleResize()
+  })
   window.addEventListener('resize', handleResize)
+  if ('ResizeObserver' in window) {
+    resizeObserver = new ResizeObserver(() => {
+      handleResize()
+    })
+    if (waveformChartEl.value) resizeObserver.observe(waveformChartEl.value)
+    if (gaugeChartEl.value) resizeObserver.observe(gaugeChartEl.value)
+    if (trendChartEl.value) resizeObserver.observe(trendChartEl.value)
+  }
   // Start simulation if not connected
   if (!isConnected.value) {
     startSimulation()
@@ -321,6 +312,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
+  resizeObserver?.disconnect()
   if (simTimer) clearInterval(simTimer)
   waveformChart?.dispose()
   gaugeChart?.dispose()
@@ -359,8 +351,8 @@ function initCharts() {
     gaugeChart.setOption({
       series: [{
         type: 'gauge',
-        center: ['50%', '55%'],
-        radius: '100%',
+        center: ['50%', '60%'],
+        radius: '90%',
         startAngle: 200,
         endAngle: -20,
         min: 0,
