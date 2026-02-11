@@ -91,8 +91,8 @@ impl GlobalState {
             quaternion: None,
             imu_head: 0,
             airspeed_head: 0,
-            battery_voltage_volts: 0.0,
-            battery_soc_percent: 0.0,
+            battery_voltage_volts: 16.0,
+            battery_soc_percent: 100.0,
             analog_pressure_sensor_data_pa: None,
             qei_position_counts: 0,
             qei_direction: true,
@@ -122,5 +122,4 @@ pub static STATUS_UPDATED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::
 pub static IMU_BUFFER_FULL_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static DESIRED_UPDATE_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 pub static ANALOG_PRESSURE_SENSOR_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
-pub static QEI_CHANNEL: Channel<CriticalSectionRawMutex, (u16, bool, bool), 2> = Channel::new();
 pub static AUDIO_CHANNEL: Channel<CriticalSectionRawMutex, AcousticFftInput, 2> = Channel::new();

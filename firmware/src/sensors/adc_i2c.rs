@@ -7,7 +7,7 @@ use embassy_stm32::{
 
 use crate::{
     sensors::drivers::ads1115::Ads1115Config,
-    utils::pressure_adc::{option_arr_to_messsage, voltage_v_to_pressure_pa},
+    utils::pressure_adc::{option_arr_to_message, voltage_v_to_pressure_pa},
 };
 
 /// ADS1115 driver over I2C
@@ -32,8 +32,7 @@ pub enum AdcI2cError {
 #[derive(Debug, Copy, Clone, PartialEq, defmt::Format)]
 pub enum AdcConnection {
     Mpxv7002,
-    Xgzp6847aPa2500,
-    Xgzp6847aPa3000,
+    Xgzp6847a { max_pressure_pa: f32 },
 }
 
 impl AdcConnection {
@@ -42,8 +41,7 @@ impl AdcConnection {
             voltage_v,
             match self {
                 AdcConnection::Mpxv7002 => (-2_000.0, 2_000.0),
-                AdcConnection::Xgzp6847aPa2500 => (0.0, 2500.0),
-                AdcConnection::Xgzp6847aPa3000 => (0.0, 3000.0),
+                AdcConnection::Xgzp6847a { max_pressure_pa } => (0.0, *max_pressure_pa),
             },
         )
     }
@@ -109,6 +107,6 @@ impl<'a> AdcI2c<'a> {
                 }
             }
         }
-        Ok(option_arr_to_messsage(results))
+        Ok(option_arr_to_message(results))
     }
 }

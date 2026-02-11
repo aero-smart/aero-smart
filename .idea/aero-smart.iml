@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/firmware/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/service/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/shared/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/panel/src-tauri/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

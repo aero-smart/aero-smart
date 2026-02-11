@@ -3,7 +3,7 @@
 [package]
 edition.workspace = true
 version.workspace = true
-name = "aerosmart-firmware"
+name              = "aerosmart-firmware"
 
 [features]
 default = [
@@ -85,10 +85,15 @@ rkyv = { version = "0.8.14", default-features = false, features = [
 aquamarine = "0.6.0"
 interpn = { version = "0.11.0", default-features = false }
 chrono = { version = "0.4.43", default-features = false }
+paste = "1.0.15"
+static_cell = "2"
+embassy-embedded-hal = "0.5.0"
+embedded-hal-async = "1.0.0"
+embedded-hal = "1.0.0"
 
 [[bin]]
-name = "aerosmart-firmware"
-test = false
+name  = "aerosmart-firmware"
+test  = false
 bench = false
 
 [package.metadata.docs.rs]

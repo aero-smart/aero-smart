@@ -12,23 +12,27 @@ use crate::state::GLOBAL_STATE;
 
 #[embassy_executor::task]
 /// Poll pitot tube @ 100 Hz and barometer @ 10 Hz
-pub async fn airspeed_task(mut sensors: Airspeed<'static>) {
+pub async fn airspeed_task(mut sensors: Airspeed) {
     let mut counter = 0;
     loop {
         match sensors.read_pitot().await {
             Ok((status, pressure_raw, temperature_raw)) => {
-                defmt::info!(
-                    "Pitot Status: {} | Pressure Raw: {} | Temperature Raw: {}",
-                    status,
-                    pressure_raw,
-                    temperature_raw
-                );
+                if counter % 10 == 0 {
+                    defmt::info!(
+                        "Pitot Readings | Status: {} | Pressure Raw: {} | Temperature Raw: {}",
+                        status,
+                        pressure_raw,
+                        temperature_raw
+                    );
+                }
                 {
                     let mut state = GLOBAL_STATE.lock().await;
                     let airspeed =
                         calculate_airspeed(pressure_raw, state.air_density_kg_per_cubic_meter);
                     state.airspeed_meters_per_second = airspeed;
-                    defmt::info!("Calculated Airspeed: {} m/s", airspeed);
+                    if counter % 5 == 0 {
+                        defmt::info!("Calculated Airspeed: {} m/s", airspeed);
+                    }
                 }
                 AIRSPEED_UPDATED_SIGNAL.signal(());
             }
@@ -39,7 +43,7 @@ pub async fn airspeed_task(mut sensors: Airspeed<'static>) {
 
         counter += 1;
 
-        if counter >= 10 {
+        if counter >= 20 {
             match sensors.read_barometer().await {
                 Ok(baro_data) => {
                     defmt::info!(
@@ -67,6 +71,6 @@ pub async fn airspeed_task(mut sensors: Airspeed<'static>) {
             counter = 0;
         }
 
-        Timer::after(Duration::from_millis(10)).await;
+        Timer::after(Duration::from_hz(20)).await;
     }
 }

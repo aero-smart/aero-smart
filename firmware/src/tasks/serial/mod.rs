@@ -21,10 +21,33 @@ pub async fn serial_initialize<'a>(uart: &mut Uart<'a, Async>, rtc: &mut Rtc) {
         time_elapsed_ms: Instant::now().as_millis(),
     });
     let (packet, length) = send_message(ack_packet).await;
-    uart.write(&packet[..length]).await.ok();
+    uart.write(&packet[..length]).await.unwrap();
+
+    info!("Waiting for RTC synchronization message...");
+
+    // Read Length Prefix (4 bytes)
+    let mut len_buf = [0u8; 4];
+    uart.read_until_idle(&mut len_buf).await.unwrap();
+    let len = u32::from_le_bytes(len_buf) as usize;
+
+    info!("Received handshake length prefix: {}", len);
+
+    if len == 0 || len > 256 {
+        defmt::error!("Invalid handshake message length: {}", len);
+        return;
+    }
+
+    // Read Payload
     let mut buffer = [0u8; 256];
-    uart.read(&mut buffer).await.ok();
-    let message = unsafe { rkyv::access_unchecked::<ArchivedSerialMessage>(&buffer) };
+    uart.read_until_idle(&mut buffer).await.unwrap();
+
+    info!("Received handshake payload: {} bytes", len);
+
+    // Slice the received data to the actual length, and process it via `rotate_right`
+    buffer[..len].rotate_right(1);
+
+    // Deserialize
+    let message = unsafe { rkyv::access_unchecked::<ArchivedSerialMessage>(&buffer[..len]) };
     match message {
         ArchivedSerialMessage::AcknowledgementConfig(config) => {
             let current = chrono::DateTime::from_timestamp_micros(
@@ -47,10 +70,10 @@ pub async fn serial_initialize<'a>(uart: &mut Uart<'a, Async>, rtc: &mut Rtc) {
                     dt.hour() as u8,
                     dt.minute() as u8,
                     dt.second() as u8,
-                    dt.nanosecond() * 1000,
+                    dt.nanosecond().wrapping_div(1000) as u32,
                 )
                 .unwrap();
-                rtc.set_datetime(new_datetime).ok();
+                // rtc.set_datetime(new_datetime).ok();
                 info!(
                     "RTC synchronized to UNIX timestamp: {}",
                     config.unix_timestamp_ms.to_native()

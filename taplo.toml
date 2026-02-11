@@ -1,0 +1,4 @@
+include = ["Cargo.toml", "shared/**/*.toml", "firmware/**/*.toml", "service/**/*.toml", "panel/**/*.toml"]
+
+[formatting]
+align_entries = true

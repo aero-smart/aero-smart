@@ -7,6 +7,6 @@ use embassy_time::{Duration, Timer};
 pub async fn watchdog_task(mut wdt: IndependentWatchdog<'static, IWDG1>) {
     loop {
         wdt.pet();
-        Timer::after(Duration::from_millis(1000)).await;
+        Timer::after(Duration::from_hz(1)).await;
     }
 }

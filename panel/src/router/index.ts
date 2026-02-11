@@ -13,26 +13,26 @@ const router = createRouter({
         {
           path: '',
           name: 'dashboard',
-          component: DashboardView
+          component: DashboardView,
         },
         {
           path: 'control',
           name: 'control',
-          component: ControlView
+          component: ControlView,
         },
         {
           path: 'analysis',
           name: 'analysis',
-          component: () => import('@/views/DashboardView.vue') // Placeholder
+          component: () => import('@/views/DashboardView.vue'), // Placeholder
         },
         {
           path: 'settings',
           name: 'settings',
-          component: () => import('@/views/DashboardView.vue') // Placeholder
-        }
-      ]
-    }
-  ]
+          component: () => import('@/views/DashboardView.vue'), // Placeholder
+        },
+      ],
+    },
+  ],
 })
 
 export default router

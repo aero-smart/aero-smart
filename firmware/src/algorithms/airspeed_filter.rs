@@ -2,7 +2,7 @@
 
 #[derive(Debug, Clone, Copy, defmt::Format)]
 pub struct AirspeedFilter {
-    state: f32,
+    pub state: f32,
     q: f32,
     p: f32,
     r: f32,

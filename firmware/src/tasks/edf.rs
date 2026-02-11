@@ -1,7 +1,7 @@
 use crate::{
     algorithms::airspeed::AirspeedControl,
-    executors::edf::EdfDshot,
-    state::{AIRSPEED_UPDATED_SIGNAL, MachineStatus, STATUS_UPDATED_SIGNAL},
+    executors::edf_pwm::EdfPwm,
+    state::{AIRSPEED_UPDATED_SIGNAL, MachineStatus},
 };
 
 use {defmt_rtt as _, panic_probe as _};
@@ -9,7 +9,8 @@ use {defmt_rtt as _, panic_probe as _};
 use crate::state::GLOBAL_STATE;
 
 #[embassy_executor::task]
-pub async fn edf_task(mut edf: EdfDshot<'static>, mut pid: AirspeedControl) {
+pub async fn edf_task(mut edf: EdfPwm, mut pid: AirspeedControl) {
+    edf.initialize().await;
     loop {
         AIRSPEED_UPDATED_SIGNAL.wait().await;
         let (measured, setpoint, status, density, voltage_v) = {
@@ -32,26 +33,11 @@ pub async fn edf_task(mut edf: EdfDshot<'static>, mut pid: AirspeedControl) {
                 );
                 pid.update_setpoint(setpoint);
                 let edf_airspeed = pid.compute_throttle(measured, density, voltage_v);
-                match edf.set_throttle_symmetric(edf_airspeed).await {
-                    Ok(_) => {}
-                    Err(e) => {
-                        defmt::error!("EDF Control Error: {:?}", e);
-                        {
-                            let mut state = GLOBAL_STATE.lock().await;
-                            state.machine_status = MachineStatus::Error;
-                            STATUS_UPDATED_SIGNAL.signal(());
-                        }
-                    }
-                }
+                edf.set_throttle_compatible(edf_airspeed);
             }
             MachineStatus::EmergencyStop => {
                 defmt::warn!("Emergency Stop Engaged! Cutting off EDF throttle.");
-                match edf.stop().await {
-                    Ok(_) => {}
-                    Err(e) => {
-                        defmt::error!("EDF Control Error during Emergency Stop: {:?}", e);
-                    }
-                }
+                edf.stop();
             }
             _ => {}
         }

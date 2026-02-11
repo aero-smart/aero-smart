@@ -1,12 +1,14 @@
 [package]
-name = "panel"
+name              = "panel"
 edition.workspace = true
 license.workspace = true
 version.workspace = true
 
 [dependencies]
 anyhow = "1.0.100"
-axum = { version = "0.7.5", features = ["ws"] } # Downgrade to 0.7.x for better compatibility or stick to 0.8 if confident, but 0.8 is very new. Let's use 0.7 for stability with tower-http
+axum = { version = "0.7.5", features = [
+  "ws",
+] } # Downgrade to 0.7.x for better compatibility or stick to 0.8 if confident, but 0.8 is very new. Let's use 0.7 for stability with tower-http
 juniper = "0.17.0"
 reqwest = "0.12.5"
 rmcp = { version = "0.12.0", features = ["server"] }

@@ -7,16 +7,14 @@ pub mod executors;
 pub mod sensors;
 pub mod state;
 pub mod tasks;
+#[macro_use]
 pub mod utils;
 
 use crate::{
     algorithms::{airspeed::AirspeedControl, madgwick::MadgwickAhrs},
-    executors::{edf::EdfDshot, servo::Servo},
-    sensors::{
-        audio_i2s::Audio, imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed,
-        qei::QeiOperations,
-    },
-    state::{AUDIO_CHANNEL, QEI_CHANNEL, SAI_BUFFER},
+    executors::{edf_pwm::EdfPwm, servo::Servo},
+    sensors::{audio_i2s::Audio, imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+    state::{AUDIO_CHANNEL, GLOBAL_STATE, SAI_BUFFER},
     tasks::*,
 };
 
@@ -35,10 +33,7 @@ use embassy_stm32::{
     sai::{Sai, split_subblocks},
     spi::{self, Spi},
     time::Hertz,
-    timer::{
-        qei::{Qei, QeiPin},
-        simple_pwm::{PwmPin, SimplePwm},
-    },
+    timer::simple_pwm::{PwmPin, PwmPinConfig, SimplePwm},
     usart::Uart,
     wdg::IndependentWatchdog,
 };
@@ -70,7 +65,6 @@ pub struct TestConfig {
     pub ctrl_airspeed: bool,
     pub battery_adc: bool,
     pub analog_pressure: bool,
-    pub qei: bool,
 }
 
 fn get_stm_config() -> embassy_stm32::Config {
@@ -103,16 +97,16 @@ fn get_stm_config() -> embassy_stm32::Config {
             source: PllSource::HSI,
             prediv: PllPreDiv::DIV4,
             mul: PllMul::MUL50,
-            divp: Some(PllDiv::DIV8), // 100mhz
+            divp: Some(PllDiv::DIV8),
             divq: None,
             divr: None,
         });
-        config.rcc.sys = Sysclk::PLL1_P; // 400 Mhz
-        config.rcc.ahb_pre = AHBPrescaler::DIV2; // 200 Mhz
-        config.rcc.apb1_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.apb2_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.apb3_pre = APBPrescaler::DIV2; // 100 Mhz
-        config.rcc.apb4_pre = APBPrescaler::DIV2; // 100 Mhz
+        config.rcc.sys = Sysclk::PLL1_P;
+        config.rcc.ahb_pre = AHBPrescaler::DIV2;
+        config.rcc.apb1_pre = APBPrescaler::DIV2;
+        config.rcc.apb2_pre = APBPrescaler::DIV2;
+        config.rcc.apb3_pre = APBPrescaler::DIV2;
+        config.rcc.apb4_pre = APBPrescaler::DIV2;
         config.rcc.voltage_scale = VoltageScale::Scale1;
     }
     config
@@ -128,7 +122,7 @@ async fn main(spawner: Spawner) {
         i2s: false,
         spi_imu: false,
         spi_ws2812: false,
-        uart_upper: false,
+        uart_upper: true,
         uart_lidar: false,
         i2c: true,
         pwm_edf: false,
@@ -139,7 +133,6 @@ async fn main(spawner: Spawner) {
         ctrl_airspeed: false,
         battery_adc: false,
         analog_pressure: false,
-        qei: false,
     };
 
     info!("Configuration: {:?}", config);
@@ -195,8 +188,12 @@ async fn main(spawner: Spawner) {
     // The `MPXV7002` hasn't been purchased and we don't have one to test with yet
     let analog_adc = sensors::adc_i2c::AdcI2c::new(
         i2c_adc,
-        Some(sensors::adc_i2c::AdcConnection::Xgzp6847aPa3000),
-        Some(sensors::adc_i2c::AdcConnection::Xgzp6847aPa2500),
+        Some(sensors::adc_i2c::AdcConnection::Xgzp6847a {
+            max_pressure_pa: 3_000.0,
+        }),
+        Some(sensors::adc_i2c::AdcConnection::Xgzp6847a {
+            max_pressure_pa: 2_500.0,
+        }),
         None,
         None,
         i2c_analog_drdy,
@@ -246,28 +243,36 @@ async fn main(spawner: Spawner) {
 
     info!("USART3 initialized for LIDAR communication");
 
-    let left_esc = PwmPin::new(p.PE9, embassy_stm32::gpio::OutputType::PushPull);
-    let right_esc = PwmPin::new(p.PE11, embassy_stm32::gpio::OutputType::PushPull);
+    fn pull_down_config() -> PwmPinConfig {
+        PwmPinConfig {
+            output_type: embassy_stm32::gpio::OutputType::PushPull,
+            speed: Speed::VeryHigh,
+            pull: Pull::Down,
+        }
+    }
 
-    let edf_pwm = SimplePwm::new(
-        p.TIM1,
-        Some(left_esc),
-        Some(right_esc),
+    let left_esc_servo = PwmPin::new_with_config(p.PA0, pull_down_config());
+    let right_esc_servo = PwmPin::new_with_config(p.PA1, pull_down_config());
+
+    let edf_servo_pwm = SimplePwm::new(
+        p.TIM5,
+        Some(left_esc_servo),
+        Some(right_esc_servo),
         None,
         None,
-        Hertz::khz(600),
-        embassy_stm32::timer::low_level::CountingMode::CenterAlignedBothInterrupts,
+        Hertz::hz(50),
+        embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
     );
 
     info!("TIM1 initialized for EDF ESC control");
 
-    let servo = PwmPin::new(p.PA0, embassy_stm32::gpio::OutputType::PushPull);
+    let servo = PwmPin::new(p.PA2, embassy_stm32::gpio::OutputType::PushPull);
 
     let servo_pwm = SimplePwm::new(
         p.TIM2,
+        None,
+        None,
         Some(servo),
-        None,
-        None,
         None,
         Hertz::hz(50),
         embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
@@ -289,8 +294,8 @@ async fn main(spawner: Spawner) {
     info!("IMU SPI interface initialized");
 
     let mut sensors = Airspeed::new(i2c);
-    let edf = EdfDshot::new(edf_pwm, p.DMA1_CH5);
-    let pid = AirspeedControl::new(0.0, 1.0, 0.1, 0.05);
+    let edf = EdfPwm::new(edf_servo_pwm);
+    let pid = AirspeedControl::new(0.0, 0.24, 0.08, 0.06);
     let ahrs = MadgwickAhrs::new(1_000.0, 0.033);
 
     info!("Airspeed sensor and EDF driver initialized");
@@ -345,8 +350,6 @@ async fn main(spawner: Spawner) {
             Err(e) => defmt::panic!("Failed to initialize Airspeed Sensor: {:?}", e),
         }
     }
-
-    Timer::after(Duration::from_micros(200)).await;
 
     match spawner.spawn(watchdog_task(wdt)) {
         Ok(_) => info!("Watchdog task spawned"),
@@ -409,11 +412,6 @@ async fn main(spawner: Spawner) {
         }
     }
 
-    let qei_tim = Qei::new(p.TIM3, QeiPin::new(p.PC6), QeiPin::new(p.PC7));
-    let qei_btn = ExtiInput::new(p.PC5, p.EXTI5, Pull::Up);
-
-    let qei = QeiOperations::new(qei_tim, qei_btn);
-
     if config.uart_upper {
         info!("Starting Serial UART RX task...");
         match spawner.spawn(serial_uart_rx_task(uart_rx)) {
@@ -422,7 +420,7 @@ async fn main(spawner: Spawner) {
         }
 
         info!("Starting Serial UART TX task...");
-        match spawner.spawn(serial_uart_tx_task(uart_tx, QEI_CHANNEL.receiver())) {
+        match spawner.spawn(serial_uart_tx_task(uart_tx)) {
             Ok(_) => info!("Serial UART TX task spawned"),
             Err(e) => defmt::panic!("Failed to spawn Serial UART TX task: {:?}", e),
         }
@@ -444,14 +442,6 @@ async fn main(spawner: Spawner) {
         }
     }
 
-    if config.qei {
-        info!("Starting QEI task...");
-        match spawner.spawn(qei_task(qei, QEI_CHANNEL.sender())) {
-            Ok(_) => info!("QEI task spawned"),
-            Err(e) => defmt::panic!("Failed to spawn QEI task: {:?}", e),
-        }
-    }
-
     if config.i2s {
         info!("Starting Acoustic Sampling task...");
         match spawner.spawn(acoustic_sampling_task(microphone, AUDIO_CHANNEL.sender())) {
@@ -463,5 +453,17 @@ async fn main(spawner: Spawner) {
             Ok(_) => info!("Acoustic Analysis task spawned"),
             Err(e) => defmt::panic!("Failed to spawn Acoustic Analysis task: {:?}", e),
         }
+    }
+
+    spawner.spawn(test_pid_task()).unwrap();
+}
+
+#[embassy_executor::task]
+async fn test_pid_task() {
+    Timer::after(Duration::from_secs(5)).await;
+    {
+        let mut state = GLOBAL_STATE.lock().await;
+        state.desired_airspeed_meters_per_second = 13.5;
+        state.machine_status = state::MachineStatus::Running;
     }
 }
