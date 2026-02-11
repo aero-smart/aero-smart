@@ -2,6 +2,7 @@ use crate::state::{MachineStatus, STATUS_UPDATED_SIGNAL};
 
 use {defmt_rtt as _, panic_probe as _};
 
+use defmt::info;
 use embassy_stm32::{mode::Async, usart::UartRx};
 
 use crate::state::GLOBAL_STATE;
@@ -14,10 +15,12 @@ pub async fn serial_uart_rx_task(mut rx: UartRx<'static, Async>) {
         // Optimization: The length prefix allows us to read exactly the amount of data needed,
         // preventing buffer overflows and ensuring correct deserialization boundaries.
         let mut len_buf = [0u8; 4];
-        if let Err(e) = rx.read(&mut len_buf).await {
+        info!("Waiting to read length prefix...");
+        if let Err(e) = rx.read_until_idle(&mut len_buf).await {
             defmt::error!("UART Read Length Error: {:?}", e);
             continue;
         }
+        info!("Received length prefix: {:?}", len_buf);
         let len = u32::from_le_bytes(len_buf) as usize;
 
         if len == 0 || len > 250 {
@@ -28,12 +31,15 @@ pub async fn serial_uart_rx_task(mut rx: UartRx<'static, Async>) {
 
         // 2. Read Payload
         let mut buffer = [0u8; 256];
-        if let Err(e) = rx.read(&mut buffer[..len]).await {
+        if let Err(e) = rx.read_until_idle(&mut buffer[..len]).await {
             defmt::error!("UART Read Payload Error: {:?}", e);
             continue;
         }
 
         defmt::info!("Received {} bytes payload", len);
+
+        // Slice the received data to the actual length, and process it via `rotate_right`
+        buffer[..len].rotate_right(1);
 
         // 3. Deserialize
         // Use check_archived_root instead of unsafe for better safety if possible,

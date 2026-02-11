@@ -122,15 +122,15 @@ async fn main(spawner: Spawner) {
         i2s: false,
         spi_imu: false,
         spi_ws2812: false,
-        uart_upper: false,
+        uart_upper: true,
         uart_lidar: false,
         i2c: true,
-        pwm_edf: true,
+        pwm_edf: false,
         pwm_servo: false,
         wdt: true,
         fft: false,
         ahrs: false,
-        ctrl_airspeed: true,
+        ctrl_airspeed: false,
         battery_adc: false,
         analog_pressure: false,
     };
@@ -205,7 +205,7 @@ async fn main(spawner: Spawner) {
         config
     }
 
-    let Ok(usart_upper) = Uart::new(
+    let Ok(mut usart_upper) = Uart::new(
         p.USART1,
         p.PA10,
         p.PA9,
@@ -217,10 +217,10 @@ async fn main(spawner: Spawner) {
         defmt::panic!("Failed to initialize upper USART");
     };
 
-    let rtc = Rtc::new(p.RTC, RtcConfig::default());
+    let mut rtc = Rtc::new(p.RTC, RtcConfig::default());
 
     if config.uart_upper {
-        // serial_initialize(&mut usart_upper, &mut rtc).await;
+        serial_initialize(&mut usart_upper, &mut rtc).await;
     }
 
     let (uart_tx, uart_rx) = usart_upper.split();

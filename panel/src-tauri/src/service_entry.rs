@@ -163,6 +163,8 @@ async fn serial_task(
             let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&pong)
                 .map_err(|e| anyhow::anyhow!("Serialization error: {:?}", e))?;
 
+            info!("Pong sent: {:?}", bytes);
+
             // Send Length Prefix (u32 little-endian)
             let len = bytes.len() as u32;
             port.write_all(&len.to_le_bytes())
