@@ -1,24 +1,9 @@
 <template>
   <div class="flex flex-col h-full p-4 gap-4 bg-[#f5f5f5] text-[#423d3c] font-sans">
-    <!-- Top Tabs -->
-    <div class="flex items-center gap-1 bg-[#e0e0e0] w-fit p-1 rounded-t-lg shadow-sm">
-      <button
-        v-for="tab in ['Overview', 'Sensor', 'Power']"
-        :key="tab"
-        @click="currentTab = tab"
-        class="px-4 py-1.5 text-xs font-medium rounded-md transition-all duration-200"
-        :class="
-          currentTab === tab ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'
-        "
-      >
-        {{ tab }}
-      </button>
-    </div>
-
     <!-- Main Content Grid -->
-    <div class="flex-1 grid grid-cols-12 gap-4 min-h-0">
+    <div class="flex-1 grid grid-cols-12 gap-4 min-h-0 items-stretch">
       <!-- Left Column (Wind Input + Wind Speed) -->
-      <div class="col-span-3 flex flex-col gap-4">
+      <div class="col-span-3 flex flex-col gap-4 min-h-0">
         <!-- Wind Input -->
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4">
           <div class="text-xs font-bold text-gray-700">Wind Input</div>
@@ -61,21 +46,13 @@
 
         <!-- Wind Speed Display -->
         <div
-          class="bg-white rounded-2xl p-3 shadow-sm border border-white flex-1 flex flex-col gap-3"
+          class="bg-white rounded-2xl p-3 shadow-sm border border-white flex-1 flex flex-col gap-3 min-h-0"
         >
           <div class="text-xs font-bold text-gray-700">Wind Speed Display</div>
 
           <!-- Gauge -->
-          <div class="flex-1 bg-gray-100 rounded-xl relative min-h-[120px] w-full overflow-hidden">
+          <div class="flex-1 relative min-h-[180px] w-full overflow-visible">
             <div ref="gaugeChartEl" class="absolute inset-0 w-full h-full z-0"></div>
-          </div>
-
-          <!-- History Trend -->
-          <div class="h-24 bg-white border border-gray-100 rounded-xl p-2 flex flex-col">
-            <div class="text-[10px] text-gray-400 mb-1 flex-shrink-0">History Trend</div>
-            <div class="flex-1 relative min-h-0 w-full">
-              <div ref="trendChartEl" class="absolute inset-0 w-full h-full"></div>
-            </div>
           </div>
 
           <!-- Bottom Info -->
@@ -85,7 +62,7 @@
               <span class="text-sm font-bold text-gray-800">19°</span>
             </div>
             <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
-              <span class="text-[10px] text-gray-500 block">Avg Wind Speed</span>
+              <span class="text-[10px] text-gray-500 block whitespace-nowrap">Avg Speed</span>
               <span class="text-sm font-bold text-gray-800"
                 >{{ stats.avgSpeed.toFixed(1) }} m/s</span
               >
@@ -95,7 +72,7 @@
       </div>
 
       <!-- Middle Column (Pressure Monitor) -->
-      <div class="col-span-5 flex flex-col gap-4">
+      <div class="col-span-5 flex flex-col gap-4 min-h-0">
         <div
           class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 h-full"
         >
@@ -151,7 +128,7 @@
       </div>
 
       <!-- Right Column (Sensor Output + IMU) -->
-      <div class="col-span-4 flex flex-col gap-4">
+      <div class="col-span-4 flex flex-col gap-4 min-h-0">
         <!-- Sensor Output (Refactored to match Reference Card Layout) -->
         <div
           class="bg-white rounded-2xl p-4 shadow-sm border border-white relative overflow-hidden"
@@ -382,7 +359,7 @@ function initCharts() {
         {
           type: 'gauge',
           center: ['50%', '55%'],
-          radius: '100%',
+          radius: '90%',
           startAngle: 200,
           endAngle: -20,
           min: 0,
@@ -390,7 +367,7 @@ function initCharts() {
           splitNumber: 6,
           itemStyle: { color: '#333' },
           progress: { show: true, width: 8 },
-          pointer: { show: true, length: '60%', width: 4 },
+          pointer: { show: true, length: '55%', width: 4 },
           axisLine: { lineStyle: { width: 8, color: [[1, '#e5e7eb']] } },
           axisTick: { distance: -12, length: 4, lineStyle: { color: '#999', width: 1 } },
           splitLine: { distance: -12, length: 8, lineStyle: { color: '#999', width: 2 } },

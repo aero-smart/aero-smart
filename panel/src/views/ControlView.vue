@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-full p-4 gap-4 bg-[#f5f5f5] text-[#423d3c] font-sans">
+  <div class="flex flex-col h-full p-4 gap-4 bg-[#f5f5f5] text-[#423d3c] font-sans overflow-hidden">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <span class="w-1.5 h-7 bg-black rounded-full"></span>
@@ -11,25 +11,15 @@
 
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0 items-stretch">
       <div class="lg:col-span-5 flex flex-col gap-4 min-h-0 h-full">
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 relative h-full">
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 h-full">
           <div class="flex items-center justify-between">
             <div class="text-xs font-bold text-gray-700">Sensor Snapshot</div>
-            <button
-              class="w-6 h-6 rounded-full border border-gray-200 text-gray-500 text-sm hover:bg-gray-100"
-              @click="addPanelOpen = true"
-            >
-              +
-            </button>
           </div>
           <div class="grid grid-cols-2 gap-3 content-start auto-rows-min">
             <div 
               v-for="metric in telemetryData" 
               :key="metric.id" 
               class="bg-gray-50 rounded-xl p-3 border border-gray-100 flex flex-col justify-between"
-              draggable="true"
-              @dragstart="startDrag(metric.id)"
-              @dragover.prevent
-              @drop="onDrop(metric.id)"
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-1">
@@ -44,70 +34,11 @@
               </div>
             </div>
           </div>
-          <div
-            v-if="addPanelOpen"
-            class="absolute inset-0 z-10 bg-white/95 backdrop-blur-sm rounded-2xl border border-gray-100 p-4 flex flex-col gap-4"
-          >
-            <div class="flex items-center justify-between">
-              <div class="text-xs font-bold text-gray-700">Edit Sensors</div>
-              <button
-                class="text-[10px] text-gray-500 px-2 py-1 rounded-md border border-gray-200 hover:bg-gray-100"
-                @click="addPanelOpen = false"
-              >
-                完成
-              </button>
-            </div>
-            <div class="flex flex-col gap-2">
-              <div class="text-[10px] text-gray-400 uppercase tracking-wider">已添加</div>
-              <div class="flex flex-col gap-2">
-                <div
-                  v-for="item in selectedSensorList"
-                  :key="item.id"
-                  class="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 flex items-center justify-between text-[11px] text-gray-600"
-                  draggable="true"
-                  @dragstart="startDrag(item.id)"
-                  @dragover.prevent
-                  @drop="onDrop(item.id)"
-                >
-                  <div class="flex items-center gap-2">
-                    <span class="text-gray-400 text-sm">⋮⋮</span>
-                    <div class="text-[11px] text-gray-700">{{ item.label }}</div>
-                    <div class="text-[10px] text-gray-400">{{ item.sub }}</div>
-                  </div>
-                  <button
-                    class="text-[10px] text-gray-500 px-2 py-1 rounded-md border border-gray-200 hover:bg-gray-100"
-                    @click="removeSensor(item.id)"
-                  >
-                    移除
-                  </button>
-                </div>
-                <div v-if="selectedSensorList.length === 0" class="text-[11px] text-gray-400">暂无新增传感器</div>
-              </div>
-            </div>
-            <div class="flex flex-col gap-2">
-              <div class="text-[10px] text-gray-400 uppercase tracking-wider">可添加</div>
-              <div class="grid grid-cols-2 gap-3">
-              <button
-                v-for="item in availableSensorList"
-                :key="item.id"
-                class="text-left bg-gray-50 border border-gray-100 rounded-xl p-3 hover:bg-white hover:border-gray-200 transition-colors disabled:opacity-40 disabled:hover:bg-gray-50"
-                :disabled="selectedSensorIds.includes(item.id)"
-                @click="addSensor(item.id)"
-              >
-                <div class="flex items-center justify-between">
-                  <div class="text-[11px] text-gray-500 font-medium">{{ item.label }}</div>
-                  <component :is="item.icon" :size="14" class="text-gray-400" />
-                </div>
-                <div class="mt-2 text-[10px] text-gray-400">{{ item.sub }}</div>
-              </button>
-            </div>
-            </div>
-          </div>
         </div>
       </div>
 
       <div class="lg:col-span-7 flex flex-col gap-4 min-h-0 h-full">
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 min-h-0 h-full">
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 min-h-0 h-full overflow-hidden">
           <div class="flex items-center justify-between">
             <div class="text-xs font-bold text-gray-700">AI Suggestions</div>
             <div class="flex items-center gap-2 text-[10px] text-gray-400">
@@ -142,7 +73,7 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 auto-rows-fr">
               <button
-                v-for="(item, idx) in suggestions"
+                v-for="(item, idx) in pagedSuggestions"
                 :key="idx"
                 @click="applySuggestion(item.prompt)"
                 class="text-left bg-gray-50 border border-gray-100 rounded-xl p-3 hover:bg-white hover:border-gray-200 transition-colors h-full"
@@ -156,6 +87,23 @@
                 </div>
                 <div class="mt-2 text-sm font-semibold text-gray-800">{{ item.title }}</div>
                 <div class="text-[11px] text-gray-500">{{ item.detail }}</div>
+              </button>
+            </div>
+            <div class="flex items-center justify-between text-[10px] text-gray-400">
+              <button
+                class="px-2 py-1 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white"
+                @click="prevPage"
+                :disabled="currentPage === 1"
+              >
+                上一页
+              </button>
+              <span class="flex-1 text-center">第 {{ currentPage }} / {{ totalPages }} 页</span>
+              <button
+                class="px-2 py-1 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white"
+                @click="nextPage"
+                :disabled="currentPage === totalPages"
+              >
+                下一页
               </button>
             </div>
           </div>
@@ -176,8 +124,8 @@ const { airspeed, pressureDiff, env, battery, imu, lidar, acoustic } = storeToRe
 
 const inputQuery = ref('')
 const aiResult = ref('压差与气流曲线保持平稳，建议以 2 秒窗口平滑后再评估异常波动。')
-const addPanelOpen = ref(false)
-const draggingId = ref<string | null>(null)
+const currentPage = ref(1)
+const suggestionsPerPage = 4
 
 type SensorOption = {
   id: string
@@ -208,19 +156,8 @@ const extraSensorOptions: SensorOption[] = [
   { id: 'acoustic', label: 'Acoustic SPL', sub: 'Audio', icon: Wind, getValue: () => `${acoustic.value.spl.toFixed(1)} dB` }
 ]
 
-const allSensorOptions = computed(() => [...baseSensorOptions.value, ...extraSensorOptions])
-
-const selectedSensorList = computed(() => {
-  const map = new Map(allSensorOptions.value.map(item => [item.id, item]))
-  return selectedSensorIds.value.map(id => map.get(id)).filter(Boolean) as SensorOption[]
-})
-
-const availableSensorList = computed(() =>
-  allSensorOptions.value.filter(item => !selectedSensorIds.value.includes(item.id))
-)
-
 const telemetryData = computed(() =>
-  selectedSensorList.value.map(item => ({
+  baseSensorOptions.value.slice(0, 6).map(item => ({
     id: item.id,
     label: item.label,
     sub: item.sub,
@@ -288,9 +225,26 @@ const suggestions = [
   }
 ]
 
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(suggestions.length / suggestionsPerPage))
+)
+
+const pagedSuggestions = computed(() => {
+  const start = (currentPage.value - 1) * suggestionsPerPage
+  return suggestions.slice(start, start + suggestionsPerPage)
+})
+
 function applySuggestion(prompt: string) {
   inputQuery.value = prompt
   sendQuery()
+}
+
+function prevPage() {
+  if (currentPage.value > 1) currentPage.value -= 1
+}
+
+function nextPage() {
+  if (currentPage.value < totalPages.value) currentPage.value += 1
 }
 
 function sendQuery() {
@@ -299,29 +253,4 @@ function sendQuery() {
   inputQuery.value = ''
 }
 
-function addSensor(id: string) {
-  if (!selectedSensorIds.value.includes(id)) {
-    selectedSensorIds.value.push(id)
-  }
-}
-
-function removeSensor(id: string) {
-  selectedSensorIds.value = selectedSensorIds.value.filter(item => item !== id)
-}
-
-function startDrag(id: string) {
-  draggingId.value = id
-}
-
-function onDrop(id: string) {
-  if (!draggingId.value || draggingId.value === id) return
-  const currentIds = [...selectedSensorIds.value]
-  const fromIndex = currentIds.indexOf(draggingId.value)
-  const toIndex = currentIds.indexOf(id)
-  if (fromIndex === -1 || toIndex === -1) return
-  currentIds.splice(fromIndex, 1)
-  currentIds.splice(toIndex, 0, draggingId.value)
-  selectedSensorIds.value = currentIds
-  draggingId.value = null
-}
 </script>
