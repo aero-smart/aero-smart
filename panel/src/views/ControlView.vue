@@ -55,12 +55,12 @@
               <span class="text-xs font-semibold text-gray-600">Presets</span>
               <span>点击卡片应用</span>
             </div>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 content-start auto-rows-min">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 flex-1 auto-rows-fr">
               <button
                 v-for="(item, idx) in pagedSuggestions"
                 :key="idx"
                 @click="applySuggestion(item.prompt)"
-                class="text-left bg-gray-50 border border-gray-100 rounded-xl p-3 hover:bg-white hover:border-gray-200 transition-colors min-h-[96px] flex flex-col justify-between"
+                class="text-left bg-gray-50 border border-gray-100 rounded-xl p-3 hover:bg-white hover:border-gray-200 transition-colors h-full"
               >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
@@ -107,7 +107,7 @@ const { airspeed, pressureDiff, env, battery, imu, lidar, acoustic } = storeToRe
 
 const aiResult = ref('压差与气流曲线保持平稳，建议以 2 秒窗口平滑后再评估异常波动。')
 const currentPage = ref(1)
-const suggestionsPerPage = 8
+const suggestionsPerPage = 6
 
 type SensorOption = {
   id: string
@@ -204,20 +204,6 @@ const suggestions = [
     title: '分析噪声能量',
     detail: '评估声压级与气流相关性',
     prompt: '分析当前声学噪声的主要特征'
-  },
-  {
-    icon: Activity,
-    category: 'Stability',
-    title: '评估控制稳定性',
-    detail: '观察姿态变化并检查控制抖动',
-    prompt: '分析姿态控制稳定性与调参方向'
-  },
-  {
-    icon: Zap,
-    category: 'Maintenance',
-    title: '检查能耗基线',
-    detail: '对比日均功耗并定位异常',
-    prompt: '给出功耗异常排查路径与建议'
   }
 ]
 
