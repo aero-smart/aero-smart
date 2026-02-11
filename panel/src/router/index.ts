@@ -2,9 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import MainLayout from '@/components/layout/MainLayout.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import ControlView from '@/views/ControlView.vue'
-
 import PowerView from '@/views/PowerView.vue'
 import OnboardingView from '@/views/OnboardingView.vue'
+import SettingsView from '@/views/SettingsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,7 +36,7 @@ const router = createRouter({
         {
           path: 'settings',
           name: 'settings',
-          component: () => import('@/views/DashboardView.vue'), // Placeholder
+          component: SettingsView,
         },
       ],
     },

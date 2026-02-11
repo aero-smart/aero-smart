@@ -7,13 +7,15 @@ use axum::{
         ws::{Message, WebSocket, WebSocketUpgrade},
     },
     response::IntoResponse,
-    routing::get,
+    routing::{get, post},
 };
 use clap::Parser;
 use std::{
     net::SocketAddr,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
+
+mod wifi;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     sync::{broadcast, mpsc},
@@ -81,6 +83,10 @@ async fn main() -> anyhow::Result<()> {
     // Setup Axum Router
     let app = Router::new()
         .route("/ws", get(ws_handler))
+        .route("/api/wifi/scan", get(wifi::scan_handler))
+        .route("/api/wifi/connect", post(wifi::connect_handler))
+        .route("/api/wifi/disconnect", post(wifi::disconnect_handler))
+        .route("/api/wifi/status", get(wifi::status_handler))
         .layer(CorsLayer::permissive())
         .with_state(state);
 
