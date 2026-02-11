@@ -4,6 +4,8 @@
 //! BME280 Barometric pressure sensor
 //!
 //! Poll pitot @ 100 Hz and barometer @ 10 Hz over I2C
+use crate::algorithms::airspeed_filter::AirspeedFilter;
+
 use super::drivers::{
     bme280::{AsyncBme280, Configuration, Oversampling, SensorMode},
     ms4525do::{ms4525do_pressure, ms4525do_temperature},
@@ -27,6 +29,8 @@ pub struct Airspeed {
 
     /// MS4525DO calibration offset in Pascals
     ms4525do_offset_pa: f32,
+
+    pressure_filter: AirspeedFilter,
 }
 
 impl Airspeed {
@@ -42,6 +46,7 @@ impl Airspeed {
         Airspeed {
             i2c: bme280,
             ms4525do_offset_pa: 0.0,
+            pressure_filter: AirspeedFilter::new(0.0, 0.24, 1.44),
         }
     }
 
@@ -69,11 +74,12 @@ impl Airspeed {
         let temperature_raw = (((buf[2] as u16) << 3) | ((buf[3] >> 5) as u16)) & 0x07FF;
 
         let pressure_pa = ms4525do_pressure(pressure_raw);
+        let pressure_pa_filtered = self.pressure_filter.update(pressure_pa);
         let temperature_c = ms4525do_temperature(temperature_raw);
 
         Ok((
             status,
-            abs(pressure_pa) - self.ms4525do_offset_pa,
+            abs(pressure_pa_filtered) - self.ms4525do_offset_pa,
             temperature_c,
         ))
     }
@@ -132,7 +138,7 @@ impl Airspeed {
         for _attempt in 0..8 {
             let (_status, pressure_raw, _temperature_raw) = self.read_pitot().await?;
             self.ms4525do_offset_pa += pressure_raw;
-            Timer::after_millis(100).await;
+            Timer::after_millis(500).await;
         }
         self.ms4525do_offset_pa /= 8.0;
         debug!("Calibrated MS4525DO offset: {} Pa", self.ms4525do_offset_pa);

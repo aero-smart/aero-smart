@@ -53,7 +53,7 @@ pub mod sensors {
 }
 
 pub mod algorithms {
-    pub const MADGWICK_BETA: f32 = 0.033; // Adjust based on expected motion dynamics
+    pub const MADGWICK_BETA: f32 = 0.1; // Adjust based on expected motion dynamics
 
     pub const PID_KP: f32 = 0.24;
     pub const PID_KI: f32 = 0.08;

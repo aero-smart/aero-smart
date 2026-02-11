@@ -127,7 +127,7 @@ async fn main(spawner: Spawner) {
 
     let config = TestConfig {
         i2s: false,
-        spi_imu: false,
+        spi_imu: true,
         spi_ws2812: false,
         uart_upper: true,
         uart_lidar: false,
@@ -135,8 +135,8 @@ async fn main(spawner: Spawner) {
         pwm_edf: false,
         pwm_servo: false,
         wdt: true,
-        fft: false,
-        ahrs: false,
+        fft: true,
+        ahrs: true,
         ctrl_airspeed: false,
         battery_adc: false,
         analog_pressure: false,
