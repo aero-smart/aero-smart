@@ -24,4 +24,6 @@ body {
     'Helvetica Neue',
     sans-serif;
   overflow: hidden; /* Prevent scrolling for IoT kiosk mode */
+  user-select: none; /* Disable text selection globally */
+  -webkit-user-select: none; /* Safari/Chrome */
 }

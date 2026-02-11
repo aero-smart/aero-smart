@@ -4,25 +4,31 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <span class="w-1.5 h-7 bg-black rounded-full"></span>
-        <div class="text-lg font-bold tracking-tight">Power Analysis</div>
+        <div class="text-lg font-bold tracking-tight">Data Analysis</div>
         <span
           class="text-[10px] text-gray-500 bg-white border border-gray-200 rounded-full px-2 py-0.5"
           >{{ isRealtime ? 'Live' : 'History' }}</span
         >
       </div>
       <div class="flex items-center gap-4">
-        <div class="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200 shadow-sm">
+        <div
+          class="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200 shadow-sm"
+        >
           <button
             @click="isRealtime = true"
             class="px-3 py-1 text-[11px] font-medium rounded-md transition-all"
-            :class="isRealtime ? 'bg-gray-800 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'"
+            :class="
+              isRealtime ? 'bg-gray-800 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'
+            "
           >
             Real-time
           </button>
           <button
             @click="isRealtime = false"
             class="px-3 py-1 text-[11px] font-medium rounded-md transition-all"
-            :class="!isRealtime ? 'bg-gray-800 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'"
+            :class="
+              !isRealtime ? 'bg-gray-800 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'
+            "
           >
             History
           </button>
@@ -62,7 +68,9 @@
                 />
                 <div class="flex flex-col">
                   <span class="text-[11px] font-bold text-gray-700">{{ source.label }}</span>
-                  <span class="text-[9px] text-gray-400 uppercase tracking-tighter">{{ source.unit }}</span>
+                  <span class="text-[9px] text-gray-400 uppercase tracking-tighter">{{
+                    source.unit
+                  }}</span>
                 </div>
               </div>
               <div
@@ -174,7 +182,11 @@
             </button>
           </div>
           <div class="flex items-center gap-4 text-[10px] text-gray-400 font-medium">
-            <div v-for="source in activeSourceInfo" :key="source.id" class="flex items-center gap-1.5">
+            <div
+              v-for="source in activeSourceInfo"
+              :key="source.id"
+              class="flex items-center gap-1.5"
+            >
               <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: source.color }"></span>
               {{ source.label }}
             </div>
@@ -195,15 +207,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useDeviceStore } from '@/stores/device'
 import { storeToRefs } from 'pinia'
 import * as echarts from 'echarts'
-import {
-  Download,
-  Database,
-  Sliders,
-  Palette,
-  RotateCcw,
-  ZoomIn,
-  ZoomOut,
-} from 'lucide-vue-next'
+import { Download, Database, Sliders, Palette, RotateCcw, ZoomIn, ZoomOut } from 'lucide-vue-next'
 
 const store = useDeviceStore()
 const { airspeed, pressureDiff, env, battery, imu } = storeToRefs(store)
@@ -232,7 +236,7 @@ const availableSources = [
 ]
 
 const activeSourceInfo = computed(() =>
-  availableSources.filter((s) => selectedSources.value.includes(s.id))
+  availableSources.filter((s) => selectedSources.value.includes(s.id)),
 )
 
 // Data buffers for real-time display
@@ -279,7 +283,7 @@ let updateTimer: number | null = null
 function initChart() {
   if (!chartEl.value) return
   chart = echarts.init(chartEl.value)
-  
+
   const option: echarts.EChartsOption = {
     tooltip: {
       trigger: 'axis',
@@ -393,10 +397,10 @@ function zoomOut() {
 
 function exportData() {
   if (selectedSources.value.length === 0) return
-  
+
   const primarySourceId = selectedSources.value[0] as string
   const primaryBuffer = (dataBuffers.value as any)[primarySourceId] || []
-  
+
   const headers = ['Timestamp', ...selectedSources.value].join(',')
   const rows = primaryBuffer.map((_: any, idx: number) => {
     const time = primaryBuffer[idx].time
@@ -406,7 +410,7 @@ function exportData() {
     })
     return [new Date(time).toISOString(), ...vals].join(',')
   })
-  
+
   const csvContent = [headers, ...rows].join('\n')
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
@@ -417,56 +421,68 @@ function exportData() {
   document.body.removeChild(link)
 }
 
-watch(selectedSources, (newSources) => {
-  if (!chart) return
-  
-  // Update series in chart
-  const currentOption = chart.getOption() as any
-  const currentSeriesIds = currentOption.series.map((s: any) => s.id)
-  
-  // Add new series
-  newSources.forEach(id => {
-    if (!currentSeriesIds.includes(id)) {
-      const info = availableSources.find(s => s.id === id)!
-      const buffer = dataBuffers.value[id] || []
-      chart!.setOption({
-        series: [{
-          id,
-          name: info.label,
-          type: 'line',
-          showSymbol: false,
-          smooth: config.value.smooth,
-          lineStyle: { width: config.value.lineWidth, color: info.color },
-          data: buffer.map(d => [d.time, d.value])
-        }]
-      })
-    }
-  })
-  
-  // Remove unused series
-  currentSeriesIds.forEach((id: string) => {
-    if (!newSources.includes(id)) {
-      chart!.setOption({
-        series: [{ id, data: [] }] // Effectively hide it or remove it
-      })
-    }
-  })
-}, { deep: true })
+watch(
+  selectedSources,
+  (newSources) => {
+    if (!chart) return
 
-watch(() => config.value.showGrid, (val) => {
-  chart?.setOption({
-    xAxis: { splitLine: { show: val } },
-    yAxis: { splitLine: { show: val } },
-  })
-})
+    // Update series in chart
+    const currentOption = chart.getOption() as any
+    const currentSeriesIds = currentOption.series.map((s: any) => s.id)
 
-watch(() => config.value.lineWidth, (val) => {
-  const series = selectedSources.value.map(id => ({
-    id,
-    lineStyle: { width: val }
-  }))
-  chart?.setOption({ series })
-})
+    // Add new series
+    newSources.forEach((id) => {
+      if (!currentSeriesIds.includes(id)) {
+        const info = availableSources.find((s) => s.id === id)!
+        const buffer = dataBuffers.value[id] || []
+        chart!.setOption({
+          series: [
+            {
+              id,
+              name: info.label,
+              type: 'line',
+              showSymbol: false,
+              smooth: config.value.smooth,
+              lineStyle: { width: config.value.lineWidth, color: info.color },
+              data: buffer.map((d) => [d.time, d.value]),
+            },
+          ],
+        })
+      }
+    })
+
+    // Remove unused series
+    currentSeriesIds.forEach((id: string) => {
+      if (!newSources.includes(id)) {
+        chart!.setOption({
+          series: [{ id, data: [] }], // Effectively hide it or remove it
+        })
+      }
+    })
+  },
+  { deep: true },
+)
+
+watch(
+  () => config.value.showGrid,
+  (val) => {
+    chart?.setOption({
+      xAxis: { splitLine: { show: val } },
+      yAxis: { splitLine: { show: val } },
+    })
+  },
+)
+
+watch(
+  () => config.value.lineWidth,
+  (val) => {
+    const series = selectedSources.value.map((id) => ({
+      id,
+      lineStyle: { width: val },
+    }))
+    chart?.setOption({ series })
+  },
+)
 
 onMounted(() => {
   initChart()

@@ -11,6 +11,7 @@ use axum::{
     Router,
 };
 // use clap::Parser; // No longer needed
+use log::{error, info, warn};
 use std::{
     net::SocketAddr,
     str::FromStr,
@@ -23,7 +24,6 @@ use tokio::{
 };
 use tokio_serial::SerialPortBuilderExt;
 use tower_http::cors::CorsLayer;
-use log::{error, info, warn};
 
 #[derive(Clone)]
 struct AppState {

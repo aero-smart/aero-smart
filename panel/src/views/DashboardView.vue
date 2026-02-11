@@ -57,11 +57,15 @@
 
           <!-- Bottom Info -->
           <div class="flex flex-col gap-3">
-            <div class="rounded-xl border border-gray-100 bg-gradient-to-br from-gray-50 to-white p-3">
+            <div
+              class="rounded-xl border border-gray-100 bg-gradient-to-br from-gray-50 to-white p-3"
+            >
               <div class="text-[10px] text-gray-500 uppercase tracking-wider">Wind Direction</div>
               <div class="mt-1 text-base font-semibold text-gray-800">19°</div>
             </div>
-            <div class="rounded-xl border border-gray-100 bg-gradient-to-br from-gray-50 to-white p-3">
+            <div
+              class="rounded-xl border border-gray-100 bg-gradient-to-br from-gray-50 to-white p-3"
+            >
               <div class="text-[10px] text-gray-500 uppercase tracking-wider">Avg Speed</div>
               <div class="mt-1 text-base font-semibold text-gray-800">
                 {{ stats.avgSpeed.toFixed(1) }} m/s

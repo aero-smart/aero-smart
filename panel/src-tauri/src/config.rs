@@ -1,7 +1,7 @@
+use log::info;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
-use log::info;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct AppConfig {
@@ -27,6 +27,7 @@ pub struct ServerConfig {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct RulesConfig {
     pub debug_mode: bool,
+    pub enable_onboarding: bool,
 }
 
 impl Default for AppConfig {
@@ -42,7 +43,10 @@ impl Default for AppConfig {
                 port: 3000,
                 host: "0.0.0.0".to_string(),
             },
-            rules: RulesConfig { debug_mode: false },
+            rules: RulesConfig {
+                debug_mode: false,
+                enable_onboarding: true,
+            },
         }
     }
 }
@@ -88,6 +92,17 @@ pub fn load_config() -> AppConfig {
     AppConfig::default()
 }
 
+pub fn save_config(config: &AppConfig) -> Result<(), String> {
+    let config_path = get_config_path();
+    let toml_str =
+        toml::to_string_pretty(config).map_err(|e| format!("Failed to serialize config: {}", e))?;
+
+    fs::write(&config_path, toml_str).map_err(|e| format!("Failed to write config file: {}", e))?;
+
+    info!("Configuration saved to {:?}", config_path);
+    Ok(())
+}
+
 pub fn create_default_config_file_if_missing() {
     let config_path = get_config_path();
     if !config_path.exists() {
@@ -122,6 +137,9 @@ host = "0.0.0.0"
 [rules]
 # Enable debug mode (outputs more logs)
 debug_mode = false
+
+# Enable onboarding screen on startup
+enable_onboarding = true
 "#;
         if let Err(e) = fs::write(&config_path, content) {
             info!("Failed to create default config file: {}", e);
