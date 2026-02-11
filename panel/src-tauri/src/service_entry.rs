@@ -29,6 +29,7 @@ use tower_http::cors::CorsLayer;
 struct AppState {
     tx: broadcast::Sender<String>,
     cmd_tx: mpsc::Sender<SerialMessage>,
+    #[allow(unused)]
     config: AppConfig,
 }
 
@@ -138,13 +139,12 @@ async fn serial_task(
             .await
             .context("Failed to read handshake payload")?;
 
-        let valid_ping = match rkyv::access::<ArchivedSerialMessage, rkyv::rancor::Error>(&buf) {
-            Ok(archived) => match archived {
-                ArchivedSerialMessage::AcknowledgementData(_) => true,
-                _ => false,
-            },
-            Err(_) => false,
-        };
+        let valid_ping = matches!(
+            rkyv::access::<ArchivedSerialMessage, rkyv::rancor::Error>(&buf).and_then(|archived| {
+                rkyv::deserialize::<SerialMessage, rkyv::rancor::Error>(archived)
+            }),
+            Ok(SerialMessage::AcknowledgementData(_))
+        );
 
         if valid_ping {
             info!("Received Ping. Sending Pong...");

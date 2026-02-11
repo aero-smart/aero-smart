@@ -14,7 +14,7 @@ use crate::state::GLOBAL_STATE;
 #[embassy_executor::task]
 pub async fn imu_task(
     mut imu: ImuSpi<'static>,
-    mut input: ExtiInput<'static>,
+    #[allow(unused)] mut input: ExtiInput<'static>,
     mut ahrs: MadgwickAhrs,
 ) {
     loop {

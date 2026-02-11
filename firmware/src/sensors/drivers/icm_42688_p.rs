@@ -1,5 +1,3 @@
-use embassy_stm32::pac::Interrupt::DFSDM1_FLT1;
-
 use crate::consts::sensors::IMU_SAMPLE_RATE_HZ;
 
 /// - Name: PWR_MGMT0

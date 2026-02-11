@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 mod uart_rx;
 mod uart_tx;
 
@@ -15,7 +16,7 @@ pub use uart_tx::serial_uart_tx_task;
 
 use crate::utils::send_message;
 
-pub async fn serial_initialize<'a>(uart: &mut Uart<'a, Async>, rtc: &mut Rtc) {
+pub async fn serial_initialize<'a>(uart: &mut Uart<'a, Async>, #[allow(unused)] rtc: &mut Rtc) {
     // Initialize the serial first to update the RTC timer and synchronize data
     let ack_packet = SerialMessage::AcknowledgementData(AcknowledgementData {
         time_elapsed_ms: Instant::now().as_millis(),
@@ -54,6 +55,7 @@ pub async fn serial_initialize<'a>(uart: &mut Uart<'a, Async>, rtc: &mut Rtc) {
                 config.unix_timestamp_ms.to_native() as i64,
             );
             if let Some(dt) = current {
+                #[allow(unused)]
                 let new_datetime = DateTime::from(
                     dt.year() as u16,
                     dt.month() as u8,
@@ -70,7 +72,7 @@ pub async fn serial_initialize<'a>(uart: &mut Uart<'a, Async>, rtc: &mut Rtc) {
                     dt.hour() as u8,
                     dt.minute() as u8,
                     dt.second() as u8,
-                    dt.nanosecond().wrapping_div(1000) as u32,
+                    dt.nanosecond().wrapping_div(1000),
                 )
                 .unwrap();
                 // rtc.set_datetime(new_datetime).ok();
