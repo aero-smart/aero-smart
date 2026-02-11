@@ -174,33 +174,6 @@
                   }}</span>
                   <span class="text-xs text-gray-500 font-bold mb-1">Pa</span>
                 </div>
-                <span class="text-[10px] text-gray-400 font-medium mt-1 block"
-                  >Main Pressure (Abs)</span
-                >
-              </div>
-
-              <!-- Decorative Bar Visual -->
-              <div class="flex gap-1 h-8 items-end opacity-20 select-none">
-                <div class="flex-1 bg-black rounded-sm h-[40%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[70%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[50%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[80%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[60%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[90%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[45%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[75%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[55%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[85%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[65%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[95%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[40%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[70%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[50%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[80%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[60%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[90%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[50%]"></div>
-                <div class="flex-1 bg-black rounded-sm h-[70%]"></div>
               </div>
             </div>
 
