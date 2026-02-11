@@ -51,21 +51,21 @@
           <div class="text-xs font-bold text-gray-700">Wind Speed Display</div>
 
           <!-- Gauge -->
-          <div class="flex-1 relative min-h-[180px] w-full overflow-visible">
+          <div class="flex-1 relative min-h-[240px] w-full overflow-visible pb-2">
             <div ref="gaugeChartEl" class="absolute inset-0 w-full h-full z-0"></div>
           </div>
 
           <!-- Bottom Info -->
-          <div class="grid grid-cols-2 gap-3">
-            <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
-              <span class="text-[10px] text-gray-500 block">Wind Direction</span>
-              <span class="text-sm font-bold text-gray-800">19°</span>
+          <div class="flex flex-col gap-3">
+            <div class="rounded-xl border border-gray-100 bg-gradient-to-br from-gray-50 to-white p-3">
+              <div class="text-[10px] text-gray-500 uppercase tracking-wider">Wind Direction</div>
+              <div class="mt-1 text-base font-semibold text-gray-800">19°</div>
             </div>
-            <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
-              <span class="text-[10px] text-gray-500 block whitespace-nowrap">Avg Speed</span>
-              <span class="text-sm font-bold text-gray-800"
-                >{{ stats.avgSpeed.toFixed(1) }} m/s</span
-              >
+            <div class="rounded-xl border border-gray-100 bg-gradient-to-br from-gray-50 to-white p-3">
+              <div class="text-[10px] text-gray-500 uppercase tracking-wider">Avg Speed</div>
+              <div class="mt-1 text-base font-semibold text-gray-800">
+                {{ stats.avgSpeed.toFixed(1) }} m/s
+              </div>
             </div>
           </div>
         </div>
@@ -359,7 +359,7 @@ function initCharts() {
         {
           type: 'gauge',
           center: ['50%', '55%'],
-          radius: '90%',
+          radius: '85%',
           startAngle: 200,
           endAngle: -20,
           min: 0,
@@ -369,33 +369,33 @@ function initCharts() {
           progress: { show: true, width: 8 },
           pointer: { show: true, length: '55%', width: 4 },
           axisLine: { lineStyle: { width: 8, color: [[1, '#e5e7eb']] } },
-          axisTick: { distance: -12, length: 4, lineStyle: { color: '#999', width: 1 } },
-          splitLine: { distance: -12, length: 8, lineStyle: { color: '#999', width: 2 } },
-          axisLabel: { distance: -16, color: '#666', fontSize: 10 },
+          axisTick: { distance: -10, length: 4, lineStyle: { color: '#999', width: 1 } },
+          splitLine: { distance: -10, length: 8, lineStyle: { color: '#999', width: 2 } },
+          axisLabel: { distance: -12, color: '#666', fontSize: 8 },
           anchor: {
             show: true,
             showAbove: true,
-            size: 8,
+            size: 6,
             itemStyle: { borderWidth: 2, borderColor: '#333' },
           },
           detail: {
             valueAnimation: true,
-            fontSize: 30,
+            fontSize: 24,
             fontWeight: 'bold',
             color: '#1f2937',
             offsetCenter: [0, '40%'],
             formatter: (val: number) => `{value|${val.toFixed(1)}}\n{unit|m/s}`,
             rich: {
               value: {
-                fontSize: 30,
+                fontSize: 24,
                 fontWeight: 'bold',
                 color: '#1f2937',
-                lineHeight: 30,
+                lineHeight: 24,
               },
               unit: {
-                fontSize: 12,
+                fontSize: 10,
                 color: '#6b7280',
-                lineHeight: 20,
+                lineHeight: 14,
                 padding: [5, 0, 0, 0],
               },
             },

@@ -38,7 +38,7 @@
       </div>
 
       <div class="lg:col-span-7 flex flex-col gap-4 min-h-0 h-full">
-      <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 min-h-0 h-full overflow-hidden">
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 min-h-0 h-full">
           <div class="flex items-center justify-between">
             <div class="text-xs font-bold text-gray-700">AI Suggestions</div>
             <div class="flex items-center gap-2 text-[10px] text-gray-400">
@@ -46,60 +46,43 @@
               Guided
             </div>
           </div>
-          <div class="bg-gray-50 rounded-xl p-3 flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center text-gray-600">
-              <Sparkles :size="16" />
-            </div>
-            <input
-              v-model="inputQuery"
-              type="text"
-              placeholder="输入提示词获取建议"
-              class="flex-1 bg-transparent border-none outline-none text-sm text-gray-800 placeholder-gray-400"
-              @keyup.enter="sendQuery"
-            />
-            <button
-              class="px-3 py-1.5 rounded-lg bg-gray-900 text-white text-xs hover:bg-black flex items-center gap-1 disabled:opacity-40 disabled:hover:bg-gray-900"
-              @click="sendQuery"
-              :disabled="!inputQuery.trim()"
-            >
-              <Send :size="12" />
-              发送
-            </button>
-          </div>
-          <div class="flex-1 min-h-0 flex flex-col gap-4">
-            <div class="bg-gray-50 border border-gray-100 rounded-xl p-4 min-h-[140px] flex-1">
+          <div class="flex-1 min-h-0 flex flex-col gap-4 overflow-visible">
+            <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 min-h-[100px]">
               <div class="text-[10px] text-gray-400 uppercase tracking-wider">AI Output</div>
-              <div class="mt-2 text-[13px] text-gray-700 leading-relaxed">{{ aiResult }}</div>
+              <div class="mt-2 text-[12px] text-gray-700 leading-relaxed">{{ aiResult }}</div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 auto-rows-fr">
+            <div class="flex items-center justify-between text-[10px] text-gray-400">
+              <span class="text-xs font-semibold text-gray-600">Presets</span>
+              <span>点击卡片应用</span>
+            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 content-start auto-rows-min">
               <button
                 v-for="(item, idx) in pagedSuggestions"
                 :key="idx"
                 @click="applySuggestion(item.prompt)"
-                class="text-left bg-gray-50 border border-gray-100 rounded-xl p-3 hover:bg-white hover:border-gray-200 transition-colors h-full"
+                class="text-left bg-gray-50 border border-gray-100 rounded-xl p-3 hover:bg-white hover:border-gray-200 transition-colors min-h-[96px] flex flex-col justify-between"
               >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
                     <component :is="item.icon" :size="14" class="text-gray-500" />
                     <span class="text-[10px] text-gray-400 uppercase tracking-wider">{{ item.category }}</span>
                   </div>
-                  <span class="text-[10px] text-gray-400">Apply</span>
                 </div>
-                <div class="mt-2 text-sm font-semibold text-gray-800">{{ item.title }}</div>
-                <div class="text-[11px] text-gray-500">{{ item.detail }}</div>
+                <div class="mt-2 text-sm font-semibold text-gray-800 leading-snug">{{ item.title }}</div>
+                <div class="text-[11px] text-gray-500 mt-1 leading-snug">{{ item.detail }}</div>
               </button>
             </div>
-            <div class="flex items-center justify-between text-[10px] text-gray-400">
+            <div class="flex items-center justify-between text-[10px] text-gray-400 pt-1">
               <button
-                class="px-2 py-1 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white"
+                class="px-3 py-1.5 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white"
                 @click="prevPage"
                 :disabled="currentPage === 1"
               >
                 上一页
               </button>
-              <span class="flex-1 text-center">第 {{ currentPage }} / {{ totalPages }} 页</span>
+              <span class="flex-1 text-center text-[11px]">第 {{ currentPage }} / {{ totalPages }} 页</span>
               <button
-                class="px-2 py-1 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white"
+                class="px-3 py-1.5 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white"
                 @click="nextPage"
                 :disabled="currentPage === totalPages"
               >
@@ -117,15 +100,14 @@
 import { ref, computed } from 'vue'
 import { useDeviceStore } from '@/stores/device'
 import { storeToRefs } from 'pinia'
-import { Sparkles, Send, Wind, Gauge, Thermometer, Database, Zap, Activity } from 'lucide-vue-next'
+import { Sparkles, Wind, Gauge, Thermometer, Database, Zap, Activity } from 'lucide-vue-next'
 
 const store = useDeviceStore()
 const { airspeed, pressureDiff, env, battery, imu, lidar, acoustic } = storeToRefs(store)
 
-const inputQuery = ref('')
 const aiResult = ref('压差与气流曲线保持平稳，建议以 2 秒窗口平滑后再评估异常波动。')
 const currentPage = ref(1)
-const suggestionsPerPage = 4
+const suggestionsPerPage = 8
 
 type SensorOption = {
   id: string
@@ -222,6 +204,20 @@ const suggestions = [
     title: '分析噪声能量',
     detail: '评估声压级与气流相关性',
     prompt: '分析当前声学噪声的主要特征'
+  },
+  {
+    icon: Activity,
+    category: 'Stability',
+    title: '评估控制稳定性',
+    detail: '观察姿态变化并检查控制抖动',
+    prompt: '分析姿态控制稳定性与调参方向'
+  },
+  {
+    icon: Zap,
+    category: 'Maintenance',
+    title: '检查能耗基线',
+    detail: '对比日均功耗并定位异常',
+    prompt: '给出功耗异常排查路径与建议'
   }
 ]
 
@@ -235,8 +231,7 @@ const pagedSuggestions = computed(() => {
 })
 
 function applySuggestion(prompt: string) {
-  inputQuery.value = prompt
-  sendQuery()
+  aiResult.value = `${prompt}。建议结合当前传感器趋势判断是否需要进一步实验。`
 }
 
 function prevPage() {
@@ -245,12 +240,6 @@ function prevPage() {
 
 function nextPage() {
   if (currentPage.value < totalPages.value) currentPage.value += 1
-}
-
-function sendQuery() {
-  if (!inputQuery.value.trim()) return
-  aiResult.value = `已接收：${inputQuery.value}。建议结合当前传感器趋势判断是否需要进一步实验。`
-  inputQuery.value = ''
 }
 
 </script>
