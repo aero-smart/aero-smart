@@ -19,10 +19,31 @@
         >
           <div class="flex items-center justify-between">
             <div class="text-xs font-bold text-gray-700">{{ $t('control.sensor_snapshot') }}</div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-gray-400 font-medium"
+                >{{ currentSensorPage }} / {{ totalSensorPages }}</span
+              >
+              <div class="flex items-center gap-1">
+                <button
+                  class="p-1 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white transition-colors"
+                  @click="prevSensorPage"
+                  :disabled="currentSensorPage === 1"
+                >
+                  <ChevronLeft :size="14" />
+                </button>
+                <button
+                  class="p-1 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white transition-colors"
+                  @click="nextSensorPage"
+                  :disabled="currentSensorPage === totalSensorPages"
+                >
+                  <ChevronRight :size="14" />
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="grid grid-cols-2 gap-3 content-start auto-rows-min">
+          <div class="grid grid-cols-2 grid-rows-4 gap-3 flex-1 overflow-y-auto min-h-0">
             <div
-              v-for="metric in telemetryData"
+              v-for="metric in pagedTelemetryData"
               :key="metric.id"
               class="bg-gray-50 rounded-xl p-3 border border-gray-100 flex flex-col justify-between"
             >
@@ -62,46 +83,47 @@
             </div>
             <div class="flex items-center justify-between text-[10px] text-gray-400">
               <span class="text-xs font-semibold text-gray-600">{{ $t('control.presets') }}</span>
-              <span>{{ $t('control.apply_card') }}</span>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px]">{{
+                  $t('common.page_info', { current: currentPage, total: totalPages })
+                }}</span>
+                <div class="flex items-center gap-1">
+                  <button
+                    class="p-1 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white transition-colors"
+                    @click="prevPage"
+                    :disabled="currentPage === 1"
+                  >
+                    <ChevronLeft :size="14" />
+                  </button>
+                  <button
+                    class="p-1 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white transition-colors"
+                    @click="nextPage"
+                    :disabled="currentPage === totalPages"
+                  >
+                    <ChevronRight :size="14" />
+                  </button>
+                </div>
+              </div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 flex-1 auto-rows-fr">
+            <div class="grid grid-cols-2 grid-rows-4 gap-2 flex-1 overflow-y-auto min-h-0">
               <button
                 v-for="(item, idx) in pagedSuggestions"
                 :key="idx"
                 @click="applySuggestion(item.prompt)"
-                class="text-left bg-gray-50 border border-gray-100 rounded-xl p-3 hover:bg-white hover:border-gray-200 transition-colors h-full"
+                class="text-left bg-gray-50 border border-gray-100 rounded-lg p-2 hover:bg-white hover:border-gray-200 transition-colors h-full flex flex-col justify-start"
               >
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <component :is="item.icon" :size="14" class="text-gray-500" />
-                    <span class="text-[10px] text-gray-400 uppercase tracking-wider">{{
+                <div class="flex items-center justify-between w-full">
+                  <div class="flex items-center gap-1.5">
+                    <component :is="item.icon" :size="12" class="text-gray-500" />
+                    <span class="text-[9px] text-gray-400 uppercase tracking-wider">{{
                       item.category
                     }}</span>
                   </div>
                 </div>
-                <div class="mt-2 text-sm font-semibold text-gray-800 leading-snug">
+                <div class="mt-1 text-xs font-semibold text-gray-800 leading-tight truncate">
                   {{ item.title }}
                 </div>
-                <div class="text-[11px] text-gray-500 mt-1 leading-snug">{{ item.detail }}</div>
-              </button>
-            </div>
-            <div class="flex items-center justify-between text-[10px] text-gray-400 pt-1">
-              <button
-                class="px-3 py-1.5 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white"
-                @click="prevPage"
-                :disabled="currentPage === 1"
-              >
-                {{ $t('common.prev_page') }}
-              </button>
-              <span class="flex-1 text-center text-[11px]">{{
-                $t('common.page_info', { current: currentPage, total: totalPages })
-              }}</span>
-              <button
-                class="px-3 py-1.5 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white"
-                @click="nextPage"
-                :disabled="currentPage === totalPages"
-              >
-                {{ $t('common.next_page') }}
+                <div class="text-[10px] text-gray-500 mt-0.5 leading-tight truncate w-full">{{ item.detail }}</div>
               </button>
             </div>
           </div>
@@ -115,7 +137,7 @@
 import { ref, computed } from 'vue'
 import { useDeviceStore } from '@/stores/device'
 import { storeToRefs } from 'pinia'
-import { Sparkles, Wind, Gauge, Thermometer, Database, Zap, Activity } from 'lucide-vue-next'
+import { Sparkles, Wind, Gauge, Thermometer, Database, Zap, Activity, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -124,7 +146,11 @@ const { airspeed, pressureDiff, env, battery, imu, lidar, acoustic } = storeToRe
 
 const aiResult = ref(t('control.ai_default_result'))
 const currentPage = ref(1)
-const suggestionsPerPage = 6
+const suggestionsPerPage = 8
+
+// Sensor Pagination
+const currentSensorPage = ref(1)
+const sensorsPerPage = 8
 
 type SensorOption = {
   id: string
@@ -157,7 +183,7 @@ const baseSensorOptions = computed<SensorOption[]>(() => [
     label: t('control.sensors.pressure_diff'),
     sub: t('control.subs.differential'),
     icon: Gauge,
-    getValue: () => `${pressureDiff.value.toFixed(1)} Pa`,
+    getValue: () => `${(pressureDiff.value / 1000).toFixed(3)} kPa`,
   },
   {
     id: 'ambient',
@@ -234,15 +260,33 @@ const extraSensorOptions = computed<SensorOption[]>(() => [
   },
 ])
 
-const telemetryData = computed(() =>
-  baseSensorOptions.value.slice(0, 6).map((item) => ({
+const allSensorOptions = computed(() => [...baseSensorOptions.value, ...extraSensorOptions.value])
+
+const totalSensorPages = computed(() => Math.ceil(allSensorOptions.value.length / sensorsPerPage))
+
+const pagedTelemetryData = computed(() => {
+  const start = (currentSensorPage.value - 1) * sensorsPerPage
+  const end = start + sensorsPerPage
+  return allSensorOptions.value.slice(start, end).map((item) => ({
     id: item.id,
     label: item.label,
     sub: item.sub,
     value: item.getValue(),
     icon: item.icon,
-  })),
-)
+  }))
+})
+
+function prevSensorPage() {
+  if (currentSensorPage.value > 1) {
+    currentSensorPage.value--
+  }
+}
+
+function nextSensorPage() {
+  if (currentSensorPage.value < totalSensorPages.value) {
+    currentSensorPage.value++
+  }
+}
 
 const suggestions = computed(() => [
   {

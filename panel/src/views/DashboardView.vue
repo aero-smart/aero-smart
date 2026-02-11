@@ -60,20 +60,20 @@
           </div>
 
           <!-- Bottom Info -->
-          <div class="flex flex-col gap-3">
-            <div
-              class="rounded-xl border border-gray-100 bg-gradient-to-br from-gray-50 to-white p-3"
-            >
-              <div class="text-[10px] text-gray-500 uppercase tracking-wider">{{ $t('dashboard.wind_direction') }}</div>
-              <div class="mt-1 text-base font-semibold text-gray-800">19°</div>
+          <div class="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100">
+            <div>
+              <span class="text-xl font-bold text-gray-900 block tracking-tight">19°</span>
+              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{{
+                $t('dashboard.wind_direction')
+              }}</span>
             </div>
-            <div
-              class="rounded-xl border border-gray-100 bg-gradient-to-br from-gray-50 to-white p-3"
-            >
-              <div class="text-[10px] text-gray-500 uppercase tracking-wider">{{ $t('dashboard.avg_speed') }}</div>
-              <div class="mt-1 text-base font-semibold text-gray-800">
+            <div>
+              <span class="text-xl font-bold text-gray-900 block tracking-tight">
                 {{ stats.avgSpeed.toFixed(1) }} m/s
-              </div>
+              </span>
+              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{{
+                $t('dashboard.avg_speed')
+              }}</span>
             </div>
           </div>
         </div>

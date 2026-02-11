@@ -51,7 +51,7 @@ export default {
     target_speed: 'Target Speed',
     current_speed: 'Current Speed',
     wind_speed_display: 'Wind Speed Display',
-    wind_direction: 'Wind Direction',
+    wind_direction: 'Wind Dire',
     avg_speed: 'Avg Speed',
     pressure_diff_monitor: 'Pressure Difference Monitor',
     current_pressure_diff: 'Current Pressure Diff',

@@ -24,3 +24,6 @@ node_modules
 # TRAE
 mobile/.figma
 mobile/.idea
+# macOS garbage
+._*
+.DS_Store
