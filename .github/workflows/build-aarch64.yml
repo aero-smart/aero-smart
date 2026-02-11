@@ -41,6 +41,16 @@ jobs:
         with:
           version: '10.20.0'
 
+      - name: Configure aarch64 cross-compilation environment
+        run: |
+          # Enable arm64 architecture for apt
+          sudo dpkg --add-architecture arm64
+
+          # Add arm64 apt sources
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs) main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/arm64.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/arm64.list
+          sudo apt-get update
+
       - name: Install Tauri dependencies
         run: |
           sudo apt-get update &&
