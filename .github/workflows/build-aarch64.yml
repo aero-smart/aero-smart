@@ -119,8 +119,20 @@ jobs:
             cp -v target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage artifacts/ || true
           else
             echo "AppImage directory not found at target/aarch64-unknown-linux-gnu/release/bundle/appimage"
-            # Try to find where it is
-            find target -name "*.AppImage"
+          fi
+
+          # Copy Deb package
+          if [ -d "target/aarch64-unknown-linux-gnu/release/bundle/deb" ]; then
+            cp -v target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb artifacts/ || true
+          else
+             echo "Deb directory not found at target/aarch64-unknown-linux-gnu/release/bundle/deb"
+          fi
+          
+          # Try to find artifacts if not found (debugging)
+          if [ -z "$(ls -A artifacts/)" ]; then
+             echo "Artifacts folder is empty, searching for files..."
+             find target -name "*.AppImage"
+             find target -name "*.deb"
           fi
           
           # List artifacts to be uploaded
@@ -139,6 +151,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: aero-smart-panel-aarch64-${{ github.sha }}
-          path: artifacts/*.AppImage
+          path: |
+            artifacts/*.AppImage
+            artifacts/*.deb
+            artifacts/BUILD_INFO.txt
           if-no-files-found: warn
           retention-days: 30

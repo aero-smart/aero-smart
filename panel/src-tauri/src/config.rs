@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use tracing::info;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -47,12 +47,21 @@ impl Default for AppConfig {
     }
 }
 
-pub fn load_config() -> AppConfig {
-    let config_path = "AeroSmart.toml";
+fn get_config_path() -> PathBuf {
+    if cfg!(target_os = "linux") {
+        if let Ok(home) = std::env::var("HOME") {
+            return PathBuf::from(home).join(".AeroSmart.toml");
+        }
+    }
+    PathBuf::from("AeroSmart.toml")
+}
 
-    if Path::new(config_path).exists() {
-        info!("Loading configuration from {}", config_path);
-        match fs::read_to_string(config_path) {
+pub fn load_config() -> AppConfig {
+    let config_path = get_config_path();
+
+    if config_path.exists() {
+        info!("Loading configuration from {:?}", config_path);
+        match fs::read_to_string(&config_path) {
             Ok(contents) => match toml::from_str(&contents) {
                 Ok(config) => return config,
                 Err(e) => info!("Failed to parse config file: {}. Using defaults.", e),
@@ -60,14 +69,14 @@ pub fn load_config() -> AppConfig {
             Err(e) => info!("Failed to read config file: {}. Using defaults.", e),
         }
     } else {
-        info!("Config file {} not found. Creating default.", config_path);
+        info!("Config file {:?} not found. Creating default.", config_path);
         let default_config = AppConfig::default();
         match toml::to_string_pretty(&default_config) {
             Ok(toml_str) => {
                 // Add comments to the TOML string manually for better UX since toml crate doesn't support preserving comments well on serialization
                 // Or better, just write a predefined string with comments.
                 // But for now, let's write what we can.
-                if let Err(e) = fs::write(config_path, toml_str) {
+                if let Err(e) = fs::write(&config_path, toml_str) {
                     info!("Failed to write default config file: {}", e);
                 }
             }
@@ -80,8 +89,8 @@ pub fn load_config() -> AppConfig {
 }
 
 pub fn create_default_config_file_if_missing() {
-    let config_path = "AeroSmart.toml";
-    if !Path::new(config_path).exists() {
+    let config_path = get_config_path();
+    if !config_path.exists() {
         let content = r#"# AeroSmart Service Configuration File
 # Restart the application after modifying this file to apply changes.
 
@@ -114,10 +123,10 @@ host = "0.0.0.0"
 # Enable debug mode (outputs more logs)
 debug_mode = false
 "#;
-        if let Err(e) = fs::write(config_path, content) {
+        if let Err(e) = fs::write(&config_path, content) {
             info!("Failed to create default config file: {}", e);
         } else {
-            info!("Created default configuration file: {}", config_path);
+            info!("Created default configuration file: {:?}", config_path);
         }
     }
 }
