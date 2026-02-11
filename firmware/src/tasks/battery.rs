@@ -1,4 +1,4 @@
-use crate::utils::battery::get_battery_info;
+use crate::{consts::sensors::BATTERY_VOLTAGE_SAMPLE_RATE_HZ, utils::battery::get_battery_info};
 
 use {defmt_rtt as _, panic_probe as _};
 
@@ -20,7 +20,7 @@ pub async fn battery_task(
     let mut refchan = adc.enable_vrefint().degrade_adc();
     let mut battchan = input_chan.degrade_adc();
     loop {
-        Timer::after(Duration::from_hz(1)).await;
+        Timer::after(Duration::from_hz(BATTERY_VOLTAGE_SAMPLE_RATE_HZ as u64)).await;
         let mut sum = [0u32; 2];
         // For better accuracy, average 4 samples
         for _ in 0..4 {

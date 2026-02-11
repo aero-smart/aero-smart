@@ -1,11 +1,14 @@
 use embassy_time::{Duration, Timer};
 
-use crate::{sensors::adc_i2c::AdcI2c, state::ANALOG_PRESSURE_SENSOR_SIGNAL};
+use crate::{consts::sensors::ANALOG_PRESSURE_SENSOR_SAMPLE_RATE_HZ, sensors::adc_i2c::AdcI2c};
 
 #[embassy_executor::task]
 pub async fn analog_pressure_task(mut adc: AdcI2c<'static>) {
     loop {
-        Timer::after(Duration::from_hz(20)).await;
+        Timer::after(Duration::from_hz(
+            ANALOG_PRESSURE_SENSOR_SAMPLE_RATE_HZ as u64,
+        ))
+        .await;
         let result = adc.poll_all().await;
         match result {
             Ok(pressures) => {
@@ -21,7 +24,6 @@ pub async fn analog_pressure_task(mut adc: AdcI2c<'static>) {
                     let mut state = crate::state::GLOBAL_STATE.lock().await;
                     state.analog_pressure_sensor_data_pa = Some(pressures);
                 }
-                ANALOG_PRESSURE_SENSOR_SIGNAL.signal(());
             }
             Err(e) => {
                 defmt::error!("Analog Pressure Sensor Error: {:?}", e);

@@ -1,4 +1,5 @@
 use crate::{
+    consts::sensors::LIDAR_SAMPLE_RATE_SECS,
     sensors::lidar_uart::LidarUart,
     state::{MachineStatus, STATUS_UPDATED_SIGNAL},
 };
@@ -35,6 +36,6 @@ pub async fn lidar_task(mut lidar: LidarUart<'static>) {
                 defmt::error!("LIDAR Error: {:?}", e);
             }
         }
-        Timer::after(Duration::from_secs(3)).await;
+        Timer::after(Duration::from_secs(LIDAR_SAMPLE_RATE_SECS as u64)).await;
     }
 }

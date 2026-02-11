@@ -1,4 +1,5 @@
 use crate::{
+    consts::sensors::{AIRSPEED_SAMPLE_RATE_HZ, BAROMETER_SAMPLE_RATE_HZ},
     sensors::pitot_i2c::Airspeed,
     state::AIRSPEED_UPDATED_SIGNAL,
     utils::{magnus::density_kg_per_m3, pitot::calculate_airspeed},
@@ -43,7 +44,7 @@ pub async fn airspeed_task(mut sensors: Airspeed) {
 
         counter += 1;
 
-        if counter >= 20 {
+        if counter >= AIRSPEED_SAMPLE_RATE_HZ / BAROMETER_SAMPLE_RATE_HZ {
             match sensors.read_barometer().await {
                 Ok(baro_data) => {
                     defmt::info!(
@@ -71,6 +72,6 @@ pub async fn airspeed_task(mut sensors: Airspeed) {
             counter = 0;
         }
 
-        Timer::after(Duration::from_hz(20)).await;
+        Timer::after(Duration::from_hz(AIRSPEED_SAMPLE_RATE_HZ as u64)).await;
     }
 }

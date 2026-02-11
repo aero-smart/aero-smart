@@ -98,11 +98,11 @@ impl<'a> ImuSpi<'a> {
         self.spi.write(&tx_buf).await.map_err(ImuError::SpiError)?;
 
         // Configure Gyroscope
-        tx_buf = [Self::GYRO_CONFIG0, GyroConfig0::khz_1().to_byte()]; // Set full scale to ±250 dps
+        tx_buf = [Self::GYRO_CONFIG0, GyroConfig0::default().to_byte()]; // Set full scale to ±250 dps
         self.spi.write(&tx_buf).await.map_err(ImuError::SpiError)?;
 
         // Configure Accelerometer
-        tx_buf = [Self::ACCEL_CONFIG0, AccelConfig0::khz_1().to_byte()]; // Set full scale to ±2g
+        tx_buf = [Self::ACCEL_CONFIG0, AccelConfig0::default().to_byte()]; // Set full scale to ±2g
         self.spi.write(&tx_buf).await.map_err(ImuError::SpiError)?;
 
         tx_buf = [

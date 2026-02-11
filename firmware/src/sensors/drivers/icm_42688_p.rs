@@ -1,3 +1,7 @@
+use embassy_stm32::pac::Interrupt::DFSDM1_FLT1;
+
+use crate::consts::sensors::IMU_SAMPLE_RATE_HZ;
+
 /// - Name: PWR_MGMT0
 /// - Address: 78 (4Eh)
 /// - Serial IF: R/W
@@ -177,6 +181,38 @@ pub enum GyroOdr {
     Hz500 = 0b1111,
 }
 
+impl GyroOdr {
+    pub fn from_hz(hz: f32) -> Self {
+        match hz as u32 {
+            500 => GyroOdr::Hz500,
+            200 => GyroOdr::Hz200,
+            100 => GyroOdr::Hz100,
+            50 => GyroOdr::Hz50,
+            25 => GyroOdr::Hz25,
+            12 => GyroOdr::Hz12_5,
+            1000 => GyroOdr::Khz1,
+            2000 => GyroOdr::Khz2,
+            4000 => GyroOdr::Khz4,
+            8000 => GyroOdr::Khz8,
+            16000 => GyroOdr::Khz16,
+            32000 => GyroOdr::Khz32,
+            _ => GyroOdr::Khz1, // Default to 1kHz
+        }
+    }
+
+    pub fn from_khz(khz: f32) -> Self {
+        match khz as u32 {
+            1 => GyroOdr::Khz1,
+            2 => GyroOdr::Khz2,
+            4 => GyroOdr::Khz4,
+            8 => GyroOdr::Khz8,
+            16 => GyroOdr::Khz16,
+            32 => GyroOdr::Khz32,
+            _ => GyroOdr::Khz1, // Default to 1kHz
+        }
+    }
+}
+
 /// - Name: ACCEL_CONFIG0
 /// - Address: 80 (50h)
 /// - Serial IF: R/W
@@ -244,6 +280,41 @@ pub enum AccelOdr {
     Hz3_125 = 0b1101,
     Hz1_5625 = 0b1110,
     Hz500 = 0b1111,
+}
+
+impl AccelOdr {
+    pub fn from_hz(hz: f32) -> Self {
+        match hz as u32 {
+            500 => AccelOdr::Hz500,
+            200 => AccelOdr::Hz200,
+            100 => AccelOdr::Hz100,
+            50 => AccelOdr::Hz50,
+            25 => AccelOdr::Hz25,
+            12 => AccelOdr::Hz12_5,
+            6 => AccelOdr::Hz6_25,
+            3 => AccelOdr::Hz3_125,
+            1 => AccelOdr::Hz1_5625,
+            1000 => AccelOdr::Khz1,
+            2000 => AccelOdr::Khz2,
+            4000 => AccelOdr::Khz4,
+            8000 => AccelOdr::Khz8,
+            16000 => AccelOdr::Khz16,
+            32000 => AccelOdr::Khz32,
+            _ => AccelOdr::Khz1, // Default to 1kHz
+        }
+    }
+
+    pub fn from_khz(khz: f32) -> Self {
+        match khz as u32 {
+            1 => AccelOdr::Khz1,
+            2 => AccelOdr::Khz2,
+            4 => AccelOdr::Khz4,
+            8 => AccelOdr::Khz8,
+            16 => AccelOdr::Khz16,
+            32 => AccelOdr::Khz32,
+            _ => AccelOdr::Khz1, // Default to 1kHz
+        }
+    }
 }
 
 impl GyroConfig0 {
@@ -329,20 +400,20 @@ impl AccelConfig0 {
     }
 }
 
-impl GyroConfig0 {
-    pub fn khz_1() -> Self {
+impl Default for GyroConfig0 {
+    fn default() -> Self {
         GyroConfig0 {
-            fs_sel: GyroFullScale::Dps2000,
-            odr: GyroOdr::Khz1,
+            fs_sel: GyroFullScale::Dps250,
+            odr: GyroOdr::from_hz(IMU_SAMPLE_RATE_HZ as f32),
         }
     }
 }
 
-impl AccelConfig0 {
-    pub fn khz_1() -> Self {
+impl Default for AccelConfig0 {
+    fn default() -> Self {
         AccelConfig0 {
             fs_sel: AccelFullScale::G16,
-            odr: AccelOdr::Khz1,
+            odr: AccelOdr::from_hz(IMU_SAMPLE_RATE_HZ as f32),
         }
     }
 }

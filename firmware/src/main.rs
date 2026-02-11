@@ -12,6 +12,13 @@ pub mod utils;
 
 use crate::{
     algorithms::{airspeed::AirspeedControl, madgwick::MadgwickAhrs},
+    consts::{
+        algorithms::{MADGWICK_BETA, PID_KD, PID_KI, PID_KP},
+        sensors::{
+            EDF_PWM_FREQUENCY_HZ, I2C_FREQ_KHZ, IMU_SAMPLE_RATE_HZ, LIDAR_BAUD_RATE,
+            SERVO_PWM_FREQUENCY_HZ, UPPER_BAUD_RATE,
+        },
+    },
     executors::{edf_pwm::EdfPwm, servo::Servo},
     sensors::{audio_i2s::Audio, imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
     state::{AUDIO_CHANNEL, GLOBAL_STATE, SAI_BUFFER},
@@ -166,7 +173,7 @@ async fn main(spawner: Spawner) {
         Irqs,
         p.DMA1_CH2,
         p.DMA1_CH3,
-        i2c_config_with_freq(Hertz::khz(400)),
+        i2c_config_with_freq(Hertz::khz(I2C_FREQ_KHZ)),
     );
 
     info!("I2C1 initialized for Airspeed Sensor & Barometer");
@@ -178,7 +185,7 @@ async fn main(spawner: Spawner) {
         Irqs,
         p.DMA2_CH4,
         p.DMA2_CH5,
-        i2c_config_with_freq(Hertz::khz(400)),
+        i2c_config_with_freq(Hertz::khz(I2C_FREQ_KHZ)),
     );
 
     info!("I2C4 initialized for ADCs (using ADS1115 chip)");
@@ -212,7 +219,7 @@ async fn main(spawner: Spawner) {
         Irqs,
         p.DMA2_CH0,
         p.DMA2_CH1,
-        uart_config_with_baud(915200),
+        uart_config_with_baud(UPPER_BAUD_RATE),
     ) else {
         defmt::panic!("Failed to initialize upper USART");
     };
@@ -234,7 +241,7 @@ async fn main(spawner: Spawner) {
         Irqs,
         p.DMA1_CH6,
         p.DMA1_CH7,
-        uart_config_with_baud(115200),
+        uart_config_with_baud(LIDAR_BAUD_RATE),
     ) else {
         defmt::panic!("Failed to initialize LIDAR USART");
     };
@@ -260,7 +267,7 @@ async fn main(spawner: Spawner) {
         Some(right_esc_servo),
         None,
         None,
-        Hertz::hz(50),
+        Hertz::hz(EDF_PWM_FREQUENCY_HZ),
         embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
     );
 
@@ -274,7 +281,7 @@ async fn main(spawner: Spawner) {
         None,
         Some(servo),
         None,
-        Hertz::hz(50),
+        Hertz::hz(SERVO_PWM_FREQUENCY_HZ),
         embassy_stm32::timer::low_level::CountingMode::EdgeAlignedUp,
     );
 
@@ -295,8 +302,8 @@ async fn main(spawner: Spawner) {
 
     let mut sensors = Airspeed::new(i2c);
     let edf = EdfPwm::new(edf_servo_pwm);
-    let pid = AirspeedControl::new(0.0, 0.24, 0.08, 0.06);
-    let ahrs = MadgwickAhrs::new(1_000.0, 0.033);
+    let pid = AirspeedControl::new(0.0, PID_KP, PID_KI, PID_KD);
+    let ahrs = MadgwickAhrs::new(IMU_SAMPLE_RATE_HZ as f32, MADGWICK_BETA);
 
     info!("Airspeed sensor and EDF driver initialized");
 

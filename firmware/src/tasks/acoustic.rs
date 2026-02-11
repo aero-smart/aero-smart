@@ -6,6 +6,7 @@ use embassy_stm32::{
 use embassy_sync::channel::Sender;
 
 use crate::{
+    consts::sensors::MICROPHONE_SAMPLE_RATE_HZ,
     sensors::audio_i2s::Audio,
     state::{AcousticFftInput, FFT_SIZE, GLOBAL_STATE},
 };
@@ -14,7 +15,7 @@ pub fn sai_config_ltrr() -> (Config, Config) {
     use embassy_stm32::sai::*;
     let mclk_div = {
         let kernel_clock = rcc::frequency::<embassy_stm32::peripherals::SAI1>().0;
-        let v = (kernel_clock / (44100 * 256)) as u8;
+        let v = (kernel_clock / (MICROPHONE_SAMPLE_RATE_HZ * 256)) as u8;
         assert!((0..=63).contains(&v), "MCLK divider out of range");
         Mckdiv::from_bits(v)
     };
