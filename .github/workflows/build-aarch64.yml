@@ -108,20 +108,22 @@ jobs:
       - name: List built artifacts
         run: |
           echo "=== Listing built artifacts ==="
-          find panel/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle -type f
+          find target/aarch64-unknown-linux-gnu/release/bundle -type f
 
       - name: Prepare artifacts
         run: |
           mkdir -p artifacts
-          # Copy .deb packages if they exist
-          if [ -d "panel/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb" ]; then
-            cp -v panel/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb artifacts/ || true
+          # Copy AppImage
+          # user provided path: /home/runner/work/aero-smart/aero-smart/target/aarch64-unknown-linux-gnu/release/bundle/appimage/aero-smart-panel_0.1.0_aarch64.AppImage
+          if [ -d "target/aarch64-unknown-linux-gnu/release/bundle/appimage" ]; then
+            cp -v target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage artifacts/ || true
+          else
+            echo "AppImage directory not found at target/aarch64-unknown-linux-gnu/release/bundle/appimage"
+            # Try to find where it is
+            find target -name "*.AppImage"
           fi
-          # Copy AppImage if it exists
-          if [ -d "panel/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage" ]; then
-            cp -v panel/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage artifacts/ || true
-          fi
-          # Copy any other relevant files
+          
+          # List artifacts to be uploaded
           ls -lh artifacts/
 
       - name: Create release info
@@ -131,13 +133,12 @@ jobs:
           echo "Commit: ${{ github.sha }}" >> artifacts/BUILD_INFO.txt
           echo "Date: $(date -u)" >> artifacts/BUILD_INFO.txt
           echo "Target: aarch64-unknown-linux-gnu (OrangePi Zero 3)" >> artifacts/BUILD_INFO.txt
-          echo "Display: 1024x600" >> artifacts/BUILD_INFO.txt
           cat artifacts/BUILD_INFO.txt
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: aero-smart-panel-aarch64-${{ github.sha }}
-          path: artifacts/*
+          path: artifacts/*.AppImage
           if-no-files-found: warn
           retention-days: 30
