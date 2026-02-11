@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
-use tracing::info;
+use log::info;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct AppConfig {

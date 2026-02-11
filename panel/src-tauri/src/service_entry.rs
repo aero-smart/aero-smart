@@ -23,7 +23,7 @@ use tokio::{
 };
 use tokio_serial::SerialPortBuilderExt;
 use tower_http::cors::CorsLayer;
-use tracing::{error, info, warn};
+use log::{error, info, warn};
 
 #[derive(Clone)]
 struct AppState {
