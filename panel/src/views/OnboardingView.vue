@@ -30,8 +30,34 @@
 
         <!-- Title & Subtitle -->
         <div class="text-center space-y-4">
-          <h1 class="text-4xl font-bold text-black tracking-tight">AeroSmart</h1>
-          <p class="text-gray-500 text-lg">Next Generation Aerodynamic Analysis</p>
+          <h1 class="text-4xl font-bold text-black tracking-tight">{{ $t('onboarding.title') }}</h1>
+          <p class="text-gray-500 text-lg">{{ $t('onboarding.subtitle') }}</p>
+        </div>
+
+        <!-- Language Selection -->
+        <div class="flex gap-4">
+          <button
+            @click="setLocale('en')"
+            class="px-6 py-2 rounded-full border text-sm font-medium transition-all duration-200"
+            :class="
+              currentLocale === 'en'
+                ? 'bg-black text-white border-black'
+                : 'bg-white text-black border-gray-200 hover:border-black'
+            "
+          >
+            English
+          </button>
+          <button
+            @click="setLocale('zh')"
+            class="px-6 py-2 rounded-full border text-sm font-medium transition-all duration-200"
+            :class="
+              currentLocale === 'zh'
+                ? 'bg-black text-white border-black'
+                : 'bg-white text-black border-gray-200 hover:border-black'
+            "
+          >
+            中文
+          </button>
         </div>
 
         <!-- Action Button -->
@@ -40,7 +66,7 @@
           class="group relative px-8 py-3 bg-black text-white rounded-full font-medium text-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95"
         >
           <span class="relative flex items-center gap-2">
-            开始使用
+            {{ $t('common.start') }}
             <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </span>
         </button>
@@ -53,8 +79,16 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowRight } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { useLocaleStore } from '@/stores/locale'
+import { storeToRefs } from 'pinia'
 
 const router = useRouter()
+const { t } = useI18n()
+const localeStore = useLocaleStore()
+const { currentLocale } = storeToRefs(localeStore)
+const { setLocale } = localeStore
+
 const show = ref(false)
 
 onMounted(() => {

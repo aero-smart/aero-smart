@@ -19,7 +19,7 @@
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white">
           <h2 class="text-lg font-bold text-black flex items-center gap-2">
             <SettingsIcon class="w-5 h-5 text-black" />
-            Settings
+            {{ $t('common.settings') }}
           </h2>
           <button
             @click="close"
@@ -37,17 +37,55 @@
           </div>
 
           <div v-else class="space-y-8">
+            <!-- Language Configuration -->
+            <section>
+              <h3
+                class="text-xs font-bold text-black uppercase tracking-wider mb-4 flex items-center gap-2"
+              >
+                <Globe class="w-4 h-4" />
+                {{ $t('common.language') }}
+              </h3>
+              <div class="flex gap-4">
+                <button
+                  @click="setLocale('en')"
+                  class="px-4 py-2 rounded-lg border text-sm font-medium transition-all"
+                  :class="
+                    currentLocale === 'en'
+                      ? 'bg-black text-white border-black'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                  "
+                >
+                  English
+                </button>
+                <button
+                  @click="setLocale('zh')"
+                  class="px-4 py-2 rounded-lg border text-sm font-medium transition-all"
+                  :class="
+                    currentLocale === 'zh'
+                      ? 'bg-black text-white border-black'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                  "
+                >
+                  中文
+                </button>
+              </div>
+            </section>
+
+            <div class="h-px bg-gray-100"></div>
+
             <!-- Serial Configuration -->
             <section>
               <h3
                 class="text-xs font-bold text-black uppercase tracking-wider mb-4 flex items-center gap-2"
               >
                 <Cable class="w-4 h-4" />
-                Serial Communication
+                {{ $t('settings.serial.title') }}
               </h3>
               <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-2">
-                  <label class="block text-xs font-medium text-gray-500 mb-1.5">Port</label>
+                  <label class="block text-xs font-medium text-gray-500 mb-1.5">{{
+                    $t('settings.serial.port')
+                  }}</label>
                   <input
                     v-model="config.serial.port"
                     type="text"
@@ -56,7 +94,9 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-gray-500 mb-1.5">Baud Rate</label>
+                  <label class="block text-xs font-medium text-gray-500 mb-1.5">{{
+                    $t('settings.serial.baud_rate')
+                  }}</label>
                   <input
                     v-model.number="config.serial.baud_rate"
                     type="number"
@@ -64,9 +104,9 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-gray-500 mb-1.5"
-                    >Retry Interval (s)</label
-                  >
+                  <label class="block text-xs font-medium text-gray-500 mb-1.5">{{
+                    $t('settings.serial.retry_interval')
+                  }}</label>
                   <input
                     v-model.number="config.serial.retry_interval_secs"
                     type="number"
@@ -84,11 +124,13 @@
                 class="text-xs font-bold text-black uppercase tracking-wider mb-4 flex items-center gap-2"
               >
                 <Network class="w-4 h-4" />
-                WebSocket Server
+                {{ $t('settings.server.title') }}
               </h3>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-medium text-gray-500 mb-1.5">Host</label>
+                  <label class="block text-xs font-medium text-gray-500 mb-1.5">{{
+                    $t('settings.server.host')
+                  }}</label>
                   <input
                     v-model="config.server.host"
                     type="text"
@@ -96,7 +138,9 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-gray-500 mb-1.5">Port</label>
+                  <label class="block text-xs font-medium text-gray-500 mb-1.5">{{
+                    $t('settings.server.port')
+                  }}</label>
                   <input
                     v-model.number="config.server.port"
                     type="number"
@@ -114,13 +158,15 @@
                 class="text-xs font-bold text-black uppercase tracking-wider mb-4 flex items-center gap-2"
               >
                 <Sliders class="w-4 h-4" />
-                Rules & Behavior
+                {{ $t('settings.rules.title') }}
               </h3>
               <div class="space-y-3">
                 <label
                   class="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 cursor-pointer transition-all group"
                 >
-                  <span class="text-sm font-medium text-black">Debug Mode</span>
+                  <span class="text-sm font-medium text-black">{{
+                    $t('settings.rules.debug_mode')
+                  }}</span>
                   <div class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" v-model="config.rules.debug_mode" class="sr-only peer" />
                     <div
@@ -131,7 +177,9 @@
                 <label
                   class="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 cursor-pointer transition-all group"
                 >
-                  <span class="text-sm font-medium text-black">Show Onboarding</span>
+                  <span class="text-sm font-medium text-black">{{
+                    $t('settings.rules.show_onboarding')
+                  }}</span>
                   <div class="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -155,7 +203,7 @@
             class="px-4 py-2 text-sm font-medium text-black border border-gray-200 hover:bg-gray-50 hover:border-black rounded-lg transition-all flex items-center gap-2 group"
           >
             <Trash2 class="w-4 h-4 group-hover:text-red-600 transition-colors" />
-            <span>删除配置</span>
+            <span>{{ $t('common.delete_config') }}</span>
           </button>
 
           <div class="flex items-center gap-3">
@@ -163,7 +211,7 @@
               @click="close"
               class="px-5 py-2 text-sm font-medium text-black hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2"
             >
-              取消
+              {{ $t('common.cancel') }}
             </button>
             <button
               @click="handleSave"
@@ -175,7 +223,7 @@
                 class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"
               ></span>
               <Check v-else class="w-4 h-4" />
-              保存
+              {{ $t('common.save') }}
             </button>
           </div>
         </div>
@@ -186,6 +234,9 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useLocaleStore } from '@/stores/locale'
+import { storeToRefs } from 'pinia'
 import {
   Settings as SettingsIcon,
   X as XIcon,
@@ -194,8 +245,14 @@ import {
   Cable,
   Network,
   Sliders,
+  Globe,
 } from 'lucide-vue-next'
 import { invoke } from '@tauri-apps/api/core'
+
+const { t } = useI18n()
+const localeStore = useLocaleStore()
+const { currentLocale } = storeToRefs(localeStore)
+const { setLocale } = localeStore
 
 const props = defineProps<{
   isOpen: boolean
@@ -249,14 +306,14 @@ const handleSave = async () => {
     close()
   } catch (error) {
     console.error('Failed to save config:', error)
-    alert('Failed to save configuration: ' + error)
+    // alert(t('common.save_failed', { error })) // Ideally use a toast
   } finally {
     saving.value = false
   }
 }
 
 const handleDelete = async () => {
-  if (confirm('确定要重置所有设置为默认值吗？此操作无法撤销。')) {
+  if (confirm(t('common.confirm_reset'))) {
     config.value = {
       serial: {
         port: '/dev/tty.usbmodem1234',

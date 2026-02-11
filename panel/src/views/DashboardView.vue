@@ -6,11 +6,13 @@
       <div class="col-span-3 flex flex-col gap-4 min-h-0">
         <!-- Wind Input -->
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4">
-          <div class="text-xs font-bold text-gray-700">Wind Input</div>
+          <div class="text-xs font-bold text-gray-700">{{ $t('dashboard.wind_input') }}</div>
 
           <div class="flex flex-col gap-2">
             <div class="flex justify-between items-center">
-              <span class="text-[11px] text-gray-500 font-medium">Target Speed</span>
+              <span class="text-[11px] text-gray-500 font-medium">{{
+                $t('dashboard.target_speed')
+              }}</span>
               <div class="flex items-baseline gap-1">
                 <input
                   type="number"
@@ -26,7 +28,9 @@
 
           <div class="bg-gray-100 rounded-lg p-3 flex flex-col gap-2">
             <div class="flex items-center justify-between">
-              <div class="text-[11px] text-gray-500 font-medium">Current Speed</div>
+              <div class="text-[11px] text-gray-500 font-medium">
+                {{ $t('dashboard.current_speed') }}
+              </div>
               <div class="flex items-baseline gap-1">
                 <span class="text-xl font-bold text-gray-800">{{ airspeed.toFixed(1) }}</span>
                 <span class="text-xs text-gray-500">m/s</span>
@@ -48,7 +52,7 @@
         <div
           class="bg-white rounded-2xl p-3 shadow-sm border border-white flex-1 flex flex-col gap-3 min-h-0"
         >
-          <div class="text-xs font-bold text-gray-700">Wind Speed Display</div>
+          <div class="text-xs font-bold text-gray-700">{{ $t('dashboard.wind_speed_display') }}</div>
 
           <!-- Gauge -->
           <div class="flex-1 relative min-h-[240px] w-full overflow-visible pb-2">
@@ -60,13 +64,13 @@
             <div
               class="rounded-xl border border-gray-100 bg-gradient-to-br from-gray-50 to-white p-3"
             >
-              <div class="text-[10px] text-gray-500 uppercase tracking-wider">Wind Direction</div>
+              <div class="text-[10px] text-gray-500 uppercase tracking-wider">{{ $t('dashboard.wind_direction') }}</div>
               <div class="mt-1 text-base font-semibold text-gray-800">19°</div>
             </div>
             <div
               class="rounded-xl border border-gray-100 bg-gradient-to-br from-gray-50 to-white p-3"
             >
-              <div class="text-[10px] text-gray-500 uppercase tracking-wider">Avg Speed</div>
+              <div class="text-[10px] text-gray-500 uppercase tracking-wider">{{ $t('dashboard.avg_speed') }}</div>
               <div class="mt-1 text-base font-semibold text-gray-800">
                 {{ stats.avgSpeed.toFixed(1) }} m/s
               </div>
@@ -80,11 +84,11 @@
         <div
           class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 h-full"
         >
-          <div class="text-xs font-bold text-gray-700">Pressure Difference Monitor</div>
+          <div class="text-xs font-bold text-gray-700">{{ $t('dashboard.pressure_diff_monitor') }}</div>
 
           <!-- Big Number -->
           <div class="bg-gray-100 rounded-xl p-6 flex flex-col items-center justify-center">
-            <div class="text-xs text-gray-500 font-medium mb-1">Current Pressure Diff</div>
+            <div class="text-xs text-gray-500 font-medium mb-1">{{ $t('dashboard.current_pressure_diff') }}</div>
             <div class="flex items-baseline gap-2">
               <span class="text-4xl font-bold text-gray-800 tracking-tight">{{
                 pressureDiff.toFixed(2)
@@ -95,7 +99,9 @@
 
           <!-- Waveform Chart -->
           <div class="flex-1 min-h-0 bg-white border border-gray-100 rounded-xl p-2 flex flex-col">
-            <div class="text-[10px] text-gray-400 mb-1 flex-shrink-0">Real-time Waveform</div>
+            <div class="text-[10px] text-gray-400 mb-1 flex-shrink-0">
+              {{ $t('dashboard.realtime_waveform') }}
+            </div>
             <div class="flex-1 relative min-h-0 w-full">
               <div ref="waveformChartEl" class="absolute inset-0 w-full h-full"></div>
             </div>
@@ -107,25 +113,25 @@
               <span class="text-xl font-bold text-gray-900 block tracking-tight">{{
                 stats.max.toFixed(1)
               }}</span>
-              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold"
-                >Max Value</span
-              >
+              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{{
+                $t('dashboard.max_value')
+              }}</span>
             </div>
             <div>
               <span class="text-xl font-bold text-gray-900 block tracking-tight">{{
                 stats.min.toFixed(1)
               }}</span>
-              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold"
-                >Min Value</span
-              >
+              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{{
+                $t('dashboard.min_value')
+              }}</span>
             </div>
             <div>
               <span class="text-xl font-bold text-gray-900 block tracking-tight">{{
                 stats.avg.toFixed(1)
               }}</span>
-              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold"
-                >Average</span
-              >
+              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{{
+                $t('dashboard.average')
+              }}</span>
             </div>
           </div>
         </div>
@@ -165,27 +171,27 @@
                 <span class="text-xl font-bold text-gray-900 block tracking-tight">{{
                   (env.pressure - pressureDiff).toFixed(0)
                 }}</span>
-                <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold"
-                  >Pressure 2</span
-                >
+                <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{{
+                  $t('dashboard.pressure_2')
+                }}</span>
               </div>
               <!-- Speed 1 -->
               <div>
                 <span class="text-xl font-bold text-gray-900 block tracking-tight">{{
                   airspeed.toFixed(2)
                 }}</span>
-                <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold"
-                  >Speed 1</span
-                >
+                <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{{
+                  $t('dashboard.speed_1')
+                }}</span>
               </div>
               <!-- Speed 2 -->
               <div>
                 <span class="text-xl font-bold text-gray-900 block tracking-tight">{{
                   (airspeed * 1.1).toFixed(2)
                 }}</span>
-                <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold"
-                  >Speed 2</span
-                >
+                <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{{
+                  $t('dashboard.speed_2')
+                }}</span>
               </div>
             </div>
           </div>
@@ -195,7 +201,7 @@
         <div
           class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 flex-1"
         >
-          <div class="text-xs font-bold text-gray-700">IMU Visualization</div>
+          <div class="text-xs font-bold text-gray-700">{{ $t('dashboard.imu_visualization') }}</div>
           <div class="flex-1 flex items-center justify-center perspective-container">
             <div class="cube" :style="cubeStyle">
               <div class="face front"></div>
@@ -208,15 +214,15 @@
           </div>
           <div class="grid grid-cols-3 gap-2">
             <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
-              <div class="text-[10px] text-gray-500 font-medium">Roll</div>
+              <div class="text-[10px] text-gray-500 font-medium">{{ $t('dashboard.roll') }}</div>
               <div class="text-sm font-bold">{{ imu.attitude.roll.toFixed(1) }}°</div>
             </div>
             <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
-              <div class="text-[10px] text-gray-500 font-medium">Pitch</div>
+              <div class="text-[10px] text-gray-500 font-medium">{{ $t('dashboard.pitch') }}</div>
               <div class="text-sm font-bold">{{ imu.attitude.pitch.toFixed(1) }}°</div>
             </div>
             <div class="bg-gray-50 p-2 rounded-lg border border-gray-100">
-              <div class="text-[10px] text-gray-500 font-medium">Yaw</div>
+              <div class="text-[10px] text-gray-500 font-medium">{{ $t('dashboard.yaw') }}</div>
               <div class="text-sm font-bold">{{ imu.attitude.yaw.toFixed(1) }}°</div>
             </div>
           </div>
@@ -231,7 +237,9 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useDeviceStore } from '@/stores/device'
 import { storeToRefs } from 'pinia'
 import * as echarts from 'echarts'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const store = useDeviceStore()
 const { imu, airspeed, pressureDiff, env, isConnected } = storeToRefs(store)
 

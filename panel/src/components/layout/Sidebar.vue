@@ -69,7 +69,7 @@
         <div
           class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50"
         >
-          Settings
+          {{ $t('common.settings') }}
         </div>
       </button>
     </div>
@@ -94,17 +94,19 @@ import { useDeviceStore } from '@/stores/device'
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 import SettingsModal from '@/components/SettingsModal.vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const store = useDeviceStore()
 const { isConnected, battery } = storeToRefs(store)
 
 const isSettingsOpen = ref(false)
 
-const menuItems = [
-  { label: 'Overview', path: '/', icon: Compass },
-  { label: 'Sensor', path: '/control', icon: Sliders },
-  { label: 'Data', path: '/analysis', icon: Files },
-]
+const menuItems = computed(() => [
+  { label: t('nav.overview'), path: '/', icon: Compass },
+  { label: t('nav.sensor'), path: '/control', icon: Sliders },
+  { label: t('nav.data'), path: '/analysis', icon: Files },
+])
 
 const batteryPercentage = computed(() => Math.round(battery.value.soc))
 

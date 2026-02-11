@@ -4,10 +4,10 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <span class="w-1.5 h-7 bg-black rounded-full"></span>
-        <div class="text-lg font-bold tracking-tight">Data Analysis</div>
+        <div class="text-lg font-bold tracking-tight">{{ $t('analysis.title') }}</div>
         <span
           class="text-[10px] text-gray-500 bg-white border border-gray-200 rounded-full px-2 py-0.5"
-          >{{ isRealtime ? 'Live' : 'History' }}</span
+          >{{ isRealtime ? $t('common.live') : $t('common.history') }}</span
         >
       </div>
       <div class="flex items-center gap-4">
@@ -21,7 +21,7 @@
               isRealtime ? 'bg-gray-800 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'
             "
           >
-            Real-time
+            {{ $t('common.real_time') }}
           </button>
           <button
             @click="isRealtime = false"
@@ -30,7 +30,7 @@
               !isRealtime ? 'bg-gray-800 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'
             "
           >
-            History
+            {{ $t('common.history') }}
           </button>
         </div>
         <button
@@ -38,7 +38,7 @@
           class="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[11px] font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
         >
           <Download :size="14" />
-          Export CSV
+          {{ $t('common.export_csv') }}
         </button>
       </div>
     </div>
@@ -51,7 +51,7 @@
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4">
           <div class="text-xs font-bold text-gray-700 flex items-center gap-2">
             <Database :size="14" class="text-gray-400" />
-            Data Sources
+            {{ $t('analysis.data_sources') }}
           </div>
           <div class="flex flex-col gap-2">
             <label
@@ -85,13 +85,13 @@
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4">
           <div class="text-xs font-bold text-gray-700 flex items-center gap-2">
             <Sliders :size="14" class="text-gray-400" />
-            Display Settings
+            {{ $t('analysis.display_settings') }}
           </div>
           <div class="flex flex-col gap-4">
             <!-- Time Range -->
             <div class="flex flex-col gap-1.5">
               <div class="flex justify-between text-[10px] text-gray-500 font-medium">
-                <span>Time Range</span>
+                <span>{{ $t('analysis.time_range') }}</span>
                 <span class="text-gray-900 font-bold">{{ config.timeRange }}s</span>
               </div>
               <input
@@ -106,7 +106,7 @@
             <!-- Sampling Frequency -->
             <div class="flex flex-col gap-1.5">
               <div class="flex justify-between text-[10px] text-gray-500 font-medium">
-                <span>Frequency</span>
+                <span>{{ $t('analysis.frequency') }}</span>
                 <span class="text-gray-900 font-bold">{{ config.frequency }}Hz</span>
               </div>
               <select
@@ -126,11 +126,11 @@
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4">
           <div class="text-xs font-bold text-gray-700 flex items-center gap-2">
             <Palette :size="14" class="text-gray-400" />
-            Chart Style
+            {{ $t('analysis.chart_style') }}
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div class="flex flex-col gap-1.5">
-              <span class="text-[10px] text-gray-500 font-medium">Line Width</span>
+              <span class="text-[10px] text-gray-500 font-medium">{{ $t('analysis.line_width') }}</span>
               <input
                 type="number"
                 v-model.number="config.lineWidth"
@@ -140,7 +140,7 @@
               />
             </div>
             <div class="flex flex-col gap-1.5">
-              <span class="text-[10px] text-gray-500 font-medium">Show Grid</span>
+              <span class="text-[10px] text-gray-500 font-medium">{{ $t('analysis.show_grid') }}</span>
               <div class="flex items-center h-full">
                 <input
                   type="checkbox"
@@ -208,7 +208,9 @@ import { useDeviceStore } from '@/stores/device'
 import { storeToRefs } from 'pinia'
 import * as echarts from 'echarts'
 import { Download, Database, Sliders, Palette, RotateCcw, ZoomIn, ZoomOut } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const store = useDeviceStore()
 const { airspeed, pressureDiff, env, battery, imu } = storeToRefs(store)
 
@@ -225,18 +227,18 @@ const config = ref({
   smooth: true,
 })
 
-const availableSources = [
-  { id: 'airspeed', label: 'Airspeed', unit: 'm/s', color: '#1f2937' },
-  { id: 'pressureDiff', label: 'Pressure Diff', unit: 'Pa', color: '#4b5563' },
-  { id: 'env_pressure', label: 'Ambient Pressure', unit: 'Pa', color: '#9ca3af' },
-  { id: 'env_temp', label: 'Temperature', unit: '°C', color: '#6b7280' },
-  { id: 'battery_v', label: 'Voltage', unit: 'V', color: '#374151' },
-  { id: 'imu_roll', label: 'Roll', unit: '°', color: '#111827' },
-  { id: 'imu_pitch', label: 'Pitch', unit: '°', color: '#1f2937' },
-]
+const availableSources = computed(() => [
+  { id: 'airspeed', label: t('control.sensors.airspeed'), unit: 'm/s', color: '#1f2937' },
+  { id: 'pressureDiff', label: t('control.sensors.pressure_diff'), unit: 'Pa', color: '#4b5563' },
+  { id: 'env_pressure', label: t('control.sensors.ambient'), unit: 'Pa', color: '#9ca3af' },
+  { id: 'env_temp', label: t('control.sensors.temperature'), unit: '°C', color: '#6b7280' },
+  { id: 'battery_v', label: t('control.sensors.battery'), unit: 'V', color: '#374151' },
+  { id: 'imu_roll', label: t('control.sensors.imu_roll'), unit: '°', color: '#111827' },
+  { id: 'imu_pitch', label: t('control.sensors.imu_pitch'), unit: '°', color: '#1f2937' },
+])
 
 const activeSourceInfo = computed(() =>
-  availableSources.filter((s) => selectedSources.value.includes(s.id)),
+  availableSources.value.filter((s) => selectedSources.value.includes(s.id)),
 )
 
 // Data buffers for real-time display
@@ -340,7 +342,7 @@ function initChart() {
       },
     ],
     series: selectedSources.value.map((id) => {
-      const info = availableSources.find((s) => s.id === id)!
+      const info = availableSources.value.find((s) => s.id === id)!
       return {
         id,
         name: info.label,
@@ -433,7 +435,7 @@ watch(
     // Add new series
     newSources.forEach((id) => {
       if (!currentSeriesIds.includes(id)) {
-        const info = availableSources.find((s) => s.id === id)!
+        const info = availableSources.value.find((s) => s.id === id)!
         const buffer = dataBuffers.value[id] || []
         chart!.setOption({
           series: [

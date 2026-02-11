@@ -3,13 +3,13 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <span class="w-1.5 h-7 bg-black rounded-full"></span>
-        <div class="text-lg font-bold tracking-tight">Sensor Analysis</div>
+        <div class="text-lg font-bold tracking-tight">{{ $t('control.sensor_analysis') }}</div>
         <span
           class="text-[10px] text-gray-500 bg-white border border-gray-200 rounded-full px-2 py-0.5"
-          >Live</span
+          >{{ $t('common.live') }}</span
         >
       </div>
-      <div class="text-xs text-gray-400 font-medium">Auto Refresh</div>
+      <div class="text-xs text-gray-400 font-medium">{{ $t('common.auto_refresh') }}</div>
     </div>
 
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0 items-stretch">
@@ -18,7 +18,7 @@
           class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 h-full"
         >
           <div class="flex items-center justify-between">
-            <div class="text-xs font-bold text-gray-700">Sensor Snapshot</div>
+            <div class="text-xs font-bold text-gray-700">{{ $t('control.sensor_snapshot') }}</div>
           </div>
           <div class="grid grid-cols-2 gap-3 content-start auto-rows-min">
             <div
@@ -47,20 +47,22 @@
           class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 min-h-0 h-full"
         >
           <div class="flex items-center justify-between">
-            <div class="text-xs font-bold text-gray-700">AI Suggestions</div>
+            <div class="text-xs font-bold text-gray-700">{{ $t('control.ai_suggestions') }}</div>
             <div class="flex items-center gap-2 text-[10px] text-gray-400">
               <Sparkles :size="12" />
-              Guided
+              {{ $t('control.guided') }}
             </div>
           </div>
           <div class="flex-1 min-h-0 flex flex-col gap-4 overflow-visible">
             <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 min-h-[100px]">
-              <div class="text-[10px] text-gray-400 uppercase tracking-wider">AI Output</div>
+              <div class="text-[10px] text-gray-400 uppercase tracking-wider">
+                {{ $t('control.ai_output') }}
+              </div>
               <div class="mt-2 text-[12px] text-gray-700 leading-relaxed">{{ aiResult }}</div>
             </div>
             <div class="flex items-center justify-between text-[10px] text-gray-400">
-              <span class="text-xs font-semibold text-gray-600">Presets</span>
-              <span>点击卡片应用</span>
+              <span class="text-xs font-semibold text-gray-600">{{ $t('control.presets') }}</span>
+              <span>{{ $t('control.apply_card') }}</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 flex-1 auto-rows-fr">
               <button
@@ -89,17 +91,17 @@
                 @click="prevPage"
                 :disabled="currentPage === 1"
               >
-                上一页
+                {{ $t('common.prev_page') }}
               </button>
-              <span class="flex-1 text-center text-[11px]"
-                >第 {{ currentPage }} / {{ totalPages }} 页</span
-              >
+              <span class="flex-1 text-center text-[11px]">{{
+                $t('common.page_info', { current: currentPage, total: totalPages })
+              }}</span>
               <button
                 class="px-3 py-1.5 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white"
                 @click="nextPage"
                 :disabled="currentPage === totalPages"
               >
-                下一页
+                {{ $t('common.next_page') }}
               </button>
             </div>
           </div>
@@ -114,11 +116,13 @@ import { ref, computed } from 'vue'
 import { useDeviceStore } from '@/stores/device'
 import { storeToRefs } from 'pinia'
 import { Sparkles, Wind, Gauge, Thermometer, Database, Zap, Activity } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const store = useDeviceStore()
 const { airspeed, pressureDiff, env, battery, imu, lidar, acoustic } = storeToRefs(store)
 
-const aiResult = ref('压差与气流曲线保持平稳，建议以 2 秒窗口平滑后再评估异常波动。')
+const aiResult = ref(t('control.ai_default_result'))
 const currentPage = ref(1)
 const suggestionsPerPage = 6
 
@@ -143,92 +147,92 @@ const selectedSensorIds = ref<string[]>([...baseSensorIds])
 const baseSensorOptions = computed<SensorOption[]>(() => [
   {
     id: 'airspeed',
-    label: 'Airspeed',
-    sub: 'Pitot A',
+    label: t('control.sensors.airspeed'),
+    sub: t('control.subs.pitot_a'),
     icon: Wind,
     getValue: () => `${airspeed.value.toFixed(2)} m/s`,
   },
   {
     id: 'pressure_diff',
-    label: 'Pressure Diff',
-    sub: 'Differential',
+    label: t('control.sensors.pressure_diff'),
+    sub: t('control.subs.differential'),
     icon: Gauge,
     getValue: () => `${pressureDiff.value.toFixed(1)} Pa`,
   },
   {
     id: 'ambient',
-    label: 'Ambient',
-    sub: 'Barometer',
+    label: t('control.sensors.ambient'),
+    sub: t('control.subs.barometer'),
     icon: Database,
     getValue: () => `${(env.value.pressure / 100).toFixed(1)} hPa`,
   },
   {
     id: 'temperature',
-    label: 'Temperature',
-    sub: 'Internal',
+    label: t('control.sensors.temperature'),
+    sub: t('control.subs.internal'),
     icon: Thermometer,
     getValue: () => `${env.value.temperature.toFixed(1)}°C`,
   },
   {
     id: 'battery',
-    label: 'Battery',
-    sub: 'Main Pack',
+    label: t('control.sensors.battery'),
+    sub: t('control.subs.main_pack'),
     icon: Zap,
     getValue: () => `${battery.value.voltage.toFixed(2)} V`,
   },
   {
     id: 'imu_pitch',
-    label: 'IMU Pitch',
-    sub: 'Attitude',
+    label: t('control.sensors.imu_pitch'),
+    sub: t('control.subs.attitude'),
     icon: Activity,
     getValue: () => `${imu.value.attitude.pitch.toFixed(1)}°`,
-  },
+  }
 ])
 
-const extraSensorOptions: SensorOption[] = [
+const extraSensorOptions = computed<SensorOption[]>(() => [
   {
     id: 'humidity',
-    label: 'Humidity',
-    sub: 'Environment',
+    label: t('control.sensors.humidity'),
+    sub: t('control.subs.environment'),
     icon: Database,
     getValue: () => `${env.value.humidity.toFixed(1)}%`,
   },
   {
     id: 'batterySoc',
-    label: 'Battery SOC',
-    sub: 'Main Pack',
+    label: t('control.sensors.battery_soc'),
+    sub: t('control.subs.main_pack'),
     icon: Zap,
     getValue: () => `${battery.value.soc.toFixed(0)}%`,
   },
   {
     id: 'imuRoll',
-    label: 'IMU Roll',
-    sub: 'Attitude',
+    label: t('control.sensors.imu_roll'),
+    sub: t('control.subs.attitude'),
     icon: Activity,
     getValue: () => `${imu.value.attitude.roll.toFixed(1)}°`,
   },
   {
     id: 'imuYaw',
-    label: 'IMU Yaw',
-    sub: 'Attitude',
+    label: t('control.sensors.imu_yaw'),
+    sub: t('control.subs.attitude'),
     icon: Activity,
     getValue: () => `${imu.value.attitude.yaw.toFixed(1)}°`,
   },
   {
     id: 'lidar',
-    label: 'Lidar',
-    sub: 'Range',
+    label: t('control.sensors.lidar'),
+    sub: t('control.subs.range'),
     icon: Gauge,
     getValue: () => `${lidar.value.distance.toFixed(0)} cm`,
   },
   {
     id: 'acoustic',
-    label: 'Acoustic SPL',
-    sub: 'Audio',
+    label: t('control.sensors.acoustic'),
+    sub: t('control.subs.audio'),
     icon: Wind,
     getValue: () => `${acoustic.value.spl.toFixed(1)} dB`,
   },
-]
+])
 
 const telemetryData = computed(() =>
   baseSensorOptions.value.slice(0, 6).map((item) => ({
@@ -240,74 +244,74 @@ const telemetryData = computed(() =>
   })),
 )
 
-const suggestions = [
+const suggestions = computed(() => [
   {
     icon: Wind,
-    category: 'Flow',
-    title: '稳定气流质量',
-    detail: '检查压差波动并调整滤波参数',
-    prompt: '根据当前压差评估气流稳定性',
+    category: t('control.suggestions.flow.category'),
+    title: t('control.suggestions.flow.title'),
+    detail: t('control.suggestions.flow.detail'),
+    prompt: t('control.suggestions.flow.prompt'),
   },
   {
     icon: Gauge,
-    category: 'Pressure',
-    title: '优化管路响应',
-    detail: '评估管路延迟并校准传感器',
-    prompt: '给出压差传感器校准建议',
+    category: t('control.suggestions.pressure.category'),
+    title: t('control.suggestions.pressure.title'),
+    detail: t('control.suggestions.pressure.detail'),
+    prompt: t('control.suggestions.pressure.prompt'),
   },
   {
     icon: Zap,
-    category: 'Power',
-    title: '降低能耗波动',
-    detail: '分析电流峰值与负载关系',
-    prompt: '分析当前电池负载与功耗',
+    category: t('control.suggestions.power.category'),
+    title: t('control.suggestions.power.title'),
+    detail: t('control.suggestions.power.detail'),
+    prompt: t('control.suggestions.power.prompt'),
   },
   {
     icon: Activity,
-    category: 'IMU',
-    title: '抑制振动噪声',
-    detail: '检查 IMU 姿态抖动与频谱',
-    prompt: '分析 IMU 振动噪声来源',
+    category: t('control.suggestions.imu.category'),
+    title: t('control.suggestions.imu.title'),
+    detail: t('control.suggestions.imu.detail'),
+    prompt: t('control.suggestions.imu.prompt'),
   },
   {
     icon: Thermometer,
-    category: 'Thermal',
-    title: '评估温升状态',
-    detail: '关注温度斜率与环境漂移',
-    prompt: '分析当前温度变化趋势',
+    category: t('control.suggestions.thermal.category'),
+    title: t('control.suggestions.thermal.title'),
+    detail: t('control.suggestions.thermal.detail'),
+    prompt: t('control.suggestions.thermal.prompt'),
   },
   {
     icon: Database,
-    category: 'Calibration',
-    title: '检查基准零点',
-    detail: '对比历史零漂并更新标定',
-    prompt: '给出传感器零点校准建议',
+    category: t('control.suggestions.calibration.category'),
+    title: t('control.suggestions.calibration.title'),
+    detail: t('control.suggestions.calibration.detail'),
+    prompt: t('control.suggestions.calibration.prompt'),
   },
   {
     icon: Gauge,
-    category: 'Lidar',
-    title: '优化测距稳定性',
-    detail: '观察量测噪声并提高采样一致性',
-    prompt: '分析测距数据的波动来源',
+    category: t('control.suggestions.lidar.category'),
+    title: t('control.suggestions.lidar.title'),
+    detail: t('control.suggestions.lidar.detail'),
+    prompt: t('control.suggestions.lidar.prompt'),
   },
   {
     icon: Wind,
-    category: 'Acoustic',
-    title: '分析噪声能量',
-    detail: '评估声压级与气流相关性',
-    prompt: '分析当前声学噪声的主要特征',
+    category: t('control.suggestions.acoustic.category'),
+    title: t('control.suggestions.acoustic.title'),
+    detail: t('control.suggestions.acoustic.detail'),
+    prompt: t('control.suggestions.acoustic.prompt'),
   },
-]
+])
 
-const totalPages = computed(() => Math.max(1, Math.ceil(suggestions.length / suggestionsPerPage)))
+const totalPages = computed(() => Math.max(1, Math.ceil(suggestions.value.length / suggestionsPerPage)))
 
 const pagedSuggestions = computed(() => {
   const start = (currentPage.value - 1) * suggestionsPerPage
-  return suggestions.slice(start, start + suggestionsPerPage)
+  return suggestions.value.slice(start, start + suggestionsPerPage)
 })
 
 function applySuggestion(prompt: string) {
-  aiResult.value = `${prompt}。建议结合当前传感器趋势判断是否需要进一步实验。`
+  aiResult.value = `${prompt}${t('control.ai_apply_suffix')}`
 }
 
 function prevPage() {
