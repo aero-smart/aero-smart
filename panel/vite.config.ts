@@ -18,4 +18,24 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('echarts')) {
+              return 'echarts'
+            }
+            if (id.includes('lucide-vue-next')) {
+              return 'icons'
+            }
+            if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router') || id.includes('vue-i18n')) {
+              return 'vue-vendor'
+            }
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1200,
+  },
 })
