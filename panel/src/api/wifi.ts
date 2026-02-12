@@ -15,9 +15,12 @@ export interface WifiStatus {
 }
 
 export async function scanWifi(): Promise<WifiNetwork[]> {
-  const res = await fetch(`${API_BASE}/scan`)
-  if (!res.ok) throw new Error('Failed to scan wifi')
-  return res.json()
+  const res = await fetch(`${API_BASE}/scan`);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Failed to scan wifi');
+  }
+  return res.json();
 }
 
 export async function connectWifi(ssid: string, password?: string): Promise<void> {
@@ -33,14 +36,20 @@ export async function connectWifi(ssid: string, password?: string): Promise<void
 }
 
 export async function disconnectWifi(): Promise<void> {
-  const res = await fetch(`${API_BASE}/disconnect`, { method: 'POST' })
-  if (!res.ok) throw new Error('Failed to disconnect')
+  const res = await fetch(`${API_BASE}/disconnect`, { method: 'POST' });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Failed to disconnect');
+  }
 }
 
 export async function getWifiStatus(): Promise<WifiStatus> {
-  const res = await fetch(`${API_BASE}/status`)
-  if (!res.ok) throw new Error('Failed to get status')
-  return res.json()
+  const res = await fetch(`${API_BASE}/status`);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Failed to get status');
+  }
+  return res.json();
 }
 
 export async function testWifiConnection(): Promise<void> {

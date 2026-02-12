@@ -7,6 +7,7 @@ use std::path::PathBuf;
 pub struct AppConfig {
     pub serial: SerialConfig,
     pub server: ServerConfig,
+    #[serde(default)]
     pub rules: RulesConfig,
 }
 
@@ -24,10 +25,25 @@ pub struct ServerConfig {
     pub host: String,
 }
 
+fn default_true() -> bool {
+    true
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct RulesConfig {
+    #[serde(default)]
     pub debug_mode: bool,
+    #[serde(default = "default_true")]
     pub enable_onboarding: bool,
+}
+
+impl Default for RulesConfig {
+    fn default() -> Self {
+        Self {
+            debug_mode: false,
+            enable_onboarding: true,
+        }
+    }
 }
 
 impl Default for AppConfig {
@@ -43,10 +59,7 @@ impl Default for AppConfig {
                 port: 3000,
                 host: "0.0.0.0".to_string(),
             },
-            rules: RulesConfig {
-                debug_mode: false,
-                enable_onboarding: true,
-            },
+            rules: RulesConfig::default(),
         }
     }
 }
@@ -67,7 +80,13 @@ pub fn load_config() -> AppConfig {
         info!("Loading configuration from {:?}", config_path);
         match fs::read_to_string(&config_path) {
             Ok(contents) => match toml::from_str(&contents) {
-                Ok(config) => return config,
+                Ok(config) => {
+                    // Normalize config file by writing back (fills in default values for missing fields)
+                    if let Err(e) = save_config(&config) {
+                        info!("Failed to normalize config file: {}", e);
+                    }
+                    return config;
+                }
                 Err(e) => info!("Failed to parse config file: {}. Using defaults.", e),
             },
             Err(e) => info!("Failed to read config file: {}. Using defaults.", e),

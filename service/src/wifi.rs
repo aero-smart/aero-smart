@@ -100,31 +100,8 @@ async fn test_connectivity() -> anyhow::Result<()> {
     }
 }
 
-#[cfg(target_os = "linux")]
-async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {
-    // nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list
-    let output = Command::new("nmcli")
-        .args(&[
-            "-t",
-            "-f",
-            "IN-USE,SSID,SIGNAL,SECURITY",
-            "device",
-            "wifi",
-            "list",
-            "--rescan",
-            "yes",
-        ])
-        .output()
-        .await?;
-
-    if !output.status.success() {
-        return Err(anyhow::anyhow!(
-            "nmcli failed: {}",
-            String::from_utf8_lossy(&output.stderr)
-        ));
-    }
-
-    let stdout = String::from_utf8(output.stdout)?;
+fn parse_scan_output(stdout: Vec<u8>) -> anyhow::Result<Vec<WifiNetwork>> {
+    let stdout = String::from_utf8(stdout)?;
     let mut networks = Vec::new();
 
     for line in stdout.lines() {
@@ -160,6 +137,64 @@ async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {
     networks.dedup_by(|a, b| a.ssid == b.ssid);
 
     Ok(networks)
+}
+
+#[cfg(target_os = "linux")]
+async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {
+    // nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list
+    let args = &[
+        "-t",
+        "-f",
+        "IN-USE,SSID,SIGNAL,SECURITY",
+        "device",
+        "wifi",
+        "list",
+        "--rescan",
+        "yes",
+    ];
+
+    let mut output = Command::new("nmcli")
+        .args(args)
+        .output()
+        .await?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        info!(
+            "Scan failed (might be disabled): {}. Attempting to enable WiFi...",
+            stderr
+        );
+
+        // Try to enable wifi
+        let _ = Command::new("nmcli")
+            .args(&["radio", "wifi", "on"])
+            .output()
+            .await;
+
+        // Try to unblock rfkill
+        let _ = Command::new("rfkill")
+            .args(&["unblock", "wifi"])
+            .output()
+            .await;
+
+        // Wait a bit for interface to come up
+        tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+
+        // Retry scan
+        output = Command::new("nmcli")
+            .args(args)
+            .output()
+            .await?;
+
+        if !output.status.success() {
+            return Err(anyhow::anyhow!(
+                "nmcli failed: {}",
+                String::from_utf8_lossy(&output.stderr)
+            ));
+        }
+    }
+
+    parse_scan_output(output.stdout)
 }
 
 #[cfg(not(target_os = "linux"))]

@@ -25,6 +25,9 @@ export default {
     calibration_subtitle: '校准您的传感器以获得准确读数',
     calibration_start: '开始校准',
     calibration_done: '已校准',
+    wifi_skip: '跳过',
+    skip_wifi_title: '跳过 WiFi 连接？',
+    skip_wifi_message: '没有网络连接可能导致部分功能不可用。确定要跳过吗？',
   },
   common: {
     settings: '设置',
