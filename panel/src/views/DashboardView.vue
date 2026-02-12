@@ -8,43 +8,57 @@
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4">
           <div class="text-xs font-bold text-gray-700">{{ $t('dashboard.wind_input') }}</div>
 
-          <div class="flex flex-col gap-2">
-            <div class="flex justify-between items-center">
-              <span class="text-[11px] text-gray-500 font-medium">{{
-                $t('dashboard.target_speed')
+          <div class="flex flex-col items-center gap-4 py-2">
+            <!-- Digital Display -->
+            <div class="relative w-full flex justify-center">
+              <span class="text-6xl font-black text-gray-900 tracking-tighter">{{
+                targetSpeed.toFixed(0)
               }}</span>
-              <div class="flex items-baseline gap-1">
-                <input
-                  type="number"
-                  v-model.number="targetSpeed"
-                  @change="updateSpeed"
-                  class="w-12 text-right bg-transparent border-b border-gray-300 text-sm font-bold focus:outline-none focus:border-black transition-colors"
-                  placeholder="0"
-                />
-                <span class="text-xs text-gray-400">m/s</span>
-              </div>
+              <span class="absolute right-8 bottom-2 text-sm font-bold text-gray-400">m/s</span>
             </div>
-          </div>
 
-          <div class="bg-gray-100 rounded-lg p-3 flex flex-col gap-2">
-            <div class="flex items-center justify-between">
-              <div class="text-[11px] text-gray-500 font-medium">
-                {{ $t('dashboard.current_speed') }}
+            <!-- Controls Grid -->
+            <div class="grid grid-cols-2 gap-x-12 gap-y-3 w-full px-4">
+              <!-- Left Side (- Buttons) -->
+              <div class="flex flex-col gap-2 items-end">
+                <button
+                  @click="adjustSpeed(1)"
+                  class="w-12 h-12 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 font-bold text-lg flex items-center justify-center transition-colors"
+                >
+                  +1
+                </button>
+                <button
+                  @click="adjustSpeed(5)"
+                  class="w-12 h-12 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 font-bold text-lg flex items-center justify-center transition-colors"
+                >
+                  +5
+                </button>
               </div>
-              <div class="flex items-baseline gap-1">
-                <span class="text-xl font-bold text-gray-800">{{ airspeed.toFixed(1) }}</span>
-                <span class="text-xs text-gray-500">m/s</span>
+
+              <!-- Right Side (+ Buttons) -->
+              <div class="flex flex-col gap-2 items-start">
+                <button
+                  @click="adjustSpeed(-1)"
+                  class="w-12 h-12 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 font-bold text-lg flex items-center justify-center transition-colors"
+                >
+                  -1
+                </button>
+                <button
+                  @click="adjustSpeed(-5)"
+                  class="w-12 h-12 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 font-bold text-lg flex items-center justify-center transition-colors"
+                >
+                  -5
+                </button>
               </div>
             </div>
-            <!-- Segmented Progress Bar (Monochrome) -->
-            <div class="flex gap-[2px] h-4 w-full">
-              <div
-                v-for="i in 30"
-                :key="i"
-                class="flex-1 rounded-sm transition-colors duration-200"
-                :class="i <= (airspeed / 30) * 30 ? 'bg-gray-800' : 'bg-gray-300'"
-              ></div>
-            </div>
+
+            <!-- Confirm Button -->
+            <button
+              @click="updateSpeed"
+              class="w-full mt-2 bg-black text-white font-bold py-3 rounded-xl hover:bg-gray-800 active:scale-95 transition-all"
+            >
+              {{ $t('common.confirm') }}
+            </button>
           </div>
         </div>
 
@@ -251,6 +265,13 @@ const { imu, airspeed, pressureDiff, env, isConnected } = storeToRefs(store)
 
 const currentTab = ref('Overview')
 const targetSpeed = ref(0)
+
+function adjustSpeed(delta: number) {
+  let newSpeed = targetSpeed.value + delta
+  if (newSpeed < 4) newSpeed = 4
+  if (newSpeed > 34) newSpeed = 34
+  targetSpeed.value = newSpeed
+}
 
 // Simulation for Demo
 let simTimer: number | null = null
