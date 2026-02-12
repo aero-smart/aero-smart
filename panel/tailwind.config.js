@@ -4,24 +4,65 @@ export default {
   theme: {
     extend: {
       colors: {
-        // App Surface & Layout
-        background: '#ffffff', // App Surface Background
-        surface: '#ececec', // Sidebar & Base Shadow Background
+        // Semantic Colors mapped to CSS Variables
+        primary: {
+          DEFAULT: 'var(--color-primary)',
+          foreground: 'var(--color-primary-foreground)',
+        },
+        secondary: {
+          DEFAULT: 'var(--color-secondary)',
+          foreground: 'var(--color-secondary-foreground)',
+        },
+        accent: {
+          DEFAULT: 'var(--color-accent)',
+          foreground: 'var(--color-accent-foreground)',
+        },
+        
+        // Status Colors
+        success: 'var(--color-success)',
+        warning: 'var(--color-warning)',
+        danger: 'var(--color-danger)',
+        info: 'var(--color-info)',
 
-        // Navigation & Interactive
-        'nav-group': '#f9f9f9', // Navigation Group Background
-        'nav-active': '#efefef', // Active Nav Item Background
+        // Backgrounds
+        page: 'var(--bg-page)',
+        surface: 'var(--bg-surface)',
+        sidebar: 'var(--bg-sidebar)',
 
-        // Text Colors
-        'text-primary': '#423d3c',
-        'text-secondary': '#666666',
+        // Text
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-tertiary': 'var(--text-tertiary)',
+        'text-inverse': 'var(--text-inverse)',
 
-        // Brand & Status
-        primary: '#3b82f6',
-        secondary: '#64748b',
-        success: '#22c55e',
-        warning: '#eab308',
-        danger: '#ef4444',
+        // Borders
+        border: 'var(--border-color)',
+      },
+      fontFamily: {
+        sans: [
+          'Inter',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'Helvetica Neue',
+          'Arial',
+          'sans-serif',
+        ],
+      },
+      borderRadius: {
+        lg: 'var(--border-radius-lg)',
+        xl: 'var(--border-radius-xl)',
+      },
+      spacing: {
+        18: '4.5rem',
+        112: '28rem',
+        128: '32rem',
+      },
+      boxShadow: {
+        'soft': '0 2px 10px rgba(0, 0, 0, 0.03)',
+        'card': '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)',
+        'float': '0 10px 30px -10px rgba(0, 0, 0, 0.1)',
       },
     },
   },

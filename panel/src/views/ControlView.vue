@@ -1,55 +1,57 @@
 <template>
-  <div class="flex flex-col h-full p-4 gap-4 bg-[#f5f5f5] text-[#423d3c] font-sans overflow-hidden">
+  <div class="flex flex-col h-full p-4 gap-4 bg-page text-primary font-sans overflow-hidden">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <span class="w-1.5 h-7 bg-black rounded-full"></span>
         <div class="text-lg font-bold tracking-tight">{{ $t('control.sensor_analysis') }}</div>
-        <span
-          class="text-[10px] text-gray-500 bg-white border border-gray-200 rounded-full px-2 py-0.5"
-          >{{ $t('common.live') }}</span
-        >
+        <Badge variant="outline" size="sm" class="bg-white border-gray-200 text-gray-500 font-normal">
+          {{ $t('common.live') }}
+        </Badge>
       </div>
-      <div class="text-xs text-gray-400 font-medium">{{ $t('common.auto_refresh') }}</div>
+      <div class="text-xs text-text-tertiary font-medium">{{ $t('common.auto_refresh') }}</div>
     </div>
 
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0 items-stretch">
       <div class="lg:col-span-5 flex flex-col gap-4 min-h-0 h-full">
-        <div
-          class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 h-full"
-        >
-          <div class="flex items-center justify-between">
+        <Card class="h-full flex flex-col" contentClass="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden">
+          <template #header>
             <div class="text-xs font-bold text-gray-700">{{ $t('control.sensor_snapshot') }}</div>
             <div class="flex items-center gap-2">
               <span class="text-[10px] text-gray-400 font-medium"
                 >{{ currentSensorPage }} / {{ totalSensorPages }}</span
               >
               <div class="flex items-center gap-1">
-                <button
-                  class="p-1 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white transition-colors"
+                <Button
+                  variant="outline"
+                  size="icon"
+                  class="h-6 w-6 rounded-md p-0"
                   @click="prevSensorPage"
                   :disabled="currentSensorPage === 1"
                 >
                   <ChevronLeft :size="14" />
-                </button>
-                <button
-                  class="p-1 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white transition-colors"
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  class="h-6 w-6 rounded-md p-0"
                   @click="nextSensorPage"
                   :disabled="currentSensorPage === totalSensorPages"
                 >
                   <ChevronRight :size="14" />
-                </button>
+                </Button>
               </div>
             </div>
-          </div>
+          </template>
+          
           <div class="grid grid-cols-2 grid-rows-4 gap-3 flex-1 overflow-y-auto min-h-0">
             <div
               v-for="metric in pagedTelemetryData"
               :key="metric.id"
-              class="bg-gray-50 rounded-xl p-3 border border-gray-100 flex flex-col justify-between"
+              class="bg-gray-50 rounded-xl p-3 border border-gray-100 flex flex-col justify-between transition-all hover:border-gray-200 hover:shadow-sm"
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-1">
-                  <span class="text-gray-400 text-xs cursor-move">⋮⋮</span>
+                  <span class="text-gray-400 text-xs cursor-move opacity-50 hover:opacity-100">⋮⋮</span>
                   <div class="text-[11px] text-gray-500 font-medium">{{ metric.label }}</div>
                 </div>
                 <component :is="metric.icon" :size="14" class="text-gray-400" />
@@ -60,20 +62,19 @@
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       <div class="lg:col-span-7 flex flex-col gap-4 min-h-0 h-full">
-        <div
-          class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 min-h-0 h-full"
-        >
-          <div class="flex items-center justify-between">
+        <Card class="h-full flex flex-col" contentClass="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden">
+          <template #header>
             <div class="text-xs font-bold text-gray-700">{{ $t('control.ai_suggestions') }}</div>
             <div class="flex items-center gap-2 text-[10px] text-gray-400">
               <Sparkles :size="12" />
               {{ $t('control.guided') }}
             </div>
-          </div>
+          </template>
+          
           <div class="flex-1 min-h-0 flex flex-col gap-4 overflow-visible">
             <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 min-h-[100px]">
               <div class="text-[10px] text-gray-400 uppercase tracking-wider">
@@ -81,6 +82,7 @@
               </div>
               <div class="mt-2 text-[12px] text-gray-700 leading-relaxed">{{ aiResult }}</div>
             </div>
+            
             <div class="flex items-center justify-between text-[10px] text-gray-400">
               <span class="text-xs font-semibold text-gray-600">{{ $t('control.presets') }}</span>
               <div class="flex items-center gap-2">
@@ -88,34 +90,39 @@
                   $t('common.page_info', { current: currentPage, total: totalPages })
                 }}</span>
                 <div class="flex items-center gap-1">
-                  <button
-                    class="p-1 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white transition-colors"
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    class="h-6 w-6 rounded-md p-0"
                     @click="prevPage"
                     :disabled="currentPage === 1"
                   >
                     <ChevronLeft :size="14" />
-                  </button>
-                  <button
-                    class="p-1 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-white transition-colors"
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    class="h-6 w-6 rounded-md p-0"
                     @click="nextPage"
                     :disabled="currentPage === totalPages"
                   >
                     <ChevronRight :size="14" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
+            
             <div class="grid grid-cols-2 grid-rows-4 gap-2 flex-1 overflow-y-auto min-h-0">
               <button
                 v-for="(item, idx) in pagedSuggestions"
                 :key="idx"
                 @click="applySuggestion(item.prompt)"
-                class="text-left bg-gray-50 border border-gray-100 rounded-lg p-2 hover:bg-white hover:border-gray-200 transition-colors h-full flex flex-col justify-start"
+                class="text-left bg-gray-50 border border-gray-100 rounded-lg p-2 hover:bg-white hover:border-gray-200 hover:shadow-sm transition-all h-full flex flex-col justify-start group"
               >
                 <div class="flex items-center justify-between w-full">
                   <div class="flex items-center gap-1.5">
-                    <component :is="item.icon" :size="12" class="text-gray-500" />
-                    <span class="text-[9px] text-gray-400 uppercase tracking-wider">{{
+                    <component :is="item.icon" :size="12" class="text-gray-500 group-hover:text-gray-700 transition-colors" />
+                    <span class="text-[9px] text-gray-400 uppercase tracking-wider group-hover:text-gray-600 transition-colors">{{
                       item.category
                     }}</span>
                   </div>
@@ -129,7 +136,7 @@
               </button>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   </div>
@@ -151,6 +158,9 @@ import {
   ChevronRight,
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
+import Card from '@/components/ui/Card.vue'
+import Button from '@/components/ui/Button.vue'
+import Badge from '@/components/ui/Badge.vue'
 
 const { t } = useI18n()
 const store = useDeviceStore()
