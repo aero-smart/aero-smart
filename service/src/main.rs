@@ -87,6 +87,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/wifi/connect", post(wifi::connect_handler))
         .route("/api/wifi/disconnect", post(wifi::disconnect_handler))
         .route("/api/wifi/status", get(wifi::status_handler))
+        .route("/api/wifi/test", get(wifi::test_handler))
         .layer(CorsLayer::permissive())
         .with_state(state);
 

@@ -20,7 +20,7 @@ class SettingsPage extends ConsumerWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildConnectionCard(state, notifier),
+            _buildConnectionCard(context, state, notifier),
             const SizedBox(height: 16),
             _buildSensorConfigCard(state, notifier),
             const SizedBox(height: 16),
@@ -48,7 +48,11 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildConnectionCard(SettingsState state, SettingsNotifier notifier) {
+  Widget _buildConnectionCard(
+    BuildContext context,
+    SettingsState state,
+    SettingsNotifier notifier,
+  ) {
     return _buildCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,18 +61,29 @@ class SettingsPage extends ConsumerWidget {
             children: const [
               Icon(Icons.wifi, size: 20),
               SizedBox(width: 8),
-              Text('连接设置', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(
+                '连接设置',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
           const SizedBox(height: 16),
-          const Text('IP地址', style: TextStyle(fontSize: 12, color: Colors.grey)),
+          const Text(
+            'IP地址',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
           const SizedBox(height: 8),
           TextField(
             decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.2)),
+                borderSide: BorderSide(
+                  color: Colors.black.withValues(alpha: 0.2),
+                ),
               ),
               hintText: '192.168.1.100',
             ),
@@ -79,10 +94,16 @@ class SettingsPage extends ConsumerWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: state.isConnected ? notifier.disconnect : notifier.connect,
+              onPressed: state.isConnected
+                  ? notifier.disconnect
+                  : notifier.connect,
               style: ElevatedButton.styleFrom(
-                backgroundColor: state.isConnected ? Colors.grey[300] : Colors.black,
-                foregroundColor: state.isConnected ? Colors.grey[600] : Colors.white,
+                backgroundColor: state.isConnected
+                    ? Colors.grey[300]
+                    : Colors.black,
+                foregroundColor: state.isConnected
+                    ? Colors.grey[600]
+                    : Colors.white,
                 elevation: 0,
               ),
               child: Text(state.isConnected ? '已连接' : '连接'),
@@ -103,7 +124,7 @@ class SettingsPage extends ConsumerWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () {
-                // TODO: Scan logic
+                context.go('/settings/binding/scan');
               },
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.black,
@@ -117,7 +138,10 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildSensorConfigCard(SettingsState state, SettingsNotifier notifier) {
+  Widget _buildSensorConfigCard(
+    SettingsState state,
+    SettingsNotifier notifier,
+  ) {
     return _buildCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,7 +150,10 @@ class SettingsPage extends ConsumerWidget {
             children: const [
               Icon(Icons.sensors, size: 20),
               SizedBox(width: 8),
-              Text('传感器配置', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(
+                '传感器配置',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -134,26 +161,46 @@ class SettingsPage extends ConsumerWidget {
             label: 'IMU方向',
             value: state.imuOrientation,
             items: const [
-              DropdownMenuItem(value: ImuOrientation.horizontal, child: Text('水平安装')),
-              DropdownMenuItem(value: ImuOrientation.vertical, child: Text('垂直安装')),
-              DropdownMenuItem(value: ImuOrientation.upsideDown, child: Text('倒置安装')),
+              DropdownMenuItem(
+                value: ImuOrientation.horizontal,
+                child: Text('水平安装'),
+              ),
+              DropdownMenuItem(
+                value: ImuOrientation.vertical,
+                child: Text('垂直安装'),
+              ),
+              DropdownMenuItem(
+                value: ImuOrientation.upsideDown,
+                child: Text('倒置安装'),
+              ),
             ],
             onChanged: (val) => notifier.setImuOrientation(val!),
           ),
           const SizedBox(height: 16),
-          const Text('空速管系数', style: TextStyle(fontSize: 12, color: Colors.grey)),
+          const Text(
+            '空速管系数',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
           const SizedBox(height: 8),
           TextField(
             decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.2)),
+                borderSide: BorderSide(
+                  color: Colors.black.withValues(alpha: 0.2),
+                ),
               ),
             ),
-            controller: TextEditingController(text: state.pitotCoeff.toStringAsFixed(2)),
+            controller: TextEditingController(
+              text: state.pitotCoeff.toStringAsFixed(2),
+            ),
             keyboardType: TextInputType.number,
-            onSubmitted: (value) => notifier.setPitotCoeff(double.tryParse(value) ?? 1.0),
+            onSubmitted: (value) =>
+                notifier.setPitotCoeff(double.tryParse(value) ?? 1.0),
           ),
           const SizedBox(height: 16),
           _buildDropdown<SamplingRate>(
@@ -161,9 +208,18 @@ class SettingsPage extends ConsumerWidget {
             value: state.samplingRate,
             items: const [
               DropdownMenuItem(value: SamplingRate.hz50, child: Text('50 Hz')),
-              DropdownMenuItem(value: SamplingRate.hz100, child: Text('100 Hz')),
-              DropdownMenuItem(value: SamplingRate.hz200, child: Text('200 Hz')),
-              DropdownMenuItem(value: SamplingRate.hz400, child: Text('400 Hz')),
+              DropdownMenuItem(
+                value: SamplingRate.hz100,
+                child: Text('100 Hz'),
+              ),
+              DropdownMenuItem(
+                value: SamplingRate.hz200,
+                child: Text('200 Hz'),
+              ),
+              DropdownMenuItem(
+                value: SamplingRate.hz400,
+                child: Text('400 Hz'),
+              ),
             ],
             onChanged: (val) => notifier.setSamplingRate(val!),
           ),
@@ -203,7 +259,11 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildFirmwareUpdateCard(BuildContext context, SettingsState state, SettingsNotifier notifier) {
+  Widget _buildFirmwareUpdateCard(
+    BuildContext context,
+    SettingsState state,
+    SettingsNotifier notifier,
+  ) {
     return _buildCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,13 +272,22 @@ class SettingsPage extends ConsumerWidget {
             children: const [
               Icon(Icons.system_update, size: 20),
               SizedBox(width: 8),
-              Text('固件更新', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(
+                '固件更新',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
           const SizedBox(height: 16),
-          const Text('当前版本', style: TextStyle(fontSize: 12, color: Colors.grey)),
+          const Text(
+            '当前版本',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
           const SizedBox(height: 4),
-          Text(state.firmwareVersion, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            state.firmwareVersion,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
@@ -247,7 +316,10 @@ class SettingsPage extends ConsumerWidget {
             children: const [
               Icon(Icons.settings_applications, size: 20),
               SizedBox(width: 8),
-              Text('应用设置', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(
+                '应用设置',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -293,8 +365,14 @@ class SettingsPage extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('关于 AeroSmart', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                Text(state.appVersion, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                const Text(
+                  '关于 AeroSmart',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                ),
+                Text(
+                  state.appVersion,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ],
             ),
           ),

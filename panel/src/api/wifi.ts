@@ -37,8 +37,16 @@ export async function disconnectWifi(): Promise<void> {
   if (!res.ok) throw new Error('Failed to disconnect')
 }
 
-export async function getWifiStatus(): Promise<WifiStatus> {
-  const res = await fetch(`${API_BASE}/status`)
-  if (!res.ok) throw new Error('Failed to get status')
-  return res.json()
+export async fn getWifiStatus(): Promise<WifiStatus> {
+  const res = await fetch(`${API_BASE}/status`);
+  if (!res.ok) throw new Error('Failed to get status');
+  return res.json();
+}
+
+export async fn testWifiConnection(): Promise<void> {
+  const res = await fetch(`${API_BASE}/test`);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Connectivity test failed');
+  }
 }

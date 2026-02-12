@@ -5,10 +5,13 @@ import '../../features/monitor/monitor_page.dart';
 import '../../features/controls/controls_page.dart';
 import '../../features/settings/settings_page.dart';
 import '../../features/firmware/firmware_page.dart';
+import '../../features/device_binding/qr_scanner_page.dart';
+import '../../features/device_binding/connection_page.dart';
 import '../../shared/widgets/shell_layout.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _shellNavigatorKey =
+    GlobalKey<NavigatorState>();
 
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
@@ -22,24 +25,42 @@ final GoRouter appRouter = GoRouter(
       routes: [
         GoRoute(
           path: '/dashboard',
-          builder: (context, state) => const DashboardPage(),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: DashboardPage()),
         ),
         GoRoute(
           path: '/monitor',
-          builder: (context, state) => const MonitorPage(),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: MonitorPage()),
         ),
         GoRoute(
           path: '/controls',
-          builder: (context, state) => const ControlsPage(),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: ControlsPage()),
         ),
         GoRoute(
           path: '/settings',
-          builder: (context, state) => const SettingsPage(),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: SettingsPage()),
           routes: [
             GoRoute(
               path: 'firmware',
-              parentNavigatorKey: _rootNavigatorKey, // Firmware page covers the bottom nav
+              parentNavigatorKey:
+                  _rootNavigatorKey, // Firmware page covers the bottom nav
               builder: (context, state) => const FirmwarePage(),
+            ),
+            GoRoute(
+              path: 'binding/scan',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) => const QRScannerPage(),
+            ),
+            GoRoute(
+              path: 'binding/connection',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (context, state) {
+                final qrData = state.extra as String?;
+                return ConnectionPage(qrData: qrData);
+              },
             ),
           ],
         ),

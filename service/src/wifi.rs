@@ -69,7 +69,34 @@ pub async fn status_handler() -> Response {
     }
 }
 
+pub async fn test_handler() -> Response {
+    match test_connectivity().await {
+        Ok(_) => StatusCode::OK.into_response(),
+        Err(e) => {
+            error!("Connectivity test failed: {}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response()
+        }
+    }
+}
+
 // --- Implementation ---
+
+async fn test_connectivity() -> anyhow::Result<()> {
+    // Try to reach bilibili.com
+    // Use reqwest to send a HEAD request or GET request
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(5))
+        .build()?;
+    
+    let res = client.get("https://www.bilibili.com").send().await?;
+    
+    if res.status().is_success() {
+        Ok(())
+    } else {
+        Err(anyhow::anyhow!("Failed to reach bilibili.com, status: {}", res.status()))
+    }
+}
+
 
 #[cfg(target_os = "linux")]
 async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {

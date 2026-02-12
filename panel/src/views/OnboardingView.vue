@@ -2,8 +2,9 @@
   <div class="fixed inset-0 bg-white font-sans">
     <div class="absolute inset-0 bg-gradient-to-b from-white via-white to-gray-50"></div>
     <div class="relative h-full w-full flex items-center justify-center p-6">
-      <div class="w-full max-w-xl rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-        <div class="px-8 pt-8 pb-6">
+      <div class="w-full max-w-xl rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col max-h-full">
+        <!-- Header -->
+        <div class="px-8 pt-8 pb-6 shrink-0">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-2xl bg-black flex items-center justify-center">
@@ -26,15 +27,10 @@
               ></div>
             </div>
           </div>
-
-          <div class="mt-6">
-            <div class="text-xs font-semibold text-gray-500">
-              {{ $t('onboarding.title') }}
-            </div>
-          </div>
         </div>
 
-        <div class="px-8 pb-8">
+        <!-- Scrollable Content Area -->
+        <div class="px-8 pb-4 flex-1 overflow-y-auto">
           <Transition
             enter-active-class="transition duration-300 ease-out"
             enter-from-class="opacity-0 translate-y-2"
@@ -44,6 +40,7 @@
             leave-to-class="opacity-0"
             mode="out-in"
           >
+            <!-- Step 0: Language & Region -->
             <div v-if="currentStep === 0" key="step0" class="space-y-8">
               <div>
                 <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">{{ $t('onboarding.title') }}</h1>
@@ -88,24 +85,48 @@
               </div>
             </div>
 
-            <div v-else-if="currentStep === 1" key="step1" class="space-y-6">
-              <div>
-                <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">{{ $t('onboarding.wifi_title') }}</h1>
-                <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.wifi_subtitle') }}</p>
+            <!-- Step 1: WiFi -->
+            <div v-else-if="currentStep === 1" key="step1" class="space-y-6 pb-20">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">{{ $t('onboarding.wifi_title') }}</h1>
+                  <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.wifi_subtitle') }}</p>
+                </div>
+                <button 
+                  @click="wifiStore.scan()" 
+                  :disabled="scanning"
+                  class="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <RefreshCw :class="['w-5 h-5', scanning ? 'animate-spin text-blue-600' : 'text-gray-600']" />
+                </button>
               </div>
 
-              <div class="rounded-2xl border border-gray-200 overflow-hidden bg-white">
+              <!-- Error Message -->
+              <div v-if="wifiError" class="p-3 bg-red-50 text-red-600 text-xs rounded-xl">
+                {{ wifiError }}
+              </div>
+
+              <!-- Wifi List -->
+              <div class="rounded-2xl border border-gray-200 overflow-hidden bg-white max-h-[300px] overflow-y-auto">
+                 <div v-if="networks.length === 0 && !scanning" class="p-6 text-center text-gray-400 text-sm">
+                   No networks found
+                 </div>
+                 
                 <button
-                  v-for="wifi in availableWifi"
+                  v-for="wifi in networks"
                   :key="wifi.ssid"
                   @click="selectWifi(wifi)"
-                  class="w-full px-4 py-3 flex items-center justify-between text-left transition-colors hover:bg-gray-50"
+                  class="w-full px-4 py-3 flex items-center justify-between text-left transition-colors hover:bg-gray-50 border-b border-gray-100 last:border-0"
                   :class="selectedWifi?.ssid === wifi.ssid ? 'bg-gray-50' : ''"
                 >
                   <div class="flex items-center gap-3 min-w-0">
                     <Wifi class="w-4 h-4 text-gray-500" />
                     <div class="min-w-0">
                       <div class="text-sm font-medium text-gray-900 truncate">{{ wifi.ssid }}</div>
+                      <div class="text-[10px] text-gray-400 flex items-center gap-2">
+                         <span>{{ wifi.security }}</span>
+                         <span v-if="wifi.in_use" class="text-green-600 font-bold">Connected</span>
+                      </div>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
@@ -117,18 +138,24 @@
                 </button>
               </div>
 
-              <div v-if="selectedWifi" class="space-y-2">
-                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('onboarding.wifi_password') }}</div>
-                <input
-                  v-model="wifiPassword"
-                  type="password"
-                  class="w-full h-12 px-4 rounded-2xl border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition"
-                  placeholder="••••••••"
-                />
+              <!-- Connection Status -->
+              <div v-if="connecting || testing" class="flex items-center justify-center gap-2 py-4 text-sm text-gray-600">
+                <Loader2 class="w-4 h-4 animate-spin" />
+                <span>{{ connecting ? 'Connecting to WiFi...' : 'Testing Internet Connection...' }}</span>
               </div>
+              <div v-else-if="testResult === true" class="flex items-center justify-center gap-2 py-4 text-sm text-green-600 font-medium">
+                <CheckCircle2 class="w-4 h-4" />
+                <span>Internet Connected (bilibili.com reachable)</span>
+              </div>
+              <div v-else-if="testResult === false" class="flex items-center justify-center gap-2 py-4 text-sm text-red-600 font-medium">
+                <XCircle class="w-4 h-4" />
+                <span>Internet Unreachable</span>
+              </div>
+
             </div>
 
-            <div v-else-if="currentStep === 2" key="step2" class="space-y-6">
+            <!-- Step 2: Login -->
+            <div v-else-if="currentStep === 2" key="step2" class="space-y-6 pb-20">
               <div>
                 <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">{{ $t('onboarding.login_title') }}</h1>
                 <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.login_subtitle') }}</p>
@@ -142,6 +169,7 @@
                     type="email"
                     class="w-full h-12 px-4 rounded-2xl border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition"
                     placeholder="name@example.com"
+                    @focus="showKeyboardFor('email')"
                   />
                 </div>
 
@@ -152,6 +180,7 @@
                     type="password"
                     class="w-full h-12 px-4 rounded-2xl border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition"
                     placeholder="••••••••"
+                    @focus="showKeyboardFor('loginPassword')"
                   />
                 </div>
 
@@ -169,6 +198,7 @@
               </div>
             </div>
 
+            <!-- Step 3: Terms -->
             <div v-else-if="currentStep === 3" key="step3" class="space-y-6">
               <div>
                 <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">{{ $t('onboarding.terms_title') }}</h1>
@@ -191,6 +221,7 @@
               </label>
             </div>
 
+            <!-- Step 4: Calibration -->
             <div v-else-if="currentStep === 4" key="step4" class="space-y-6">
               <div>
                 <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">{{ $t('onboarding.calibration_title') }}</h1>
@@ -230,7 +261,8 @@
           </Transition>
         </div>
 
-        <div class="px-8 py-6 border-t border-gray-100 bg-gray-50/40 flex items-center justify-between">
+        <!-- Footer Actions -->
+        <div class="px-8 py-6 border-t border-gray-100 bg-gray-50/40 flex items-center justify-between shrink-0">
           <button
             v-if="currentStep > 0"
             @click="prevStep"
@@ -253,24 +285,63 @@
         </div>
       </div>
     </div>
+
+    <!-- WiFi Password Modal -->
+    <div v-if="showWifiModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40">
+      <div class="bg-white p-6 rounded-3xl shadow-xl w-80 flex flex-col gap-4">
+        <h3 class="text-lg font-bold text-gray-900">Connect to {{ selectedWifi?.ssid }}</h3>
+        <input 
+          v-model="wifiPassword" 
+          type="password" 
+          placeholder="Password" 
+          class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black"
+          @focus="showKeyboardFor('wifiPassword')"
+        />
+        <div class="flex justify-end gap-2 mt-2">
+          <button @click="closeWifiModal" class="text-sm text-gray-500 px-4 py-2 font-medium">Cancel</button>
+          <button 
+            @click="confirmConnect" 
+            :disabled="connecting"
+            class="text-sm bg-black text-white px-5 py-2 rounded-xl hover:bg-gray-800 disabled:opacity-50 font-bold"
+          >
+            {{ connecting ? 'Connecting...' : 'Connect' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Virtual Keyboard -->
+    <VirtualKeyboard 
+      :show="showKeyboard" 
+      :model-value="keyboardValue"
+      @update:model-value="handleKeyboardInput"
+      @close="showKeyboard = false"
+      @enter="handleKeyboardEnter"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowRight, Wifi, Gauge, Thermometer, Activity } from 'lucide-vue-next'
+import { ArrowRight, Wifi, Gauge, Thermometer, Activity, RefreshCw, Loader2, CheckCircle2, XCircle } from 'lucide-vue-next'
 import { useLocaleStore } from '@/stores/locale'
+import { useWifiStore } from '@/stores/wifi'
 import { storeToRefs } from 'pinia'
+import VirtualKeyboard from '@/components/VirtualKeyboard.vue'
+import type { WifiNetwork } from '@/api/wifi'
 
 const router = useRouter()
 const localeStore = useLocaleStore()
+const wifiStore = useWifiStore()
+
 const { currentLocale } = storeToRefs(localeStore)
 const { setLocale } = localeStore
+const { networks, scanning, connecting, testing, testResult, error: wifiError } = storeToRefs(wifiStore)
 
 const currentStep = ref(0)
 const selectedRegion = ref('us')
-const selectedWifi = ref<any>(null)
+const selectedWifi = ref<WifiNetwork | null>(null)
 const wifiPassword = ref('')
 const loginForm = ref({ email: '', password: '', remember: false })
 const acceptTerms = ref(false)
@@ -278,12 +349,82 @@ const calibrationStatus = ref<{ [key: string]: boolean }>({ environment: false, 
 
 const steps = ['Language & Region', 'WiFi', 'Login', 'Terms', 'Calibration']
 
-const availableWifi = ref([
-  { ssid: 'Home WiFi', signal: 90 },
-  { ssid: 'Office Network', signal: 75 },
-  { ssid: 'Public WiFi', signal: 45 },
-  { ssid: 'Mobile Hotspot', signal: 60 }
-])
+// Keyboard State
+const showKeyboard = ref(false)
+const activeInput = ref<string | null>(null)
+
+const keyboardValue = computed(() => {
+  if (activeInput.value === 'wifiPassword') return wifiPassword.value
+  if (activeInput.value === 'email') return loginForm.value.email
+  if (activeInput.value === 'loginPassword') return loginForm.value.password
+  return ''
+})
+
+function showKeyboardFor(field: string) {
+  activeInput.value = field
+  showKeyboard.value = true
+}
+
+function handleKeyboardInput(val: string) {
+  if (activeInput.value === 'wifiPassword') wifiPassword.value = val
+  else if (activeInput.value === 'email') loginForm.value.email = val
+  else if (activeInput.value === 'loginPassword') loginForm.value.password = val
+}
+
+function handleKeyboardEnter() {
+  showKeyboard.value = false
+  if (activeInput.value === 'wifiPassword' && showWifiModal.value) {
+    confirmConnect()
+  }
+}
+
+// Wifi Logic
+const showWifiModal = ref(false)
+
+onMounted(() => {
+  // If we start at step 1, scan
+  if (currentStep.value === 1) wifiStore.scan()
+})
+
+watch(currentStep, (newStep) => {
+  if (newStep === 1) {
+    wifiStore.scan()
+  }
+})
+
+function selectWifi(wifi: WifiNetwork) {
+  if (wifi.in_use) {
+      selectedWifi.value = wifi
+      // Already connected, maybe test connectivity?
+      wifiStore.testConnection()
+      return
+  }
+  
+  selectedWifi.value = wifi
+  wifiPassword.value = ''
+  showWifiModal.value = true
+}
+
+function closeWifiModal() {
+  showWifiModal.value = false
+  wifiPassword.value = ''
+  showKeyboard.value = false
+  activeInput.value = null
+}
+
+async function confirmConnect() {
+  if (!selectedWifi.value) return
+  
+  showKeyboard.value = false // Hide keyboard to show status
+  try {
+    await wifiStore.connect(selectedWifi.value.ssid, wifiPassword.value)
+    showWifiModal.value = false
+    // Auto test after connect
+    await wifiStore.testConnection()
+  } catch (e) {
+    // Error is in store
+  }
+}
 
 const calibrationItems = [
   { key: 'environment', title: 'Environment Pressure', description: 'Calibrate ambient pressure sensor', icon: Gauge },
@@ -296,7 +437,9 @@ const canProceed = computed(() => {
     case 0:
       return true
     case 1:
-      return !!selectedWifi.value
+      // Require testResult to be true (internet connected)
+      // Or if user insists on skipping? For now strict requirement as per user request "confirm network connection"
+      return testResult.value === true
     case 2:
       return loginForm.value.email && loginForm.value.password
     case 3:
@@ -310,10 +453,6 @@ const canProceed = computed(() => {
 
 const setRegion = (region: string) => {
   selectedRegion.value = region
-}
-
-const selectWifi = (wifi: any) => {
-  selectedWifi.value = wifi
 }
 
 const calibrate = (key: string) => {
