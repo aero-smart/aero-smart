@@ -18,11 +18,11 @@ export async function scanWifi(): Promise<WifiNetwork[]> {
   const res = await fetch(`${API_BASE}/scan`)
   if (!res.ok) {
     let errorMessage = 'Failed to scan wifi'
+    const text = await res.text()
     try {
-      const data = await res.json()
+      const data = JSON.parse(text)
       if (data && data.error) errorMessage = data.error
     } catch (e) {
-      const text = await res.text()
       if (text) errorMessage = text
     }
     throw new Error(errorMessage)
@@ -38,11 +38,11 @@ export async function connectWifi(ssid: string, password?: string): Promise<void
   })
   if (!res.ok) {
     let errorMessage = 'Failed to connect'
+    const text = await res.text()
     try {
-      const data = await res.json()
+      const data = JSON.parse(text)
       if (data && data.error) errorMessage = data.error
     } catch (e) {
-      const text = await res.text()
       if (text) errorMessage = text
     }
     throw new Error(errorMessage)
@@ -53,11 +53,11 @@ export async function disconnectWifi(): Promise<void> {
   const res = await fetch(`${API_BASE}/disconnect`, { method: 'POST' })
   if (!res.ok) {
     let errorMessage = 'Failed to disconnect'
+    const text = await res.text()
     try {
-      const data = await res.json()
+      const data = JSON.parse(text)
       if (data && data.error) errorMessage = data.error
     } catch (e) {
-      const text = await res.text()
       if (text) errorMessage = text
     }
     throw new Error(errorMessage)
@@ -68,11 +68,11 @@ export async function getWifiStatus(): Promise<WifiStatus> {
   const res = await fetch(`${API_BASE}/status`)
   if (!res.ok) {
     let errorMessage = 'Failed to get status'
+    const text = await res.text()
     try {
-      const data = await res.json()
+      const data = JSON.parse(text)
       if (data && data.error) errorMessage = data.error
     } catch (e) {
-      const text = await res.text()
       if (text) errorMessage = text
     }
     throw new Error(errorMessage)
@@ -84,11 +84,11 @@ export async function testWifiConnection(): Promise<void> {
   const res = await fetch(`${API_BASE}/test`)
   if (!res.ok) {
     let errorMessage = 'Connectivity test failed'
+    const text = await res.text()
     try {
-      const data = await res.json()
+      const data = JSON.parse(text)
       if (data && data.error) errorMessage = data.error
     } catch (e) {
-      const text = await res.text()
       if (text) errorMessage = text
     }
     throw new Error(errorMessage)
