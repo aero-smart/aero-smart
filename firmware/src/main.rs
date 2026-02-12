@@ -36,6 +36,7 @@ use {defmt_rtt as _, panic_probe as _};
 use aerosmart_shared::serial::SerialMessage;
 use defmt::info;
 use embassy_executor::Spawner;
+use embassy_futures::join;
 use embassy_stm32::{
     adc::Adc,
     bind_interrupts,
@@ -50,7 +51,7 @@ use embassy_stm32::{
     usart::Uart,
     wdg::IndependentWatchdog,
 };
-use embassy_time::{Duration, TICK_HZ, Timer};
+use embassy_time::{Duration, TICK_HZ, Timer, with_timeout};
 use ws2812_async::{Rgb, Ws2812};
 
 bind_interrupts!(struct Irqs {
@@ -138,14 +139,14 @@ async fn main(spawner: Spawner) {
         uart_upper: true,
         uart_lidar: false,
         i2c: true,
-        pwm_edf: false,
+        pwm_edf: true,
         pwm_servo: false,
         wdt: true,
         fft: true,
         ahrs: true,
-        ctrl_airspeed: false,
-        battery_adc: false,
-        analog_pressure: false,
+        ctrl_airspeed: true,
+        battery_adc: true,
+        analog_pressure: true,
     };
 
     info!("Configuration: {:?}", config);
@@ -233,7 +234,14 @@ async fn main(spawner: Spawner) {
     let mut rtc = Rtc::new(p.RTC, RtcConfig::default());
 
     if config.uart_upper {
-        serial_initialize(&mut usart_upper, &mut rtc).await;
+        let result = with_timeout(Duration::from_secs(5), serial_initialize(&mut usart_upper, &mut rtc)).await;
+        if let Err(_) = result {
+            defmt::error!("RTC synchronization via UART timed out");
+            // Software reset
+            cortex_m::peripheral::SCB::sys_reset();
+        } else {
+            info!("RTC synchronized via UART");
+        }
     }
 
     let (uart_tx, uart_rx) = usart_upper.split();
@@ -348,20 +356,32 @@ async fn main(spawner: Spawner) {
 
     info!("System initialized, starting tasks...");
 
-    if config.spi_imu {
-        info!("Starting IMU initialization...");
-        match imu.init().await {
-            Ok(_) => info!("IMU initialized successfully"),
-            Err(e) => defmt::panic!("Failed to initialize IMU: {:?}", e),
+    match (config.spi_imu, config.i2c) {
+        (true, true) => match join::join(imu.init(), sensors.init()).await {
+            (Ok(_), Ok(_)) => info!("IMU and Airspeed Sensor initialized successfully"),
+            (Err(e1), Err(e2)) => defmt::panic!(
+                "Failed to initialize IMU and Airspeed Sensor: {:?}, {:?}",
+                e1,
+                e2
+            ),
+            (Err(e), _) => defmt::panic!("Failed to initialize IMU: {:?}", e),
+            (_, Err(e)) => defmt::panic!("Failed to initialize Airspeed Sensor: {:?}", e),
+        },
+        (true, false) => {
+            info!("Starting IMU initialization...");
+            match imu.init().await {
+                Ok(_) => info!("IMU initialized successfully"),
+                Err(e) => defmt::panic!("Failed to initialize IMU: {:?}", e),
+            }
         }
-    }
-
-    if config.i2c {
-        info!("Starting Airspeed Sensor initialization...");
-        match sensors.init().await {
-            Ok(_) => info!("Airspeed Sensor initialized successfully"),
-            Err(e) => defmt::panic!("Failed to initialize Airspeed Sensor: {:?}", e),
+        (false, true) => {
+            info!("Starting Airspeed Sensor initialization...");
+            match sensors.init().await {
+                Ok(_) => info!("Airspeed Sensor initialized successfully"),
+                Err(e) => defmt::panic!("Failed to initialize Airspeed Sensor: {:?}", e),
+            }
         }
+        (false, false) => { /* No sensors to initialize */ }
     }
 
     match spawner.spawn(watchdog_task(wdt)) {

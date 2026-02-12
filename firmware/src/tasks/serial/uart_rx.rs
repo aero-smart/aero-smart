@@ -88,8 +88,6 @@ pub async fn serial_uart_rx_task(mut rx: UartRx<'static, Async>) {
                         "Received Handshake ACK. Timestamp: {}",
                         unix_timestamp_ms.to_native()
                     );
-                    // In a real implementation, we might update RTC here or signal ready.
-                    // The main initialization loop handles the first one, but this allows re-sync.
                 }
 
                 _ => {

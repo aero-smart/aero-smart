@@ -135,12 +135,12 @@ impl Airspeed {
     }
 
     pub async fn calibrate(&mut self) -> Result<(), AirspeedError> {
-        for _attempt in 0..8 {
+        for _attempt in 0..4 {
             let (_status, pressure_raw, _temperature_raw) = self.read_pitot().await?;
             self.ms4525do_offset_pa += pressure_raw;
-            Timer::after_millis(500).await;
+            Timer::after_millis(250).await;
         }
-        self.ms4525do_offset_pa /= 8.0;
+        self.ms4525do_offset_pa /= 4.0;
         debug!("Calibrated MS4525DO offset: {} Pa", self.ms4525do_offset_pa);
         Ok(())
     }
