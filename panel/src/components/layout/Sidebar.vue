@@ -189,7 +189,8 @@ onUnmounted(() => {
 const serialIndicatorClass = computed(() => {
   const s = serialStore.statusString
   if (s === 'Active') return 'bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.4)]'
-  if (['Handshaking', 'WaitingForFirstMessage'].includes(s)) return 'bg-blue-500 animate-pulse shadow-[0_0_4px_rgba(59,130,246,0.4)]'
+  if (['Handshaking', 'WaitingForFirstMessage'].includes(s))
+    return 'bg-blue-500 animate-pulse shadow-[0_0_4px_rgba(59,130,246,0.4)]'
   return 'bg-red-500 animate-pulse shadow-[0_0_4px_rgba(239,68,68,0.4)]'
 })
 
@@ -250,7 +251,7 @@ const wifiColorClass = computed(() => {
   // Requirement 1: If internet test passes, mark as green regardless of wifiStatus.connected check
   // (Assuming testResult implies connection is working)
   if (wifiTestResult.value === true) return 'text-green-500'
-  
+
   if (!wifiStatus.value.connected) return 'text-red-500'
   // Connected but no internet or testing
   return 'text-yellow-500'

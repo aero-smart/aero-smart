@@ -29,7 +29,7 @@ export const useSerialStore = defineStore('serial', () => {
       if (!res.ok) throw new Error('Failed to fetch status')
       const data = await res.json()
       status.value = data
-      
+
       if (typeof data === 'object' && 'Failed' in data) {
         error.value = data.Failed
       } else {
@@ -73,6 +73,6 @@ export const useSerialStore = defineStore('serial', () => {
     fetchStatus,
     startPolling,
     stopPolling,
-    restart
+    restart,
   }
 })

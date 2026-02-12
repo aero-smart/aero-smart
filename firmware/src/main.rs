@@ -234,7 +234,11 @@ async fn main(spawner: Spawner) {
     let mut rtc = Rtc::new(p.RTC, RtcConfig::default());
 
     if config.uart_upper {
-        let result = with_timeout(Duration::from_secs(5), serial_initialize(&mut usart_upper, &mut rtc)).await;
+        let result = with_timeout(
+            Duration::from_secs(5),
+            serial_initialize(&mut usart_upper, &mut rtc),
+        )
+        .await;
         if let Err(_) = result {
             defmt::error!("RTC synchronization via UART timed out");
             // Software reset

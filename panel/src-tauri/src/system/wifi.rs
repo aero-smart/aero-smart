@@ -131,11 +131,11 @@ fn parse_scan_output(stdout: Vec<u8>) -> anyhow::Result<Vec<WifiNetwork>> {
         // We need at least 4 parts.
         // If SSID has colons, this split is wrong.
         // But for "Innoxsz-Public", it's fine.
-        
+
         // Wait, look at the log:
         //  :Innoxsz-Guest:100:
         //  *:Innoxsz-Public:100:WPA1 WPA2
-        
+
         // Line 1: " :Innoxsz-Guest:100:"
         // Split: [" ", "Innoxsz-Guest", "100", ""] -> len 4
         // Part 0: " " (space?) No, wait.
@@ -143,13 +143,13 @@ fn parse_scan_output(stdout: Vec<u8>) -> anyhow::Result<Vec<WifiNetwork>> {
         // It seems there is a space before the colon? Or is it empty?
         // "IN-USE" field: "*" or " ".
         // If it is " ", then split might be: [" ", "jiangyin14", "100", "WPA2 WPA3"]
-        
+
         // If line starts with ':', then part[0] is empty string "".
         // If line starts with " :", then part[0] is " ".
         // Let's look at the log carefully:
         // Feb 13 00:45:26 ...:  :jiangyin14:100:WPA2 WPA3
         // There is a space.
-        
+
         // If I use `nmcli -t`, fields are separated by `:`.
         // The IN-USE field is either `*` or ` ` (space) or empty?
         // Actually, `nmcli -t` usually produces `*:SSID...` or `:SSID...` (empty string for false).
@@ -158,40 +158,40 @@ fn parse_scan_output(stdout: Vec<u8>) -> anyhow::Result<Vec<WifiNetwork>> {
         // "Feb 13 00:45:26 ... [INFO] nmcli scan output raw:"
         // " :jiangyin14..."
         // It's possible the log prefix alignment makes it look like a space, or it IS a space.
-        
+
         // Let's trim the line first? No, if IN-USE is space, trimming might remove it?
         // But IN-USE is significant.
         // Let's rely on the position.
-        
+
         // Recover logic:
         // Iterate backwards?
         // Security is last. Signal is second to last.
         // But SSID can be anything.
-        
+
         // Let's try to parse flexibly.
         // We know Signal is a number.
-        
+
         // If split by ':', we get N parts.
         // Last part: Security
         // Second last: Signal (u8)
         // First part: IN-USE
         // Everything in between: SSID (joined by :)
-        
+
         if parts.len() < 4 {
             continue;
         }
-        
+
         let in_use_str = parts[0].trim();
         let in_use = in_use_str == "*";
-        
+
         let security = parts[parts.len() - 1].to_string();
-        
+
         let signal_str = parts[parts.len() - 2];
         let signal = signal_str.parse::<u8>().unwrap_or(0);
-        
+
         // SSID is parts[1..len-2] joined by ":"
-        let ssid = parts[1..parts.len()-2].join(":");
-        
+        let ssid = parts[1..parts.len() - 2].join(":");
+
         if ssid.is_empty() {
             continue;
         }

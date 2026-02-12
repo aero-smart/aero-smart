@@ -255,7 +255,11 @@
             </div>
 
             <!-- Step 3: Activation -->
-            <div v-else-if="currentStep === 3" key="step3" class="flex flex-col h-full justify-center">
+            <div
+              v-else-if="currentStep === 3"
+              key="step3"
+              class="flex flex-col h-full justify-center"
+            >
               <div class="shrink-0 mb-6">
                 <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
                   Device Activation
@@ -555,8 +559,8 @@ async function startActivation() {
     const poll = setInterval(async () => {
       try {
         if (activationStatus.value === 'skipped') {
-           clearInterval(poll)
-           return
+          clearInterval(poll)
+          return
         }
         const res = await fetch('http://localhost:3000/api/activation/status')
         const data = await res.json()

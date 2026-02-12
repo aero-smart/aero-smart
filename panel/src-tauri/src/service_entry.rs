@@ -115,11 +115,11 @@ pub async fn run() -> anyhow::Result<()> {
             // Create a channel to signal forced restart from the task
             let (abort_tx, mut abort_rx) = mpsc::channel::<()>(1);
             let restart_signal_inner = restart_signal_clone.clone();
-            
+
             // Spawn a watcher for restart signal
             let watcher_handle = tokio::spawn(async move {
-                 restart_signal_inner.notified().await;
-                 let _ = abort_tx.send(()).await;
+                restart_signal_inner.notified().await;
+                let _ = abort_tx.send(()).await;
             });
 
             tokio::select! {
