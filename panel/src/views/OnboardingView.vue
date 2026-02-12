@@ -166,7 +166,7 @@
                   v-if="networks.length === 0 && !scanning"
                   class="p-6 text-center text-gray-400 text-sm"
                 >
-                  No networks found
+                  {{ $t('onboarding.no_networks') }}
                 </div>
 
                 <button
@@ -203,7 +203,9 @@
                 >
                   <Loader2 class="w-4 h-4 animate-spin" />
                   <span>{{
-                    connecting ? 'Connecting to WiFi...' : 'Testing Internet Connection...'
+                    connecting
+                      ? $t('onboarding.connecting_wifi')
+                      : $t('onboarding.testing_connection')
                   }}</span>
                 </div>
                 <div
@@ -211,14 +213,14 @@
                   class="flex items-center justify-center gap-2 py-4 text-sm text-green-600 font-medium"
                 >
                   <CheckCircle2 class="w-4 h-4" />
-                  <span>Internet Connected (bilibili.com reachable)</span>
+                  <span>{{ $t('onboarding.internet_connected') }}</span>
                 </div>
                 <div
                   v-else-if="testResult === false"
                   class="flex items-center justify-center gap-2 py-4 text-sm text-red-600 font-medium"
                 >
                   <XCircle class="w-4 h-4" />
-                  <span>Internet Unreachable</span>
+                  <span>{{ $t('onboarding.internet_unreachable') }}</span>
                 </div>
               </div>
             </div>
@@ -262,9 +264,9 @@
             >
               <div class="shrink-0 mb-6">
                 <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
-                  Device Activation
+                  {{ $t('onboarding.activation_title') }}
                 </h1>
-                <p class="mt-2 text-sm text-gray-500">Connect and synchronize with the hardware.</p>
+                <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.activation_subtitle') }}</p>
               </div>
 
               <div class="flex-1 flex flex-col items-center justify-center space-y-6">
@@ -304,27 +306,27 @@
                   <h3 class="text-lg font-bold text-gray-900">
                     {{
                       activationStatus === 'idle'
-                        ? 'Ready to Activate'
+                        ? $t('onboarding.status_idle')
                         : activationStatus === 'activating'
-                          ? 'Activating...'
+                          ? $t('onboarding.status_activating')
                           : activationStatus === 'success'
-                            ? 'Activation Successful'
+                            ? $t('onboarding.status_success')
                             : activationStatus === 'skipped'
-                              ? 'Activation Skipped'
-                              : 'Activation Failed'
+                              ? $t('onboarding.status_skipped')
+                              : $t('onboarding.status_error')
                     }}
                   </h3>
                   <p class="text-sm text-gray-500 max-w-xs mx-auto">
                     {{
                       activationStatus === 'idle'
-                        ? 'Click the button below to start the device activation process.'
+                        ? $t('onboarding.desc_idle')
                         : activationStatus === 'activating'
-                          ? 'Connecting to serial port and syncing hardware clock...'
+                          ? $t('onboarding.desc_activating')
                           : activationStatus === 'success'
-                            ? 'Device connected and synchronized. You can now finish setup.'
+                            ? $t('onboarding.desc_success')
                             : activationStatus === 'skipped'
-                              ? 'Device activation was skipped. You can finish setup now.'
-                              : activationError || 'An unknown error occurred.'
+                              ? $t('onboarding.desc_skipped')
+                              : activationError || $t('onboarding.desc_error_unknown')
                     }}
                   </p>
                 </div>
@@ -335,7 +337,7 @@
                   @click="startActivation"
                   class="px-8 py-3 bg-black text-white rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg shadow-gray-200"
                 >
-                  开始激活设备
+                  {{ $t('onboarding.start_activation') }}
                 </button>
               </div>
             </div>
@@ -379,20 +381,20 @@
         <input
           v-model="wifiPassword"
           type="password"
-          placeholder="Password"
+          :placeholder="$t('onboarding.wifi_password_placeholder')"
           class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black"
           @focus="keyboardStore.open(wifiPassword, (val) => (wifiPassword = val), confirmConnect)"
         />
         <div class="flex justify-end gap-2 mt-2">
           <button @click="closeWifiModal" class="text-sm text-gray-500 px-4 py-2 font-medium">
-            Cancel
+            {{ $t('common.cancel') }}
           </button>
           <button
             @click="confirmConnect"
             :disabled="connecting"
             class="text-sm bg-black text-white px-5 py-2 rounded-xl hover:bg-gray-800 disabled:opacity-50 font-bold"
           >
-            {{ connecting ? 'Connecting...' : 'Connect' }}
+            {{ connecting ? $t('wifi.connecting') : $t('wifi.connect') }}
           </button>
         </div>
       </div>

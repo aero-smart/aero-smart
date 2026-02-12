@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 h-[500px]">
     <div class="flex justify-between items-center shrink-0">
-      <div class="text-sm font-bold text-gray-900">WiFi Management</div>
+      <div class="text-sm font-bold text-gray-900">{{ $t('wifi.title') }}</div>
       <button @click="$emit('close')" class="p-1 rounded-full hover:bg-gray-100 text-gray-500">
         <X class="w-4 h-4" />
       </button>
@@ -12,22 +12,22 @@
         <div class="flex items-center gap-2">
           <span class="text-xs text-green-600 font-bold flex items-center gap-1">
             <CheckCircle2 class="w-3 h-3" />
-            {{ activeConnection.ssid || 'Unknown SSID' }}
+            {{ activeConnection.ssid || $t('wifi.unknown_ssid') }}
           </span>
           <button
             @click="handleDisconnect"
             :disabled="connecting"
             class="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded hover:bg-red-100 disabled:opacity-50"
           >
-            Disconnect
+            {{ $t('wifi.disconnect') }}
           </button>
         </div>
         <!-- Requirement 2: Show IPv4 Address -->
         <div class="text-[10px] text-gray-400 font-mono ml-4">
-          IP: {{ activeConnection.ip || 'Obtaining IP...' }}
+          {{ $t('wifi.ip_prefix') }}{{ activeConnection.ip || $t('wifi.obtaining_ip') }}
         </div>
       </div>
-      <div v-else class="text-xs text-gray-500">Not Connected</div>
+      <div v-else class="text-xs text-gray-500">{{ $t('wifi.not_connected') }}</div>
 
       <button
         @click="handleScan"
@@ -35,7 +35,7 @@
         class="bg-gray-900 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors flex items-center gap-1.5"
       >
         <RefreshCw :class="['w-3 h-3', scanning ? 'animate-spin' : '']" />
-        {{ scanning ? 'Scanning...' : 'Scan' }}
+        {{ scanning ? $t('wifi.scanning') : $t('wifi.scan') }}
       </button>
     </div>
 
@@ -62,7 +62,7 @@
                 <span
                   v-if="net.in_use"
                   class="text-green-600 font-bold bg-green-50 px-1.5 py-0.5 rounded-full"
-                  >Connected</span
+                  >{{ $t('wifi.connected') }}</span
                 >
               </div>
             </div>
@@ -75,7 +75,7 @@
         class="flex flex-col items-center justify-center h-full text-gray-400 gap-2"
       >
         <WifiOff class="w-8 h-8 opacity-20" />
-        <span class="text-xs">No networks found</span>
+        <span class="text-xs">{{ $t('wifi.no_networks') }}</span>
       </div>
     </div>
 
@@ -86,14 +86,14 @@
     >
       <div class="w-64 flex flex-col gap-4">
         <div class="text-center">
-          <div class="text-sm font-bold text-gray-900">Connect to WiFi</div>
+          <div class="text-sm font-bold text-gray-900">{{ $t('wifi.connect_title') }}</div>
           <div class="text-xs text-gray-500 mt-1">{{ selectedSsid }}</div>
         </div>
 
         <input
           v-model="password"
           type="password"
-          placeholder="Enter Password"
+          :placeholder="$t('wifi.password_placeholder')"
           class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black w-full"
           @focus="keyboardStore.open(password, (val) => (password = val), confirmConnect)"
         />
@@ -103,7 +103,7 @@
             @click="closeModal"
             class="flex-1 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 py-2.5 rounded-xl transition-colors"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </button>
           <button
             @click="confirmConnect"
@@ -111,7 +111,7 @@
             class="flex-1 text-xs font-bold bg-black text-white py-2.5 rounded-xl hover:bg-gray-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
           >
             <Loader2 v-if="connecting" class="w-3 h-3 animate-spin" />
-            {{ connecting ? 'Connecting' : 'Connect' }}
+            {{ connecting ? $t('wifi.connecting') : $t('wifi.connect') }}
           </button>
         </div>
       </div>
@@ -126,9 +126,11 @@ import { useKeyboardStore } from '@/stores/keyboard'
 import { storeToRefs } from 'pinia'
 import type { WifiNetwork } from '@/api/wifi'
 import { X, RefreshCw, Wifi, WifiOff, CheckCircle2, Loader2 } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 
 defineEmits(['close'])
 
+const { t } = useI18n()
 const store = useWifiStore()
 const keyboardStore = useKeyboardStore()
 const { networks, status, scanning, connecting, error } = storeToRefs(store)
