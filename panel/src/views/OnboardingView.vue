@@ -22,16 +22,12 @@
 
     <!-- Step Progress -->
     <div class="flex items-center justify-center gap-4 py-6 px-4">
-      <div
-        v-for="(step, index) in steps"
-        :key="index"
-        class="flex items-center"
-      >
+      <div v-for="(step, index) in steps" :key="index" class="flex items-center">
         <div
           class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300"
           :class="{
             'bg-black text-white': currentStep <= index,
-            'bg-gray-100 text-gray-400': currentStep > index
+            'bg-gray-100 text-gray-400': currentStep > index,
           }"
         >
           {{ index + 1 }}
@@ -41,7 +37,7 @@
           class="h-1 w-12 md:w-16 mx-2 transition-all duration-300"
           :class="{
             'bg-black': currentStep <= index,
-            'bg-gray-200': currentStep > index
+            'bg-gray-200': currentStep > index,
           }"
         ></div>
       </div>
@@ -58,7 +54,9 @@
 
         <!-- Language Selection -->
         <div class="space-y-3">
-          <h2 class="text-base font-semibold text-gray-700 text-center">{{ $t('onboarding.language') }}</h2>
+          <h2 class="text-base font-semibold text-gray-700 text-center">
+            {{ $t('onboarding.language') }}
+          </h2>
           <div class="flex flex-wrap justify-center gap-3">
             <button
               @click="setLocale('en')"
@@ -87,7 +85,9 @@
 
         <!-- Region Selection -->
         <div class="space-y-3">
-          <h2 class="text-base font-semibold text-gray-700 text-center">{{ $t('onboarding.region') }}</h2>
+          <h2 class="text-base font-semibold text-gray-700 text-center">
+            {{ $t('onboarding.region') }}
+          </h2>
           <div class="flex flex-wrap justify-center gap-3">
             <button
               @click="setRegion('us')"
@@ -129,7 +129,9 @@
       <!-- Step 2: WiFi Selection -->
       <div v-if="currentStep === 1" class="space-y-3 max-w-md mx-auto">
         <div class="text-center space-y-2">
-          <h1 class="text-xl font-bold text-black tracking-tight">{{ $t('onboarding.wifi_title') }}</h1>
+          <h1 class="text-xl font-bold text-black tracking-tight">
+            {{ $t('onboarding.wifi_title') }}
+          </h1>
           <p class="text-gray-500 text-sm">{{ $t('onboarding.wifi_subtitle') }}</p>
         </div>
 
@@ -217,7 +219,7 @@
                   :class="{
                     'bg-green-500': wifi.signal > 70,
                     'bg-yellow-500': wifi.signal > 40 && wifi.signal <= 70,
-                    'bg-red-500': wifi.signal <= 40
+                    'bg-red-500': wifi.signal <= 40,
                   }"
                 ></div>
                 <span class="text-xs">{{ wifi.signal }}%</span>
@@ -226,7 +228,9 @@
 
             <!-- Password input for selected WiFi -->
             <div v-if="selectedWifi?.ssid === wifi.ssid" class="mt-2 space-y-1.5">
-              <h3 class="text-xs font-semibold text-gray-700">{{ $t('onboarding.wifi_password') }}</h3>
+              <h3 class="text-xs font-semibold text-gray-700">
+                {{ $t('onboarding.wifi_password') }}
+              </h3>
               <input
                 v-model="wifiPassword"
                 type="password"
@@ -241,13 +245,17 @@
       <!-- Step 3: Login -->
       <div v-if="currentStep === 2" class="space-y-4 max-w-md mx-auto">
         <div class="text-center space-y-2">
-          <h1 class="text-xl font-bold text-black tracking-tight">{{ $t('onboarding.login_title') }}</h1>
+          <h1 class="text-xl font-bold text-black tracking-tight">
+            {{ $t('onboarding.login_title') }}
+          </h1>
           <p class="text-gray-500 text-sm">{{ $t('onboarding.login_subtitle') }}</p>
         </div>
 
         <div class="space-y-2">
           <div class="space-y-1.5">
-            <label class="text-xs font-semibold text-gray-700 block">{{ $t('onboarding.email') }}</label>
+            <label class="text-xs font-semibold text-gray-700 block">{{
+              $t('onboarding.email')
+            }}</label>
             <input
               v-model="loginForm.email"
               type="email"
@@ -257,7 +265,9 @@
           </div>
 
           <div class="space-y-1.5">
-            <label class="text-xs font-semibold text-gray-700 block">{{ $t('onboarding.password') }}</label>
+            <label class="text-xs font-semibold text-gray-700 block">{{
+              $t('onboarding.password')
+            }}</label>
             <input
               v-model="loginForm.password"
               type="password"
@@ -274,9 +284,13 @@
                 id="remember"
                 class="w-3 h-3 rounded border-gray-300 text-black focus:ring-black"
               />
-              <label for="remember" class="text-xs text-gray-600">{{ $t('onboarding.remember_me') }}</label>
+              <label for="remember" class="text-xs text-gray-600">{{
+                $t('onboarding.remember_me')
+              }}</label>
             </div>
-            <a href="#" class="text-xs text-black font-medium hover:underline">{{ $t('onboarding.forgot_password') }}</a>
+            <a href="#" class="text-xs text-black font-medium hover:underline">{{
+              $t('onboarding.forgot_password')
+            }}</a>
           </div>
         </div>
       </div>
@@ -284,7 +298,9 @@
       <!-- Step 4: Terms & Conditions -->
       <div v-if="currentStep === 3" class="space-y-3 max-w-md mx-auto">
         <div class="text-center space-y-2">
-          <h1 class="text-xl font-bold text-black tracking-tight">{{ $t('onboarding.terms_title') }}</h1>
+          <h1 class="text-xl font-bold text-black tracking-tight">
+            {{ $t('onboarding.terms_title') }}
+          </h1>
           <p class="text-gray-500 text-sm">{{ $t('onboarding.terms_subtitle') }}</p>
         </div>
 
@@ -302,14 +318,18 @@
             id="terms"
             class="w-3 h-3 rounded border-gray-300 text-black focus:ring-black"
           />
-          <label for="terms" class="text-xs text-gray-600">{{ $t('onboarding.terms_accept') }}</label>
+          <label for="terms" class="text-xs text-gray-600">{{
+            $t('onboarding.terms_accept')
+          }}</label>
         </div>
       </div>
 
       <!-- Step 5: Calibration -->
       <div v-if="currentStep === 4" class="space-y-4 max-w-md mx-auto">
         <div class="text-center space-y-2">
-          <h1 class="text-xl font-bold text-black tracking-tight">{{ $t('onboarding.calibration_title') }}</h1>
+          <h1 class="text-xl font-bold text-black tracking-tight">
+            {{ $t('onboarding.calibration_title') }}
+          </h1>
           <p class="text-gray-500 text-sm">{{ $t('onboarding.calibration_subtitle') }}</p>
         </div>
 
@@ -320,7 +340,7 @@
             class="p-2 rounded-xl border transition-all duration-200"
             :class="{
               'bg-green-50 border-green-200 text-green-700': calibrationStatus[item.key],
-              'bg-white border-gray-200 text-black': !calibrationStatus[item.key]
+              'bg-white border-gray-200 text-black': !calibrationStatus[item.key],
             }"
           >
             <div class="flex items-center justify-between">
@@ -336,11 +356,15 @@
                 class="px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 min-w-[80px]"
                 :class="{
                   'bg-black text-white hover:bg-gray-800': !calibrationStatus[item.key],
-                  'bg-green-100 text-green-700 cursor-not-allowed': calibrationStatus[item.key]
+                  'bg-green-100 text-green-700 cursor-not-allowed': calibrationStatus[item.key],
                 }"
                 :disabled="calibrationStatus[item.key]"
               >
-                {{ calibrationStatus[item.key] ? $t('onboarding.calibration_done') : $t('onboarding.calibration_start') }}
+                {{
+                  calibrationStatus[item.key]
+                    ? $t('onboarding.calibration_done')
+                    : $t('onboarding.calibration_start')
+                }}
               </button>
             </div>
           </div>
@@ -426,7 +450,11 @@ const selectedWifi = ref<any>(null)
 const wifiPassword = ref('')
 const loginForm = ref({ email: '', password: '', remember: false })
 const acceptTerms = ref(false)
-const calibrationStatus = ref<{ [key: string]: boolean }>({ environment: false, temperature: false, engine: false })
+const calibrationStatus = ref<{ [key: string]: boolean }>({
+  environment: false,
+  temperature: false,
+  engine: false,
+})
 
 const steps = ['Language & Region', 'WiFi', 'Login', 'Terms', 'Calibration']
 
@@ -434,13 +462,23 @@ const availableWifi = ref([
   { ssid: 'Home WiFi', signal: 90 },
   { ssid: 'Office Network', signal: 75 },
   { ssid: 'Public WiFi', signal: 45 },
-  { ssid: 'Mobile Hotspot', signal: 60 }
+  { ssid: 'Mobile Hotspot', signal: 60 },
 ])
 
 const calibrationItems = [
-  { key: 'environment', title: 'Environment Pressure', description: 'Calibrate ambient pressure sensor', icon: Gauge },
-  { key: 'temperature', title: 'Temperature', description: 'Calibrate temperature sensor', icon: Thermometer },
-  { key: 'engine', title: 'Engine', description: 'Calibrate engine sensors', icon: Activity }
+  {
+    key: 'environment',
+    title: 'Environment Pressure',
+    description: 'Calibrate ambient pressure sensor',
+    icon: Gauge,
+  },
+  {
+    key: 'temperature',
+    title: 'Temperature',
+    description: 'Calibrate temperature sensor',
+    icon: Thermometer,
+  },
+  { key: 'engine', title: 'Engine', description: 'Calibrate engine sensors', icon: Activity },
 ]
 
 const canProceed = computed(() => {
@@ -454,7 +492,7 @@ const canProceed = computed(() => {
     case 3:
       return acceptTerms.value
     case 4:
-      return Object.values(calibrationStatus.value).every(status => status)
+      return Object.values(calibrationStatus.value).every((status) => status)
     default:
       return false
   }
