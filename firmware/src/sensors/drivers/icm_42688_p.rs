@@ -428,7 +428,7 @@ impl AccelConfig0 {
 impl Default for GyroConfig0 {
     fn default() -> Self {
         GyroConfig0 {
-            fs_sel: GyroFullScale::Dps31_25,
+            fs_sel: GyroFullScale::Dps2000,
             odr: GyroOdr::from_hz(IMU_SAMPLE_RATE_HZ as f32),
         }
     }
@@ -437,7 +437,7 @@ impl Default for GyroConfig0 {
 impl Default for AccelConfig0 {
     fn default() -> Self {
         AccelConfig0 {
-            fs_sel: AccelFullScale::G2,
+            fs_sel: AccelFullScale::G16,
             odr: AccelOdr::from_hz(IMU_SAMPLE_RATE_HZ as f32),
         }
     }

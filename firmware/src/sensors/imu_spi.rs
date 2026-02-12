@@ -3,9 +3,9 @@
 //! ICM-42688-P
 //!
 //! Poll @ 1 kHz at 1 MHz SPIuse defmt::info;
-use crate::sensors::drivers::icm_42688_p::{
+use crate::{algorithms::airspeed_filter::AirspeedFilter, sensors::drivers::icm_42688_p::{
     AccelConfig0, GyroConfig0, IntSource0, PwrMgmt0, icm_42688_p_accel, icm_42688_p_gyro,
-};
+}};
 use defmt::info;
 use embassy_stm32::{
     gpio::Output,
@@ -19,6 +19,8 @@ pub struct ImuSpi<'a> {
 
     pub accel_config: AccelConfig0,
     pub gyro_config: GyroConfig0,
+
+    pub filters: [AirspeedFilter; 6]
 }
 
 #[derive(defmt::Format)]
@@ -75,6 +77,7 @@ impl<'a> ImuSpi<'a> {
             cs,
             accel_config,
             gyro_config,
+            filters: [AirspeedFilter::new(0.0, 0.24, 1.44); 6],
         }
     }
 
@@ -98,6 +101,13 @@ impl<'a> ImuSpi<'a> {
         let gyro_x = icm_42688_p_gyro(u16::from_be_bytes([buffer[7], buffer[8]]));
         let gyro_y = icm_42688_p_gyro(u16::from_be_bytes([buffer[9], buffer[10]]));
         let gyro_z = icm_42688_p_gyro(u16::from_be_bytes([buffer[11], buffer[12]]));
+
+        let accel_x = self.filters[0].update(accel_x);
+        let accel_y = self.filters[1].update(accel_y);
+        let accel_z = self.filters[2].update(accel_z);
+        let gyro_x = self.filters[3].update(gyro_x);
+        let gyro_y = self.filters[4].update(gyro_y);
+        let gyro_z = self.filters[5].update(gyro_z);
 
         Ok(ImuData::new(
             accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z,

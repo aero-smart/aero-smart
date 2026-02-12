@@ -16,7 +16,7 @@ use embassy_stm32::{
     i2c::{I2c, Master},
     mode::Async,
 };
-use embassy_time::{Delay, Instant, Timer};
+use embassy_time::{Delay, Duration, Instant, Timer};
 
 #[derive(defmt::Format)]
 pub enum AirspeedError {
@@ -46,7 +46,7 @@ impl Airspeed {
         Airspeed {
             i2c: bme280,
             ms4525do_offset_pa: 0.0,
-            pressure_filter: AirspeedFilter::new(0.0, 0.24, 1.44),
+            pressure_filter: AirspeedFilter::new(0.0, 0.36, 1.96),
         }
     }
 
@@ -129,18 +129,20 @@ impl Airspeed {
             .await
             .map_err(|_| AirspeedError::I2cError)?;
 
+        Timer::after(Duration::from_millis(200)).await;
+
         self.calibrate().await?;
 
         Ok(())
     }
 
     pub async fn calibrate(&mut self) -> Result<(), AirspeedError> {
-        for _attempt in 0..4 {
+        for _attempt in 0..8 {
             let (_status, pressure_raw, _temperature_raw) = self.read_pitot().await?;
             self.ms4525do_offset_pa += pressure_raw;
-            Timer::after_millis(250).await;
+            Timer::after(Duration::from_millis(200)).await;
         }
-        self.ms4525do_offset_pa /= 4.0;
+        self.ms4525do_offset_pa /= 8.0;
         debug!("Calibrated MS4525DO offset: {} Pa", self.ms4525do_offset_pa);
         Ok(())
     }

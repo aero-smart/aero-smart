@@ -317,7 +317,7 @@ async fn main(spawner: Spawner) {
     let mut sensors = Airspeed::new(i2c);
     let edf = EdfPwm::new(edf_servo_pwm);
     let pid = AirspeedControl::new(0.0, PID_KP, PID_KI, PID_KD);
-    let ahrs = MadgwickAhrs::new(IMU_SAMPLE_RATE_HZ as f32, MADGWICK_BETA);
+    let ahrs = MadgwickAhrs::new(IMU_SAMPLE_RATE_HZ as f32 * 10.0, MADGWICK_BETA);
 
     info!("Airspeed sensor and EDF driver initialized");
 

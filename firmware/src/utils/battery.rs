@@ -35,7 +35,7 @@ fn get_soc(measured_voltage: f32) -> f32 {
 fn adc_to_voltage(adc_reading: u16, vrefint_reading: u16) -> f32 {
     // VREFINT from datasheet: -40°C < TJ < 105°C, VDD = 3.3V
     // Typical: 1.216V, Min: 1.180V, Max: 1.255V
-    const VREFINT_CAL: f32 = 1.216; // Typical value for STM32
+    const VREFINT_CAL: f32 = 0.96; // Typical value for STM32
     const ADC_MAX: f32 = 4095.0; // 12-bit ADC
 
     // Voltage divider ratio: R1=5k, R2=1k

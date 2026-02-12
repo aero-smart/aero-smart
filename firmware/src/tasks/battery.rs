@@ -47,12 +47,12 @@ pub async fn battery_task(
             "Battery Voltage: {} V | Cell Voltage: {} V | State of Charge: {} %",
             battery_voltage,
             cell_voltage,
-            soc * 100.0
+            soc
         );
         {
             let mut state = GLOBAL_STATE.lock().await;
             state.battery_voltage_volts = battery_voltage;
-            state.battery_soc_percent = soc * 100.0;
+            state.battery_soc_percent = soc;
         }
     }
 }
