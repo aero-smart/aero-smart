@@ -58,8 +58,10 @@ final GoRouter appRouter = GoRouter(
               path: 'binding/connection',
               parentNavigatorKey: _rootNavigatorKey,
               builder: (context, state) {
-                final qrData = state.extra as String?;
-                return ConnectionPage(qrData: qrData);
+                final extra = state.extra as Map<String, dynamic>?;
+                final ip = extra?['ip'] as String?;
+                final ssid = extra?['ssid'] as String?;
+                return ConnectionPage(qrData: ip, targetSsid: ssid);
               },
             ),
           ],

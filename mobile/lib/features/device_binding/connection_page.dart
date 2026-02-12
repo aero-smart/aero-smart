@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:network_info_plus/network_info_plus.dart';
 import 'device_api_service.dart';
 import '../settings/settings_provider.dart';
 
 class ConnectionPage extends ConsumerStatefulWidget {
-  const ConnectionPage({super.key, this.qrData});
+  const ConnectionPage({super.key, this.qrData, this.targetSsid});
   final String? qrData; // This is the IP address from the QR code
+  final String? targetSsid; // The SSID that the device is connected to
 
   @override
   ConsumerState<ConnectionPage> createState() => _ConnectionPageState();
@@ -22,14 +24,66 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
   void initState() {
     super.initState();
     if (widget.qrData != null) {
-      _apiService = DeviceApiService(widget.qrData!);
-      _loadInitialData();
-
-      // 同步 IP 到全局设置并触发 WebSocket 连接
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(settingsProvider.notifier).setIpAddress(widget.qrData!);
-      });
+      _checkSsidAndConnect();
     }
+  }
+
+  Future<void> _checkSsidAndConnect() async {
+    if (widget.targetSsid != null) {
+      final info = NetworkInfo();
+      String? currentSsid = await info.getWifiName();
+      // Remove quotes if present (iOS/Android sometimes return "SSID")
+      if (currentSsid != null) {
+        currentSsid = currentSsid.replaceAll('"', '');
+      }
+
+      if (currentSsid != widget.targetSsid) {
+        if (!mounted) return;
+        _showSsidMismatchDialog(currentSsid, widget.targetSsid!);
+        return;
+      }
+    }
+
+    _proceedWithConnection();
+  }
+
+  void _proceedWithConnection() {
+    _apiService = DeviceApiService(widget.qrData!);
+    _loadInitialData();
+
+    // 同步 IP 到全局设置并触发 WebSocket 连接
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(settingsProvider.notifier).setIpAddress(widget.qrData!);
+    });
+  }
+
+  void _showSsidMismatchDialog(String? current, String target) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Wi-Fi 不匹配'),
+        content: Text(
+          '设备位于 "$target" 网络，而您当前连接的是 "${current ?? '未知网络'}"。\n\n请切换手机 Wi-Fi 后重试。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Go back to scanner
+            },
+            child: const Text('返回'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              _proceedWithConnection(); // Ignore and proceed
+            },
+            child: const Text('强制继续'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _loadInitialData() async {

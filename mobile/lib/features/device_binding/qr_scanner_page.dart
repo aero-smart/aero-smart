@@ -21,8 +21,13 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
       if (success) {
         final String ip = data['ip'] ?? '';
+        final String ssid = data['ssid'] ?? '';
+
         if (ip.isNotEmpty) {
-          context.pushReplacement('/settings/binding/connection', extra: ip);
+          context.pushReplacement(
+            '/settings/binding/connection',
+            extra: {'ip': ip, 'ssid': ssid},
+          );
         } else {
           _showError('Invalid QR Code: IP address missing');
         }

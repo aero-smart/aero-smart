@@ -43,6 +43,7 @@ dependencies:
   dio: ^5.9.1
   web_socket_channel: ^3.0.3
   shared_preferences: ^2.5.4
+  network_info_plus: ^7.0.0
 
 dev_dependencies:
   flutter_test:
