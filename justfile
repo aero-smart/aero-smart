@@ -1,3 +1,5 @@
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
+
 setup:
   cargo install taplo-cli cargo-shear --locked
 
@@ -67,4 +69,4 @@ build-firmware-thumbv7em:
 
 fmt:
   cargo fmt
-  cd panel && pnpm run format
+  pnpm run --filter panel format

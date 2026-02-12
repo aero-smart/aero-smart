@@ -755,6 +755,7 @@
       </div>
     </div>
 
+<<<<<<< Updated upstream
     <!-- WiFi Password Modal -->
     <div
       v-if="showWifiModal"
@@ -783,6 +784,31 @@
         </div>
       </div>
 <<<<<<< HEAD
+=======
+    <!-- Navigation Buttons - Bottom Area -->
+    <div class="py-6 px-4 flex items-center justify-between">
+      <button
+        v-if="currentStep > 0"
+        @click="prevStep"
+        class="min-w-[120px] h-12 px-6 py-3 rounded-full border border-gray-200 text-black font-medium transition-all duration-200 hover:border-black hover:bg-gray-50 text-base flex items-center justify-center"
+      >
+        {{ $t('common.back') }}
+      </button>
+      <div v-else class="min-w-[120px]"></div>
+
+      <button
+        @click="nextStep"
+        class="group relative min-w-[160px] h-12 px-8 py-3 bg-black text-white rounded-full font-medium text-base overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+        :disabled="!canProceed"
+        :class="{
+          'opacity-50 cursor-not-allowed': !canProceed,
+          'opacity-100 cursor-pointer': canProceed,
+        }"
+      >
+        {{ currentStep === steps.length - 1 ? $t('common.finish') : $t('common.next') }}
+        <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+      </button>
+>>>>>>> Stashed changes
     </div>
 
     <!-- Skip WiFi Confirmation Modal -->
@@ -1087,5 +1113,8 @@ const nextStep = () => {
   background: #555;
 }
 </style>
+<<<<<<< Updated upstream
 =======
 >>>>>>> e7d9385 (feat(onboarding): 重构并增强用户引导流程的UI与交互)
+=======
+>>>>>>> Stashed changes
