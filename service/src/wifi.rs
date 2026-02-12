@@ -212,10 +212,7 @@ async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             error!("nmcli failed after retry: {}", stderr);
-            return Err(anyhow::anyhow!(
-                "nmcli failed: {}",
-                stderr
-            ));
+            return Err(anyhow::anyhow!("nmcli failed: {}", stderr));
         }
     }
 
