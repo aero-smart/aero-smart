@@ -8,56 +8,45 @@
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4">
           <div class="text-xs font-bold text-gray-700">{{ $t('dashboard.wind_input') }}</div>
 
-          <div class="flex flex-col items-center gap-4 py-2">
-            <!-- Digital Display -->
-            <div class="relative w-full flex justify-center">
-              <span class="text-6xl font-black text-gray-900 tracking-tighter">{{
+          <div class="grid grid-cols-3 gap-2 px-1">
+            <!-- Row 1 -->
+            <button
+              @click="adjustSpeed(1)"
+              class="h-14 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 font-bold text-lg flex items-center justify-center transition-colors"
+            >
+              +1
+            </button>
+            <div class="h-14 flex items-center justify-center bg-gray-50 rounded-xl border border-gray-100 relative">
+              <span class="text-3xl font-black text-gray-900 tracking-tighter">{{
                 targetSpeed.toFixed(0)
               }}</span>
-              <span class="absolute right-8 bottom-2 text-sm font-bold text-gray-400">m/s</span>
+              <span class="absolute bottom-1 right-2 text-[10px] font-bold text-gray-400">m/s</span>
             </div>
+            <button
+              @click="adjustSpeed(-1)"
+              class="h-14 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 font-bold text-lg flex items-center justify-center transition-colors"
+            >
+              -1
+            </button>
 
-            <!-- Controls Grid -->
-            <div class="grid grid-cols-2 gap-x-12 gap-y-3 w-full px-4">
-              <!-- Left Side (- Buttons) -->
-              <div class="flex flex-col gap-2 items-end">
-                <button
-                  @click="adjustSpeed(1)"
-                  class="w-12 h-12 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 font-bold text-lg flex items-center justify-center transition-colors"
-                >
-                  +1
-                </button>
-                <button
-                  @click="adjustSpeed(5)"
-                  class="w-12 h-12 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 font-bold text-lg flex items-center justify-center transition-colors"
-                >
-                  +5
-                </button>
-              </div>
-
-              <!-- Right Side (+ Buttons) -->
-              <div class="flex flex-col gap-2 items-start">
-                <button
-                  @click="adjustSpeed(-1)"
-                  class="w-12 h-12 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 font-bold text-lg flex items-center justify-center transition-colors"
-                >
-                  -1
-                </button>
-                <button
-                  @click="adjustSpeed(-5)"
-                  class="w-12 h-12 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 font-bold text-lg flex items-center justify-center transition-colors"
-                >
-                  -5
-                </button>
-              </div>
-            </div>
-
-            <!-- Confirm Button -->
+            <!-- Row 2 -->
+            <button
+              @click="adjustSpeed(5)"
+              class="h-14 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 font-bold text-lg flex items-center justify-center transition-colors"
+            >
+              +5
+            </button>
             <button
               @click="updateSpeed"
-              class="w-full mt-2 bg-black text-white font-bold py-3 rounded-xl hover:bg-gray-800 active:scale-95 transition-all"
+              class="h-14 rounded-xl bg-black text-white font-bold text-lg flex items-center justify-center hover:bg-gray-800 active:scale-95 transition-all shadow-lg shadow-gray-200"
             >
-              {{ $t('common.confirm') }}
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button
+              @click="adjustSpeed(-5)"
+              class="h-14 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 font-bold text-lg flex items-center justify-center transition-colors"
+            >
+              -5
             </button>
           </div>
         </div>
@@ -71,26 +60,8 @@
           </div>
 
           <!-- Gauge -->
-          <div class="flex-1 relative min-h-[240px] w-full overflow-visible pb-2">
+          <div class="flex-1 relative w-full overflow-hidden">
             <div ref="gaugeChartEl" class="absolute inset-0 w-full h-full z-0"></div>
-          </div>
-
-          <!-- Bottom Info -->
-          <div class="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100">
-            <div>
-              <span class="text-xl font-bold text-gray-900 block tracking-tight">19°</span>
-              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{{
-                $t('dashboard.wind_direction')
-              }}</span>
-            </div>
-            <div>
-              <span class="text-xl font-bold text-gray-900 block tracking-tight">
-                {{ stats.avgSpeed.toFixed(1) }} m/s
-              </span>
-              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{{
-                $t('dashboard.avg_speed')
-              }}</span>
-            </div>
           </div>
         </div>
       </div>
