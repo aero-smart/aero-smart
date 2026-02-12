@@ -64,6 +64,31 @@
             <div ref="gaugeChartEl" class="absolute inset-0 w-full h-full z-0"></div>
           </div>
         </div>
+
+        <!-- System Control -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4">
+          <div class="text-xs font-bold text-gray-700">System Control</div>
+          <div class="grid grid-cols-3 gap-2">
+            <button
+              @click="setCommand('Start')"
+              class="h-10 rounded-lg bg-green-50 text-green-700 font-bold text-xs hover:bg-green-100 transition-colors border border-green-200"
+            >
+              Start
+            </button>
+            <button
+              @click="setCommand('Stop')"
+              class="h-10 rounded-lg bg-red-50 text-red-700 font-bold text-xs hover:bg-red-100 transition-colors border border-red-200"
+            >
+              Stop
+            </button>
+            <button
+              @click="setCommand('Calibrate')"
+              class="h-10 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs hover:bg-blue-100 transition-colors border border-blue-200"
+            >
+              Calibrate
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Middle Column (Pressure Monitor) -->
@@ -310,6 +335,11 @@ const cubeStyle = computed(() => {
 function updateSpeed() {
   console.log('Update speed button clicked', targetSpeed.value)
   store.setThrottle(targetSpeed.value)
+}
+
+function setCommand(cmd: 'Start' | 'Stop' | 'Calibrate') {
+  console.log('Set command:', cmd)
+  store.setCommand(cmd)
 }
 
 // Chart Options
