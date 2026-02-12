@@ -101,10 +101,9 @@
                 <option :value="50">50 Hz</option>
                 <option :value="100">100 Hz</option>
               </select>
-<<<<<<< Updated upstream
               <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-400 group-hover:text-gray-600 transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-=======
+              </div>
             </div>
           </div>
         </div>
@@ -138,7 +137,6 @@
                   v-model="config.showGrid"
                   class="w-4 h-4 rounded border-gray-300 text-gray-800 focus:ring-gray-800"
                 />
->>>>>>> Stashed changes
               </div>
             </div>
           </div>
@@ -273,6 +271,7 @@ import * as echarts from 'echarts'
 import { 
   Database, 
   Sliders, 
+  Palette,
   Download, 
   RotateCcw, 
   ZoomIn, 
