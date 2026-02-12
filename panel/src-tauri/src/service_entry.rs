@@ -15,16 +15,28 @@ use axum::{
 use log::{error, info, warn};
 use std::{
     net::SocketAddr,
+    process::Command,
     str::FromStr,
+    sync::Arc,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
-    sync::{broadcast, mpsc},
+    sync::{broadcast, mpsc, Notify, RwLock},
     time::timeout,
 };
 use tokio_serial::SerialPortBuilderExt;
 use tower_http::cors::CorsLayer;
+
+#[derive(Clone, Debug, PartialEq, serde::Serialize)]
+enum ActivationStatus {
+    Idle,                   // Waiting for activation command
+    Connecting,             // connecting to serial
+    Handshaking,            // Waiting for ping
+    WaitingForFirstMessage, // Ping/Pong done, waiting for data
+    Active,                 // Success
+    Failed(String),
+}
 
 #[derive(Clone)]
 struct AppState {
@@ -32,6 +44,8 @@ struct AppState {
     cmd_tx: mpsc::Sender<SerialMessage>,
     #[allow(unused)]
     config: AppConfig,
+    activation_signal: Arc<Notify>,
+    activation_status: Arc<RwLock<ActivationStatus>>,
 }
 
 pub async fn run() -> anyhow::Result<()> {
@@ -48,25 +62,68 @@ pub async fn run() -> anyhow::Result<()> {
     // MPSC: WebSockets -> Serial (Command SerialMessage)
     let (cmd_tx, mut cmd_rx) = mpsc::channel::<SerialMessage>(100);
 
+    let activation_signal = Arc::new(Notify::new());
+    // If onboarding is enabled, we start in Idle and wait for signal.
+    // If disabled, we treat it as already "Active" in terms of flow, but effectively we just start connecting.
+    // We'll set it to Connecting initially if not onboarding.
+    let initial_status = if config.rules.enable_onboarding {
+        ActivationStatus::Idle
+    } else {
+        ActivationStatus::Connecting
+    };
+    let activation_status = Arc::new(RwLock::new(initial_status));
+
     let state = AppState {
         tx: tx.clone(),
         cmd_tx: cmd_tx.clone(),
         config: config.clone(),
+        activation_signal: activation_signal.clone(),
+        activation_status: activation_status.clone(),
     };
 
     // Spawn Serial Task
     let serial_config = config.serial.clone();
     let tx_clone = tx.clone();
+    let signal_clone = activation_signal.clone();
+    let status_clone = activation_status.clone();
 
     tokio::spawn(async move {
         // Retry loop for serial connection
         loop {
-            if let Err(e) = serial_task(serial_config.clone(), tx_clone.clone(), &mut cmd_rx).await
+            // Check if we need to wait for activation
+            let should_wait = {
+                let s = status_clone.read().await;
+                *s == ActivationStatus::Idle
+            };
+
+            if should_wait {
+                info!("Serial Task: Waiting for activation signal...");
+                signal_clone.notified().await;
+                info!("Serial Task: Activation signal received!");
+            }
+
+            // Update status to Connecting
+            {
+                let mut s = status_clone.write().await;
+                *s = ActivationStatus::Connecting;
+            }
+
+            if let Err(e) = serial_task(
+                serial_config.clone(),
+                tx_clone.clone(),
+                &mut cmd_rx,
+                status_clone.clone(),
+            )
+            .await
             {
                 error!(
                     "Serial task failed: {:?}. Retrying in {}s...",
                     e, serial_config.retry_interval_secs
                 );
+                {
+                    let mut s = status_clone.write().await;
+                    *s = ActivationStatus::Failed(e.to_string());
+                }
                 tokio::time::sleep(Duration::from_secs(serial_config.retry_interval_secs)).await;
             }
         }
@@ -80,6 +137,8 @@ pub async fn run() -> anyhow::Result<()> {
         .route("/api/wifi/disconnect", post(wifi::disconnect_handler))
         .route("/api/wifi/status", get(wifi::status_handler))
         .route("/api/wifi/test", get(wifi::test_handler))
+        .route("/api/activation/start", post(start_activation))
+        .route("/api/activation/status", get(get_activation_status))
         .layer(CorsLayer::permissive())
         .with_state(state);
 
@@ -98,6 +157,7 @@ async fn serial_task(
     config: config::SerialConfig,
     tx: broadcast::Sender<String>,
     cmd_rx: &mut mpsc::Receiver<SerialMessage>,
+    status: Arc<RwLock<ActivationStatus>>,
 ) -> anyhow::Result<()> {
     info!(
         "Opening serial port {} @ {}...",
@@ -112,6 +172,11 @@ async fn serial_task(
         .context("Failed to set exclusive mode")?;
 
     info!("Serial port opened. Waiting for Handshake (Ping)...");
+
+    {
+        let mut s = status.write().await;
+        *s = ActivationStatus::Handshaking;
+    }
 
     // --- Phase 1: Handshake (Length-Prefixed) ---
     // We expect the firmware to send: [u32 len] [payload]
@@ -179,6 +244,11 @@ async fn serial_task(
 
             port.write_all(&bytes).await?;
             info!("Pong sent. Handshake complete. Entering Main Loop.");
+
+            {
+                let mut s = status.write().await;
+                *s = ActivationStatus::WaitingForFirstMessage;
+            }
             break;
         } else {
             warn!("Received non-ping message during handshake");
@@ -215,6 +285,27 @@ async fn serial_task(
                     Ok(archived) => {
                         match rkyv::deserialize::<SerialMessage, rkyv::rancor::Error>(archived) {
                             Ok(native) => {
+                                // Update status if waiting
+                                {
+                                    // Use try_write to avoid blocking if not needed, or just write.
+                                    // Optimization: only write if needed.
+                                    // However, we need to read to check.
+                                    // Let's just blindly upgrade if in WaitingForFirstMessage state.
+                                    // This lock contention might be high if we do it every packet?
+                                    // Since this is 100Hz or so, it might be fine.
+                                    // But better to check a boolean flag?
+                                    // Or just check once.
+                                    // I'll assume we can check every time for now or optimize later.
+                                    // Actually, let's optimize: only check if we suspect we are waiting.
+                                    // But we don't have local state.
+                                    // Let's just do it.
+                                    let mut s = status.write().await;
+                                    if *s == ActivationStatus::WaitingForFirstMessage {
+                                        *s = ActivationStatus::Active;
+                                        info!("Activation Complete: First message received.");
+                                    }
+                                }
+
                                 let json = serde_json::to_string(&native)?;
                                 let _ = tx.send(json);
                             }
@@ -278,4 +369,48 @@ async fn handle_socket(mut socket: WebSocket, state: AppState) {
             }
         }
     }
+}
+
+async fn start_activation(State(state): State<AppState>) -> impl IntoResponse {
+    info!("Activation requested.");
+
+    // 1. Sync Time
+    if let Err(e) = sync_time().await {
+        error!("Failed to sync time: {:?}", e);
+    }
+
+    // 2. Trigger Signal
+    {
+        let mut s = state.activation_status.write().await;
+        if *s == ActivationStatus::Idle {
+            *s = ActivationStatus::Connecting;
+            state.activation_signal.notify_one();
+            return axum::Json(serde_json::json!({ "status": "started" }));
+        }
+    }
+
+    axum::Json(serde_json::json!({ "status": "already_running_or_active" }))
+}
+
+async fn get_activation_status(State(state): State<AppState>) -> impl IntoResponse {
+    let s = state.activation_status.read().await;
+    axum::Json(s.clone())
+}
+
+async fn sync_time() -> anyhow::Result<()> {
+    info!("Syncing hardware clock...");
+
+    // Try to write system time to hardware clock.
+    // This assumes the OS has already synced via NTP.
+    let output = tokio::process::Command::new("hwclock")
+        .arg("-w")
+        .output()
+        .await?;
+
+    if !output.status.success() {
+        return Err(anyhow::anyhow!("hwclock failed: {:?}", output));
+    }
+
+    info!("Hardware clock synced successfully.");
+    Ok(())
 }

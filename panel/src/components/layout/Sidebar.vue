@@ -48,8 +48,9 @@
     <div class="flex flex-col items-center gap-1 mb-1">
       <!-- WiFi Indicator -->
       <button
-        @click="isSettingsOpen = true"
+        @click="isWifiManagerOpen = true"
         class="w-[36px] h-[36px] rounded-[7px] flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-gray-100 transition-all group relative cursor-pointer"
+        :class="{ 'bg-nav-active text-text-primary': isWifiManagerOpen }"
       >
         <component :is="wifiIcon" :size="18" stroke-width="2" :class="wifiColorClass" />
         <!-- Tooltip -->
@@ -90,6 +91,26 @@
   </aside>
 
   <SettingsModal v-model:isOpen="isSettingsOpen" @close="isSettingsOpen = false" />
+
+  <!-- Wifi Manager Modal -->
+  <Transition
+    enter-active-class="transition duration-200 ease-out"
+    enter-from-class="opacity-0"
+    enter-to-class="opacity-100"
+    leave-active-class="transition duration-150 ease-in"
+    leave-from-class="opacity-100"
+    leave-to-class="opacity-0"
+  >
+    <div v-if="isWifiManagerOpen" class="fixed inset-0 z-[100] flex items-center justify-center">
+      <div
+        class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        @click="isWifiManagerOpen = false"
+      ></div>
+      <div class="relative z-10 w-[400px]">
+        <WifiManager @close="isWifiManagerOpen = false" />
+      </div>
+    </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -111,6 +132,7 @@ import { useWifiStore } from '@/stores/wifi'
 import { storeToRefs } from 'pinia'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import SettingsModal from '@/components/SettingsModal.vue'
+import WifiManager from '@/components/WifiManager.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -120,6 +142,7 @@ const { isConnected, battery } = storeToRefs(store)
 const { status: wifiStatus, testResult: wifiTestResult } = storeToRefs(wifiStore)
 
 const isSettingsOpen = ref(false)
+const isWifiManagerOpen = ref(false)
 let wifiInterval: number | null = null
 
 onMounted(() => {

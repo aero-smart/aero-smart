@@ -1,10 +1,6 @@
 <template>
   <!-- Backdrop for closing -->
-  <div 
-    v-if="show"
-    class="fixed inset-0 z-[99] bg-transparent"
-    @click="$emit('close')"
-  ></div>
+  <div v-if="show" class="fixed inset-0 z-[99] bg-transparent" @click="$emit('close')"></div>
 
   <div
     class="fixed inset-x-0 bottom-0 z-[100] bg-gray-900 pb-2 pt-1 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] transition-transform duration-200 select-none"

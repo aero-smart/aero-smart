@@ -91,6 +91,9 @@
                     type="text"
                     class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-black focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all"
                     placeholder="e.g. /dev/tty.usbmodem..."
+                    @focus="
+                      keyboardStore.open(config.serial.port, (val) => (config.serial.port = val))
+                    "
                   />
                 </div>
                 <div>
@@ -101,6 +104,12 @@
                     v-model.number="config.serial.baud_rate"
                     type="number"
                     class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-black focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all"
+                    @focus="
+                      keyboardStore.open(
+                        String(config.serial.baud_rate),
+                        (val) => (config.serial.baud_rate = Number(val)),
+                      )
+                    "
                   />
                 </div>
                 <div>
@@ -111,6 +120,12 @@
                     v-model.number="config.serial.retry_interval_secs"
                     type="number"
                     class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-black focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all"
+                    @focus="
+                      keyboardStore.open(
+                        String(config.serial.retry_interval_secs),
+                        (val) => (config.serial.retry_interval_secs = Number(val)),
+                      )
+                    "
                   />
                 </div>
               </div>
@@ -135,6 +150,9 @@
                     v-model="config.server.host"
                     type="text"
                     class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-black focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all"
+                    @focus="
+                      keyboardStore.open(config.server.host, (val) => (config.server.host = val))
+                    "
                   />
                 </div>
                 <div>
@@ -145,6 +163,12 @@
                     v-model.number="config.server.port"
                     type="number"
                     class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-black focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all"
+                    @focus="
+                      keyboardStore.open(
+                        String(config.server.port),
+                        (val) => (config.server.port = Number(val)),
+                      )
+                    "
                   />
                 </div>
               </div>
@@ -248,9 +272,11 @@ import {
   Globe,
 } from 'lucide-vue-next'
 import { invoke } from '@tauri-apps/api/core'
+import { useKeyboardStore } from '@/stores/keyboard'
 
 const { t } = useI18n()
 const localeStore = useLocaleStore()
+const keyboardStore = useKeyboardStore()
 const { currentLocale } = storeToRefs(localeStore)
 const { setLocale } = localeStore
 

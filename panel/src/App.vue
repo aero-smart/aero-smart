@@ -5,7 +5,11 @@ import { onMounted } from 'vue'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
 
+import { useKeyboardStore } from '@/stores/keyboard'
+import VirtualKeyboard from '@/components/VirtualKeyboard.vue'
+
 const store = useDeviceStore()
+const keyboardStore = useKeyboardStore()
 const router = useRouter()
 
 // Config interface matching Rust struct
@@ -41,4 +45,11 @@ onMounted(async () => {
 
 <template>
   <RouterView />
+  <VirtualKeyboard
+    :show="keyboardStore.isVisible"
+    :model-value="keyboardStore.currentValue"
+    @update:model-value="keyboardStore.handleInput"
+    @close="keyboardStore.close"
+    @enter="keyboardStore.handleEnter"
+  />
 </template>

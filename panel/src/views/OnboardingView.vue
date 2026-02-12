@@ -250,59 +250,75 @@
               </label>
             </div>
 
-            <!-- Step 3: Calibration -->
+            <!-- Step 3: Activation -->
             <div v-else-if="currentStep === 3" key="step3" class="space-y-6">
               <div>
                 <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
-                  {{ $t('onboarding.calibration_title') }}
+                  Device Activation
                 </h1>
-                <p class="mt-2 text-sm text-gray-500">
-                  {{ $t('onboarding.calibration_subtitle') }}
-                </p>
+                <p class="mt-2 text-sm text-gray-500">Connect and synchronize with the hardware.</p>
               </div>
 
-              <div class="space-y-3">
+              <div class="flex flex-col items-center justify-center py-12 space-y-6">
+                <!-- Status Icon -->
                 <div
-                  v-for="(item, index) in calibrationItems"
-                  :key="index"
-                  class="rounded-2xl border border-gray-200 bg-white px-4 py-4 flex items-center justify-between"
+                  class="w-20 h-20 rounded-full flex items-center justify-center transition-colors"
+                  :class="{
+                    'bg-gray-100': activationStatus === 'idle',
+                    'bg-blue-50': activationStatus === 'activating',
+                    'bg-green-50': activationStatus === 'success',
+                    'bg-red-50': activationStatus === 'error',
+                  }"
                 >
-                  <div class="flex items-center gap-3 min-w-0">
-                    <div
-                      class="w-10 h-10 rounded-2xl flex items-center justify-center"
-                      :class="
-                        calibrationStatus[item.key]
-                          ? 'bg-green-50 text-green-700'
-                          : 'bg-gray-100 text-gray-600'
-                      "
-                    >
-                      <component :is="item.icon" class="w-5 h-5" />
-                    </div>
-                    <div class="min-w-0">
-                      <div class="text-sm font-semibold text-gray-900 truncate">
-                        {{ item.title }}
-                      </div>
-                      <div class="text-xs text-gray-500 truncate">{{ item.description }}</div>
-                    </div>
-                  </div>
-
-                  <button
-                    @click="calibrate(item.key)"
-                    class="shrink-0 h-9 px-4 rounded-full text-xs font-semibold transition-colors"
-                    :class="
-                      calibrationStatus[item.key]
-                        ? 'bg-gray-100 text-gray-500 cursor-default'
-                        : 'bg-black text-white hover:bg-gray-800'
-                    "
-                    :disabled="calibrationStatus[item.key]"
-                  >
-                    {{
-                      calibrationStatus[item.key]
-                        ? $t('onboarding.calibration_done')
-                        : $t('onboarding.calibration_start')
-                    }}
-                  </button>
+                  <Wifi v-if="activationStatus === 'idle'" class="w-10 h-10 text-gray-400" />
+                  <Loader2
+                    v-else-if="activationStatus === 'activating'"
+                    class="w-10 h-10 text-blue-600 animate-spin"
+                  />
+                  <CheckCircle2
+                    v-else-if="activationStatus === 'success'"
+                    class="w-10 h-10 text-green-600"
+                  />
+                  <XCircle
+                    v-else-if="activationStatus === 'error'"
+                    class="w-10 h-10 text-red-600"
+                  />
                 </div>
+
+                <!-- Status Text -->
+                <div class="text-center space-y-2">
+                  <h3 class="text-lg font-bold text-gray-900">
+                    {{
+                      activationStatus === 'idle'
+                        ? 'Ready to Activate'
+                        : activationStatus === 'activating'
+                          ? 'Activating...'
+                          : activationStatus === 'success'
+                            ? 'Activation Successful'
+                            : 'Activation Failed'
+                    }}
+                  </h3>
+                  <p class="text-sm text-gray-500 max-w-xs mx-auto">
+                    {{
+                      activationStatus === 'idle'
+                        ? 'Click the button below to start the device activation process.'
+                        : activationStatus === 'activating'
+                          ? 'Connecting to serial port and syncing hardware clock...'
+                          : activationStatus === 'success'
+                            ? 'Device connected and synchronized. You can now finish setup.'
+                            : activationError || 'An unknown error occurred.'
+                    }}
+                  </p>
+                </div>
+
+                <!-- Action Button -->
+                <button
+                  v-if="activationStatus === 'idle' || activationStatus === 'error'"
+                  @click="startActivation"
+                  class="px-8 py-3 bg-black text-white rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg shadow-gray-200"
+                >
+                  开始激活设备
+                </button>
               </div>
             </div>
           </Transition>
@@ -347,7 +363,7 @@
           type="password"
           placeholder="Password"
           class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black"
-          @focus="showKeyboardFor('wifiPassword')"
+          @focus="keyboardStore.open(wifiPassword, (val) => (wifiPassword = val), confirmConnect)"
         />
         <div class="flex justify-end gap-2 mt-2">
           <button @click="closeWifiModal" class="text-sm text-gray-500 px-4 py-2 font-medium">
@@ -390,15 +406,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Virtual Keyboard -->
-    <VirtualKeyboard
-      :show="showKeyboard"
-      :model-value="keyboardValue"
-      @update:model-value="handleKeyboardInput"
-      @close="showKeyboard = false"
-      @enter="handleKeyboardEnter"
-    />
   </div>
 </template>
 
@@ -419,12 +426,15 @@ import {
 import { useLocaleStore } from '@/stores/locale'
 import { useWifiStore } from '@/stores/wifi'
 import { storeToRefs } from 'pinia'
-import VirtualKeyboard from '@/components/VirtualKeyboard.vue'
+import { useKeyboardStore } from '@/stores/keyboard'
 import type { WifiNetwork } from '@/api/wifi'
+
+import { invoke } from '@tauri-apps/api/core'
 
 const router = useRouter()
 const localeStore = useLocaleStore()
 const wifiStore = useWifiStore()
+const keyboardStore = useKeyboardStore()
 
 const { currentLocale } = storeToRefs(localeStore)
 const { setLocale } = localeStore
@@ -437,44 +447,33 @@ const {
   error: wifiError,
 } = storeToRefs(wifiStore)
 
+interface AppConfig {
+  serial: {
+    port: string
+    baud_rate: number
+    handshake_timeout_secs: number
+    retry_interval_secs: number
+  }
+  server: {
+    port: number
+    host: string
+  }
+  rules: {
+    debug_mode: boolean
+    enable_onboarding: boolean
+  }
+}
+
 const currentStep = ref(0)
 const selectedRegion = ref('us')
 const selectedWifi = ref<WifiNetwork | null>(null)
 const wifiPassword = ref('')
 const loginForm = ref({ email: '', password: '', remember: false })
 const acceptTerms = ref(false)
-const calibrationStatus = ref<{ [key: string]: boolean }>({
-  environment: false,
-  temperature: false,
-  engine: false,
-})
+const activationStatus = ref<'idle' | 'activating' | 'success' | 'error'>('idle')
+const activationError = ref('')
 
-const steps = ['Language & Region', 'WiFi', 'Terms', 'Calibration']
-
-// Keyboard State
-const showKeyboard = ref(false)
-const activeInput = ref<string | null>(null)
-
-const keyboardValue = computed(() => {
-  if (activeInput.value === 'wifiPassword') return wifiPassword.value
-  return ''
-})
-
-function showKeyboardFor(field: string) {
-  activeInput.value = field
-  showKeyboard.value = true
-}
-
-function handleKeyboardInput(val: string) {
-  if (activeInput.value === 'wifiPassword') wifiPassword.value = val
-}
-
-function handleKeyboardEnter() {
-  showKeyboard.value = false
-  if (activeInput.value === 'wifiPassword' && showWifiModal.value) {
-    confirmConnect()
-  }
-}
+const steps = ['Language & Region', 'WiFi', 'Terms', 'Activation']
 
 // Wifi Logic
 const showWifiModal = ref(false)
@@ -507,14 +506,13 @@ function selectWifi(wifi: WifiNetwork) {
 function closeWifiModal() {
   showWifiModal.value = false
   wifiPassword.value = ''
-  showKeyboard.value = false
-  activeInput.value = null
+  keyboardStore.close()
 }
 
 async function confirmConnect() {
   if (!selectedWifi.value) return
 
-  showKeyboard.value = false // Hide keyboard to show status
+  keyboardStore.close() // Hide keyboard to show status
   try {
     await wifiStore.connect(selectedWifi.value.ssid, wifiPassword.value)
     showWifiModal.value = false
@@ -530,21 +528,38 @@ function confirmSkipWifi() {
   currentStep.value += 2
 }
 
-const calibrationItems = [
-  {
-    key: 'environment',
-    title: 'Environment Pressure',
-    description: 'Calibrate ambient pressure sensor',
-    icon: Gauge,
-  },
-  {
-    key: 'temperature',
-    title: 'Temperature',
-    description: 'Calibrate temperature sensor',
-    icon: Thermometer,
-  },
-  { key: 'engine', title: 'Engine', description: 'Calibrate engine sensors', icon: Activity },
-]
+async function startActivation() {
+  activationStatus.value = 'activating'
+  activationError.value = ''
+
+  try {
+    const startRes = await fetch('http://localhost:3000/api/activation/start', { method: 'POST' })
+    if (!startRes.ok) throw new Error('Failed to start activation')
+
+    // Poll status
+    const poll = setInterval(async () => {
+      try {
+        const res = await fetch('http://localhost:3000/api/activation/status')
+        const data = await res.json()
+        console.log('Activation Status:', data)
+
+        if (data === 'Active') {
+          activationStatus.value = 'success'
+          clearInterval(poll)
+        } else if (typeof data === 'object' && 'Failed' in data) {
+          activationStatus.value = 'error'
+          activationError.value = data.Failed
+          clearInterval(poll)
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }, 1000)
+  } catch (e) {
+    activationStatus.value = 'error'
+    activationError.value = String(e)
+  }
+}
 
 const canProceed = computed(() => {
   switch (currentStep.value) {
@@ -557,7 +572,7 @@ const canProceed = computed(() => {
     case 2:
       return acceptTerms.value
     case 3:
-      return Object.values(calibrationStatus.value).every((status) => status)
+      return activationStatus.value === 'success'
     default:
       return false
   }
@@ -567,22 +582,24 @@ const setRegion = (region: string) => {
   selectedRegion.value = region
 }
 
-const calibrate = (key: string) => {
-  setTimeout(() => {
-    calibrationStatus.value[key] = true
-  }, 1000)
-}
-
 const prevStep = () => {
   if (currentStep.value > 0) {
     currentStep.value--
   }
 }
 
-const nextStep = () => {
+const nextStep = async () => {
   if (currentStep.value < steps.length - 1 && canProceed.value) {
     currentStep.value++
   } else if (currentStep.value === steps.length - 1 && canProceed.value) {
+    try {
+      const config = await invoke<AppConfig>('get_app_config')
+      config.rules.enable_onboarding = false
+      await invoke('save_app_config', { config })
+    } catch (e) {
+      console.error('Failed to update config:', e)
+    }
+
     setTimeout(() => {
       router.push('/')
     }, 500)
