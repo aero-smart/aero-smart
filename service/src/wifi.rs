@@ -29,12 +29,15 @@ pub struct WifiStatus {
     pub ip: Option<String>,
 }
 
+use serde_json::json;
+
 pub async fn scan_handler() -> Response {
     match scan_networks().await {
         Ok(networks) => Json(networks).into_response(),
         Err(e) => {
             error!("Failed to scan wifi: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response()
+            let body = Json(json!({ "error": e.to_string() }));
+            (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
         }
     }
 }
@@ -44,7 +47,8 @@ pub async fn connect_handler(Json(req): Json<WifiConnectRequest>) -> Response {
         Ok(_) => StatusCode::OK.into_response(),
         Err(e) => {
             error!("Failed to connect to wifi: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response()
+            let body = Json(json!({ "error": e.to_string() }));
+            (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
         }
     }
 }
@@ -54,7 +58,8 @@ pub async fn disconnect_handler() -> Response {
         Ok(_) => StatusCode::OK.into_response(),
         Err(e) => {
             error!("Failed to disconnect wifi: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response()
+            let body = Json(json!({ "error": e.to_string() }));
+            (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
         }
     }
 }
@@ -64,7 +69,8 @@ pub async fn status_handler() -> Response {
         Ok(status) => Json(status).into_response(),
         Err(e) => {
             error!("Failed to get wifi status: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response()
+            let body = Json(json!({ "error": e.to_string() }));
+            (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
         }
     }
 }
@@ -74,7 +80,8 @@ pub async fn test_handler() -> Response {
         Ok(_) => StatusCode::OK.into_response(),
         Err(e) => {
             error!("Connectivity test failed: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response()
+            let body = Json(json!({ "error": e.to_string() }));
+            (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
         }
     }
 }
