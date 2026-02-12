@@ -46,6 +46,23 @@
 
     <!-- Bottom: Settings (Icons 4) -->
     <div class="flex flex-col items-center gap-1 mb-1">
+      <!-- Serial Status Indicator -->
+      <button
+        @click="handleSerialClick"
+        class="w-[36px] h-[10px] flex items-center justify-center group relative cursor-help"
+      >
+        <div
+          class="w-1.5 h-1.5 rounded-full transition-all duration-300"
+          :class="serialIndicatorClass"
+        ></div>
+        <!-- Tooltip -->
+        <div
+          class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50"
+        >
+          {{ serialTooltip }}
+        </div>
+      </button>
+
       <!-- WiFi Indicator -->
       <button
         @click="isWifiManagerOpen = true"
@@ -129,6 +146,7 @@ import {
 } from 'lucide-vue-next'
 import { useDeviceStore } from '@/stores/device'
 import { useWifiStore } from '@/stores/wifi'
+import { useSerialStore } from '@/stores/serial'
 import { storeToRefs } from 'pinia'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import SettingsModal from '@/components/SettingsModal.vue'
@@ -138,6 +156,7 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 const store = useDeviceStore()
 const wifiStore = useWifiStore()
+const serialStore = useSerialStore()
 const { isConnected, battery } = storeToRefs(store)
 const { status: wifiStatus, testResult: wifiTestResult } = storeToRefs(wifiStore)
 
@@ -149,6 +168,7 @@ onMounted(() => {
   // Initial check
   wifiStore.updateStatus()
   wifiStore.testConnection()
+  serialStore.startPolling()
 
   // Poll every 30 seconds
   wifiInterval = window.setInterval(() => {
@@ -163,7 +183,38 @@ onUnmounted(() => {
   if (wifiInterval) {
     clearInterval(wifiInterval)
   }
+  serialStore.stopPolling()
 })
+
+const serialIndicatorClass = computed(() => {
+  const s = serialStore.statusString
+  if (s === 'Active') return 'bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.4)]'
+  if (['Handshaking', 'WaitingForFirstMessage'].includes(s)) return 'bg-blue-500 animate-pulse shadow-[0_0_4px_rgba(59,130,246,0.4)]'
+  return 'bg-red-500 animate-pulse shadow-[0_0_4px_rgba(239,68,68,0.4)]'
+})
+
+const serialTooltip = computed(() => {
+  const s = serialStore.statusString
+  if (s === 'Active') return 'Serial: Connected'
+  if (['Handshaking', 'WaitingForFirstMessage'].includes(s)) return `Serial: ${s}`
+  if (s === 'Failed' && serialStore.error) return `Serial Error: ${serialStore.error}`
+  return `Serial: ${s}`
+})
+
+const handleSerialClick = () => {
+  const s = serialStore.statusString
+  // Red or Blue status
+  if (
+    s === 'Failed' ||
+    s === 'Idle' ||
+    s === 'Connecting' ||
+    ['Handshaking', 'WaitingForFirstMessage'].includes(s)
+  ) {
+    if (confirm('Restart serial handshake?')) {
+      serialStore.restart()
+    }
+  }
+}
 
 const menuItems = computed(() => [
   { label: t('nav.overview'), path: '/', icon: Compass },

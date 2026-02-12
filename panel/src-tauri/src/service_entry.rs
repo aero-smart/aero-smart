@@ -45,6 +45,7 @@ struct AppState {
     #[allow(unused)]
     config: AppConfig,
     activation_signal: Arc<Notify>,
+    restart_signal: Arc<Notify>,
     activation_status: Arc<RwLock<ActivationStatus>>,
 }
 
@@ -63,6 +64,7 @@ pub async fn run() -> anyhow::Result<()> {
     let (cmd_tx, mut cmd_rx) = mpsc::channel::<SerialMessage>(100);
 
     let activation_signal = Arc::new(Notify::new());
+    let restart_signal = Arc::new(Notify::new());
     // If onboarding is enabled, we start in Idle and wait for signal.
     // If disabled, we treat it as already "Active" in terms of flow, but effectively we just start connecting.
     // We'll set it to Connecting initially if not onboarding.
@@ -78,6 +80,7 @@ pub async fn run() -> anyhow::Result<()> {
         cmd_tx: cmd_tx.clone(),
         config: config.clone(),
         activation_signal: activation_signal.clone(),
+        restart_signal: restart_signal.clone(),
         activation_status: activation_status.clone(),
     };
 
@@ -85,6 +88,7 @@ pub async fn run() -> anyhow::Result<()> {
     let serial_config = config.serial.clone();
     let tx_clone = tx.clone();
     let signal_clone = activation_signal.clone();
+    let restart_signal_clone = restart_signal.clone();
     let status_clone = activation_status.clone();
 
     tokio::spawn(async move {
@@ -108,23 +112,42 @@ pub async fn run() -> anyhow::Result<()> {
                 *s = ActivationStatus::Connecting;
             }
 
-            if let Err(e) = serial_task(
-                serial_config.clone(),
-                tx_clone.clone(),
-                &mut cmd_rx,
-                status_clone.clone(),
-            )
-            .await
-            {
-                error!(
-                    "Serial task failed: {:?}. Retrying in {}s...",
-                    e, serial_config.retry_interval_secs
-                );
-                {
-                    let mut s = status_clone.write().await;
-                    *s = ActivationStatus::Failed(e.to_string());
+            // Create a channel to signal forced restart from the task
+            let (abort_tx, mut abort_rx) = mpsc::channel::<()>(1);
+            let restart_signal_inner = restart_signal_clone.clone();
+            
+            // Spawn a watcher for restart signal
+            let watcher_handle = tokio::spawn(async move {
+                 restart_signal_inner.notified().await;
+                 let _ = abort_tx.send(()).await;
+            });
+
+            tokio::select! {
+                res = serial_task(
+                    serial_config.clone(),
+                    tx_clone.clone(),
+                    &mut cmd_rx,
+                    status_clone.clone(),
+                ) => {
+                    // Task finished (likely error)
+                    watcher_handle.abort();
+                    if let Err(e) = res {
+                        error!(
+                            "Serial task failed: {:?}. Retrying in {}s...",
+                            e, serial_config.retry_interval_secs
+                        );
+                        {
+                            let mut s = status_clone.write().await;
+                            *s = ActivationStatus::Failed(e.to_string());
+                        }
+                        tokio::time::sleep(Duration::from_secs(serial_config.retry_interval_secs)).await;
+                    }
                 }
-                tokio::time::sleep(Duration::from_secs(serial_config.retry_interval_secs)).await;
+                _ = abort_rx.recv() => {
+                    // Forced restart
+                    warn!("Serial task aborted by restart signal. Restarting...");
+                    // Loop will continue and restart connection
+                }
             }
         }
     });
@@ -139,6 +162,7 @@ pub async fn run() -> anyhow::Result<()> {
         .route("/api/wifi/test", get(wifi::test_handler))
         .route("/api/activation/start", post(start_activation))
         .route("/api/activation/status", get(get_activation_status))
+        .route("/api/activation/restart", post(restart_activation))
         .layer(CorsLayer::permissive())
         .with_state(state);
 
@@ -191,6 +215,18 @@ async fn serial_task(
             Ok(Ok(len)) => len as usize,
             Ok(Err(e)) => {
                 warn!("Handshake read error: {:?}", e);
+                // Send a PING anyway if we are timing out, maybe the device is waiting?
+                // Actually the requirement says: "10s no packet automatically send Ping return to handshake process"
+                // This loop IS the handshake process.
+                // But wait, the requirement says "10s No packet automatically send Ping return to handshake process".
+                // This likely means if we are in Main Loop and don't receive anything for 10s, we should restart handshake.
+                // OR it means during handshake if we don't get anything, we should send something?
+                // Usually handshake is: Device sends Ping -> Host sends Pong.
+                // If Host doesn't receive Ping, it can't do anything.
+                // UNLESS the roles are swapped or we want to trigger the device?
+                // Re-reading: "10s 无回包自动发送 Ping 回到握手流程"
+                // It seems to mean: In the main loop, if no packet received for 10s, treat as disconnected and restart handshake.
+                // Let's implement that in Phase 2.
                 continue;
             }
             Err(_) => {
@@ -260,11 +296,21 @@ async fn serial_task(
         tokio::select! {
             // Uplink: Serial -> WebSocket
             // 1. Read Length (u32)
-            res = port.read_u32_le() => {
+            // Added timeout for 10s silence detection
+            res = timeout(Duration::from_secs(10), port.read_u32_le()) => {
                 let len = match res {
-                    Ok(l) => l as usize,
-                    Err(e) => {
+                    Ok(Ok(l)) => l as usize,
+                    Ok(Err(e)) => {
                         return Err(anyhow::anyhow!("Serial read error: {:?}", e));
+                    }
+                    Err(_) => {
+                        // Timeout: 10s silence
+                        // Requirement: "10s No packet automatically send Ping return to handshake process"
+                        // This implies we should fail this task so the outer loop restarts it (which restarts handshake).
+                        // Or we can try to send a Ping here if the protocol supports Host->Device Ping.
+                        // Assuming "return to handshake process" means we should restart the connection/handshake flow.
+                        warn!("10s silence detected. Restarting handshake...");
+                        return Err(anyhow::anyhow!("Serial timeout (10s silence)"));
                     }
                 };
 
@@ -390,6 +436,12 @@ async fn start_activation(State(state): State<AppState>) -> impl IntoResponse {
     }
 
     axum::Json(serde_json::json!({ "status": "already_running_or_active" }))
+}
+
+async fn restart_activation(State(state): State<AppState>) -> impl IntoResponse {
+    info!("Restart activation requested.");
+    state.restart_signal.notify_one();
+    axum::Json(serde_json::json!({ "status": "restarting" }))
 }
 
 async fn get_activation_status(State(state): State<AppState>) -> impl IntoResponse {
