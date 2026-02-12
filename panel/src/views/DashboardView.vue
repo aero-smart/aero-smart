@@ -326,8 +326,8 @@ const commonChartOptions = {
       type: 'inside',
       xAxisIndex: [0],
       filterMode: 'filter',
-      zoomLock: false
-    }
+      zoomLock: false,
+    },
   ],
   animation: false,
 }

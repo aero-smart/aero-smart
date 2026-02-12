@@ -124,7 +124,9 @@
             <div v-else-if="currentStep === 1" key="step1" class="space-y-6 pb-20">
               <div class="flex justify-between items-start">
                 <div>
-                  <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">{{ $t('onboarding.wifi_title') }}</h1>
+                  <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
+                    {{ $t('onboarding.wifi_title') }}
+                  </h1>
                   <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.wifi_subtitle') }}</p>
                 </div>
                 <div class="flex items-center">
@@ -134,12 +136,17 @@
                   >
                     {{ $t('onboarding.wifi_skip') }}
                   </button>
-                  <button 
-                    @click="wifiStore.scan()" 
+                  <button
+                    @click="wifiStore.scan()"
                     :disabled="scanning"
                     class="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
                   >
-                    <RefreshCw :class="['w-5 h-5', scanning ? 'animate-spin text-blue-600' : 'text-gray-600']" />
+                    <RefreshCw
+                      :class="[
+                        'w-5 h-5',
+                        scanning ? 'animate-spin text-blue-600' : 'text-gray-600',
+                      ]"
+                    />
                   </button>
                 </div>
               </div>
@@ -381,20 +388,25 @@
     </div>
 
     <!-- WiFi Password Modal -->
-    <div v-if="showWifiModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40">
+    <div
+      v-if="showWifiModal"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40"
+    >
       <div class="bg-white p-6 rounded-3xl shadow-xl w-80 flex flex-col gap-4">
         <h3 class="text-lg font-bold text-gray-900">Connect to {{ selectedWifi?.ssid }}</h3>
-        <input 
-          v-model="wifiPassword" 
-          type="password" 
-          placeholder="Password" 
+        <input
+          v-model="wifiPassword"
+          type="password"
+          placeholder="Password"
           class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black"
           @focus="showKeyboardFor('wifiPassword')"
         />
         <div class="flex justify-end gap-2 mt-2">
-          <button @click="closeWifiModal" class="text-sm text-gray-500 px-4 py-2 font-medium">Cancel</button>
-          <button 
-            @click="confirmConnect" 
+          <button @click="closeWifiModal" class="text-sm text-gray-500 px-4 py-2 font-medium">
+            Cancel
+          </button>
+          <button
+            @click="confirmConnect"
             :disabled="connecting"
             class="text-sm bg-black text-white px-5 py-2 rounded-xl hover:bg-gray-800 disabled:opacity-50 font-bold"
           >
@@ -405,15 +417,18 @@
     </div>
 
     <!-- Skip WiFi Confirmation Modal -->
-    <div v-if="showSkipWifiModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40">
+    <div
+      v-if="showSkipWifiModal"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40"
+    >
       <div class="bg-white p-6 rounded-3xl shadow-xl w-80 flex flex-col gap-4">
         <h3 class="text-lg font-bold text-gray-900">{{ $t('onboarding.skip_wifi_title') }}</h3>
         <p class="text-sm text-gray-500">
           {{ $t('onboarding.skip_wifi_message') }}
         </p>
         <div class="flex justify-end gap-2 mt-2">
-          <button 
-            @click="showSkipWifiModal = false" 
+          <button
+            @click="showSkipWifiModal = false"
             class="text-sm text-gray-500 px-4 py-2 font-medium hover:bg-gray-50 rounded-xl"
           >
             {{ $t('common.cancel') }}

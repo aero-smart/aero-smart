@@ -27,7 +27,8 @@ export default {
     calibration_done: 'Calibrated',
     wifi_skip: 'Skip',
     skip_wifi_title: 'Skip WiFi Connection?',
-    skip_wifi_message: 'Some features may not be available without an internet connection. Are you sure you want to skip?',
+    skip_wifi_message:
+      'Some features may not be available without an internet connection. Are you sure you want to skip?',
   },
   common: {
     settings: 'Settings',

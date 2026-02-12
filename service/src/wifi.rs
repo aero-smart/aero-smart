@@ -160,10 +160,7 @@ async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {
         "yes",
     ];
 
-    let mut output = Command::new("nmcli")
-        .args(args)
-        .output()
-        .await?;
+    let mut output = Command::new("nmcli").args(args).output().await?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
@@ -188,10 +185,7 @@ async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {
         tokio::time::sleep(std::time::Duration::from_secs(3)).await;
 
         // Retry scan
-        output = Command::new("nmcli")
-            .args(args)
-            .output()
-            .await?;
+        output = Command::new("nmcli").args(args).output().await?;
 
         if !output.status.success() {
             return Err(anyhow::anyhow!(

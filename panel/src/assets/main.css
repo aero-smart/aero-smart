@@ -78,14 +78,16 @@ body {
   user-select: none; /* Disable text selection globally */
   touch-action: pan-x pan-y; /* Enable touch scrolling/panning */
   -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none; /* Safari/Chrome */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Allow scrolling in containers with overflow */
-.overflow-y-auto, .overflow-x-auto, .overflow-auto {
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-auto {
   -webkit-overflow-scrolling: touch;
-}  -webkit-user-select: none; /* Safari/Chrome */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Scrollbar Customization */
