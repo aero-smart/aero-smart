@@ -32,8 +32,8 @@ async function handleResponseError(res: Response, defaultMsg: string): Promise<n
     if (data && data.error) {
       errorMessage = data.error
     } else if (text) {
-        // If valid JSON but no 'error' field, use the raw text if available
-        errorMessage = text
+      // If valid JSON but no 'error' field, use the raw text if available
+      errorMessage = text
     }
   } catch (e) {
     // Not JSON, fall back to raw text if available
