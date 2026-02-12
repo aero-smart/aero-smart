@@ -1,1 +1,2 @@
 src-tauri/AeroSmart.toml
+../firmware/src/algorithms/*_window.rs

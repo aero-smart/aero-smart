@@ -3,9 +3,12 @@
 //! ICM-42688-P
 //!
 //! Poll @ 1 kHz at 1 MHz SPIuse defmt::info;
-use crate::{algorithms::airspeed_filter::AirspeedFilter, sensors::drivers::icm_42688_p::{
-    AccelConfig0, GyroConfig0, IntSource0, PwrMgmt0, icm_42688_p_accel, icm_42688_p_gyro,
-}};
+use crate::{
+    algorithms::airspeed_filter::AirspeedFilter,
+    sensors::drivers::icm_42688_p::{
+        AccelConfig0, GyroConfig0, IntSource0, PwrMgmt0, icm_42688_p_accel, icm_42688_p_gyro,
+    },
+};
 use defmt::info;
 use embassy_stm32::{
     gpio::Output,
@@ -20,7 +23,7 @@ pub struct ImuSpi<'a> {
     pub accel_config: AccelConfig0,
     pub gyro_config: GyroConfig0,
 
-    pub filters: [AirspeedFilter; 6]
+    pub filters: [AirspeedFilter; 6],
 }
 
 #[derive(defmt::Format)]

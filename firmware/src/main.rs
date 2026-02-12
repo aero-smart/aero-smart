@@ -234,17 +234,42 @@ async fn main(spawner: Spawner) {
     let mut rtc = Rtc::new(p.RTC, RtcConfig::default());
 
     if config.uart_upper {
-        let result = with_timeout(
-            Duration::from_secs(5),
-            serial_initialize(&mut usart_upper, &mut rtc),
-        )
-        .await;
-        if let Err(_) = result {
-            defmt::error!("RTC synchronization via UART timed out");
-            // Software reset
+        const MAX_RETRIES: u32 = 10;
+        let mut success = false;
+
+        for attempt in 1..=MAX_RETRIES {
+            let result = with_timeout(
+                Duration::from_secs(3),
+                serial_initialize(&mut usart_upper, &mut rtc),
+            )
+            .await;
+
+            match result {
+                Ok(_) => {
+                    info!("RTC synchronized via UART");
+                    success = true;
+                    break;
+                }
+                Err(_) => {
+                    defmt::warn!(
+                        "RTC synchronization via UART timed out (attempt {}/{})",
+                        attempt,
+                        MAX_RETRIES
+                    );
+                    if attempt < MAX_RETRIES {
+                        // Optional: add a small delay between retries
+                        // embassy_time::Timer::after(Duration::from_millis(100)).await;
+                    }
+                }
+            }
+        }
+
+        if !success {
+            defmt::error!(
+                "RTC synchronization failed after {} attempts, performing software reset",
+                MAX_RETRIES
+            );
             cortex_m::peripheral::SCB::sys_reset();
-        } else {
-            info!("RTC synchronized via UART");
         }
     }
 
