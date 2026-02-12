@@ -388,7 +388,7 @@ async fn get_status() -> anyhow::Result<WifiStatus> {
         .await?;
 
     let stdout = String::from_utf8(output.stdout)?;
-    
+
     let mut active_dev = None;
     let mut active_ssid = None;
 
@@ -415,21 +415,14 @@ async fn get_status() -> anyhow::Result<WifiStatus> {
         // Step 2: Get IP address for the device
         // nmcli -t -f IP4.ADDRESS device show <dev>
         let ip_output = Command::new("nmcli")
-            .args(&[
-                "-t",
-                "-f",
-                "IP4.ADDRESS",
-                "device",
-                "show",
-                &dev,
-            ])
+            .args(&["-t", "-f", "IP4.ADDRESS", "device", "show", &dev])
             .output()
             .await?;
-        
+
         let ip_stdout = String::from_utf8(ip_output.stdout)?;
         // Output format: IP4.ADDRESS:192.168.1.100/24
         // Or multiple lines. We take the first non-empty one.
-        
+
         let mut ip = None;
         for line in ip_stdout.lines() {
             if let Some(val) = line.strip_prefix("IP4.ADDRESS:") {
@@ -442,15 +435,15 @@ async fn get_status() -> anyhow::Result<WifiStatus> {
                 // But standard behavior with -f KEY is KEY:VALUE in show mode (terse).
                 // Let's try to parse flexibly.
                 if line.contains(':') {
-                     let parts: Vec<&str> = line.splitn(2, ':').collect();
-                     if parts.len() == 2 && !parts[1].is_empty() {
-                         ip = Some(parts[1].to_string());
-                         break;
-                     }
+                    let parts: Vec<&str> = line.splitn(2, ':').collect();
+                    if parts.len() == 2 && !parts[1].is_empty() {
+                        ip = Some(parts[1].to_string());
+                        break;
+                    }
                 } else {
                     // Just value?
-                     ip = Some(line.to_string());
-                     break;
+                    ip = Some(line.to_string());
+                    break;
                 }
             }
         }

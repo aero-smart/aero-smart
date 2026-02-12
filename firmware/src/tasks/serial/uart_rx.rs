@@ -14,14 +14,15 @@ pub async fn serial_uart_rx_task(mut rx: UartRx<'static, Async>) {
         // 1. Read Length (4 bytes)
         // Optimization: The length prefix allows us to read exactly the amount of data needed,
         // preventing buffer overflows and ensuring correct deserialization boundaries.
-        let mut len_buf = [0u8; 4];
+        let mut buffer = [0u8; 256];
         info!("Waiting to read length prefix...");
-        if let Err(e) = rx.read_until_idle(&mut len_buf).await {
+        if let Err(e) = rx.read_until_idle(&mut buffer).await {
             defmt::error!("UART Read Length Error: {:?}", e);
             continue;
         }
-        info!("Received length prefix: {:?}", len_buf);
-        let len = u32::from_le_bytes(len_buf) as usize;
+        info!("Received payload: {:?}", buffer);
+        let len_buf = &buffer[..4];
+        let len = u32::from_le_bytes(len_buf.try_into().unwrap()) as usize;
 
         if len == 0 || len > 250 {
             // Sanity check
@@ -29,17 +30,16 @@ pub async fn serial_uart_rx_task(mut rx: UartRx<'static, Async>) {
             continue;
         }
 
-        // 2. Read Payload
-        let mut buffer = [0u8; 256];
-        if let Err(e) = rx.read_until_idle(&mut buffer[..len]).await {
-            defmt::error!("UART Read Payload Error: {:?}", e);
-            continue;
-        }
-
         defmt::info!("Received {} bytes payload", len);
 
         // Slice the received data to the actual length, and process it via `rotate_right`
-        buffer[..len].rotate_right(1);
+        // buffer[4..4 + len].rotate_right(1);
+
+        // info!("Buffer after rotation: {:?}", &buffer[4..4 + len]);
+
+        let mut new_buffer = [0u8; 256];
+        new_buffer[..len].copy_from_slice(&buffer[4..4 + len]);
+        buffer = new_buffer;
 
         // 3. Deserialize
         // Use check_archived_root instead of unsafe for better safety if possible,
@@ -52,6 +52,10 @@ pub async fn serial_uart_rx_task(mut rx: UartRx<'static, Async>) {
             match message {
                 ArchivedSerialMessage::ThrottleConfig(ArchivedThrottleConfig { airspeed }) => {
                     state.desired_airspeed_meters_per_second = *airspeed as f32;
+                    info!(
+                        "Updated desired airspeed to {} m/s",
+                        state.desired_airspeed_meters_per_second
+                    );
                 }
 
                 ArchivedSerialMessage::ServoConfig(ArchivedServoConfig { angle }) => {

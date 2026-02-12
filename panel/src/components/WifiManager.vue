@@ -144,24 +144,24 @@ const activeConnection = computed(() => {
     return {
       connected: true,
       ssid: status.value.ssid,
-      ip: status.value.ip
+      ip: status.value.ip,
     }
   }
 
   // Priority 2: Scan list shows an in-use network
-  const connectedNet = networks.value.find(n => n.in_use)
+  const connectedNet = networks.value.find((n) => n.in_use)
   if (connectedNet) {
     return {
       connected: true,
       ssid: connectedNet.ssid,
-      ip: null // Scan result doesn't provide IP
+      ip: null, // Scan result doesn't provide IP
     }
   }
 
   return {
     connected: false,
     ssid: null,
-    ip: null
+    ip: null,
   }
 })
 

@@ -375,19 +375,16 @@ mod tests {
 
     #[test]
     fn test_unchecked_access() {
-        let config = SerialMessage::AcknowledgementConfig(AcknowledgementConfig {
-            ack: true,
-            unix_timestamp_ms: 1625079045123,
-        });
+        let config = SerialMessage::ThrottleConfig(ThrottleConfig { airspeed: 10 });
         let serialized = rkyv::to_bytes::<Error>(&config).unwrap();
         let packet = serialized.as_slice();
-        println!("{:?}", packet);
+        println!("packet {:?}", packet);
         let mut buffer = [0u8; 256];
         buffer[..packet.len()].copy_from_slice(packet);
-        println!("{:?}", buffer);
+        println!("buffer {:?}", buffer);
         let archived =
             unsafe { rkyv::access_unchecked::<ArchivedSerialMessage>(&buffer[..packet.len()]) };
-        println!("{:?}", serialized);
+        println!("ser {:?}", serialized);
         panic!("Debugging");
     }
 }
