@@ -88,22 +88,17 @@
                 >{{ config.timeRange }}s</span
               >
             </div>
-            <div class="relative h-4 flex items-center">
-              <input
-                type="range"
-                v-model.number="config.timeRange"
-                min="5"
-                max="60"
-                step="5"
-                class="w-full h-1 bg-gray-200 rounded-full appearance-none cursor-pointer accent-gray-800 z-10 relative"
-              />
-              <div class="absolute inset-0 flex justify-between px-0.5 pointer-events-none">
-                <div
-                  v-for="n in 12"
-                  :key="n"
-                  class="w-0.5 h-0.5 rounded-full bg-gray-300 mt-2"
-                ></div>
-              </div>
+            <div class="grid grid-cols-3 gap-1">
+              <button
+                v-for="option in timeRangeOptions"
+                :key="option"
+                type="button"
+                @click="config.timeRange = option"
+                class="px-2 py-1 rounded-md text-[11px] font-semibold border transition-colors"
+                :class="config.timeRange === option ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+              >
+                {{ option }}s
+              </button>
             </div>
           </div>
 
@@ -197,33 +192,6 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <!-- Chart Actions -->
-          <div class="flex items-center gap-1">
-            <button
-              @click="resetView"
-              class="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-              title="Reset View"
-            >
-              <RotateCcw :size="15" />
-            </button>
-            <button
-              @click="zoomIn"
-              class="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-              title="Zoom In"
-            >
-              <ZoomIn :size="15" />
-            </button>
-            <button
-              @click="zoomOut"
-              class="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-              title="Zoom Out"
-            >
-              <ZoomOut :size="15" />
-            </button>
-          </div>
-
-          <div class="h-4 w-px bg-gray-200"></div>
-
           <button
             @click="exportData"
             class="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[11px] font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm active:scale-[0.98]"
@@ -239,6 +207,29 @@
         <!-- ECharts Container -->
         <div class="flex-1 w-full p-0">
           <div ref="chartEl" class="w-full h-full"></div>
+        </div>
+        <div class="h-12 px-4 border-t border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur">
+          <div class="text-[11px] text-gray-500 font-medium">
+            {{ formatTime(timelineStart) }} - {{ formatTime(timelineEnd) }}
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              @click="goPrevWindow"
+              :disabled="pageOffset >= maxOffset"
+              class="p-1.5 rounded-lg border border-gray-200 bg-white shadow-sm hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white transition-all active:scale-95"
+            >
+              <ChevronLeft :size="16" class="text-gray-600" />
+            </button>
+            <button
+              type="button"
+              @click="goNextWindow"
+              :disabled="pageOffset <= 0"
+              class="p-1.5 rounded-lg border border-gray-200 bg-white shadow-sm hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white transition-all active:scale-95"
+            >
+              <ChevronRight :size="16" class="text-gray-600" />
+            </button>
+          </div>
         </div>
 
         <!-- Dashboard Panel (Bottom) -->
@@ -309,11 +300,7 @@ import * as echarts from 'echarts'
 import {
   Database,
   Sliders,
-  Palette,
   Download,
-  RotateCcw,
-  ZoomIn,
-  ZoomOut,
   Wind,
   Gauge,
   Thermometer,
@@ -340,6 +327,45 @@ const config = ref({
   showGrid: true,
   smooth: true,
 })
+const timeRangeOptions = [10, 20, 30]
+const pageOffset = ref(0)
+const timelineWindowMs = computed(() => config.value.timeRange * 1000)
+
+const latestTimestamp = computed(() => {
+  const times = Object.values(dataBuffers.value)
+    .flat()
+    .map((item) => item.time)
+  if (times.length === 0) return Date.now()
+  return Math.max(...times)
+})
+
+const oldestTimestamp = computed(() => {
+  const times = Object.values(dataBuffers.value)
+    .flat()
+    .map((item) => item.time)
+  if (times.length === 0) return Date.now()
+  return Math.min(...times)
+})
+
+const maxOffset = computed(() => {
+  const span = latestTimestamp.value - oldestTimestamp.value
+  if (span <= 0) return 0
+  return Math.max(0, Math.floor(span / timelineWindowMs.value))
+})
+
+const timelineEnd = computed(() => latestTimestamp.value - pageOffset.value * timelineWindowMs.value)
+const timelineStart = computed(() => timelineEnd.value - timelineWindowMs.value)
+
+const goPrevWindow = () => {
+  if (pageOffset.value < maxOffset.value) pageOffset.value += 1
+}
+
+const goNextWindow = () => {
+  if (pageOffset.value > 0) pageOffset.value -= 1
+}
+
+const formatTime = (timestamp: number) =>
+  new Date(Math.max(0, timestamp)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
 const availableSources = computed(() => [
   { id: 'airspeed', label: t('control.sensors.airspeed'), unit: 'm/s', color: '#1f2937' },
@@ -537,29 +563,6 @@ function initChart() {
         lineStyle: { color: '#f3f4f6', type: 'dashed' },
       },
     },
-    dataZoom: [
-      { type: 'inside', throttle: 20 },
-      {
-        type: 'slider',
-        height: 16,
-        bottom: 20,
-        borderColor: 'transparent',
-        backgroundColor: '#f9fafb',
-        fillerColor: 'rgba(31, 41, 55, 0.05)',
-        handleStyle: { color: '#1f2937', opacity: 0.8 },
-        moveHandleStyle: { color: '#1f2937', opacity: 0.8 },
-        dataBackground: {
-          lineStyle: { opacity: 0 },
-          areaStyle: { opacity: 0 },
-        },
-        selectedDataBackground: {
-          lineStyle: { opacity: 0 },
-          areaStyle: { opacity: 0 },
-        },
-        textStyle: { show: false },
-        showDetail: false, // Hide the detail text on the sides
-      },
-    ],
     series: selectedSources.value.map((id) => {
       const info = availableSources.value.find((s) => s.id === id)!
       return {
@@ -581,38 +584,24 @@ function initChart() {
 function updateChart() {
   if (!chart) return
 
+  if (isRealtime.value && pageOffset.value !== 0) {
+    pageOffset.value = 0
+  }
+
+  const startTime = timelineStart.value
+  const endTime = timelineEnd.value
   const series = selectedSources.value.map((id) => {
     const buffer = dataBuffers.value[id] || []
+    const filtered = buffer.filter((d) => d.time >= startTime && d.time <= endTime)
     return {
       id,
-      data: buffer.map((d) => [d.time, d.value]),
+      data: filtered.map((d) => [d.time, d.value]),
     }
   })
 
-  chart.setOption({ series })
-}
-
-function resetView() {
-  chart?.dispatchAction({
-    type: 'dataZoom',
-    start: 0,
-    end: 100,
-  })
-}
-
-function zoomIn() {
-  chart?.dispatchAction({
-    type: 'dataZoom',
-    start: 20,
-    end: 80,
-  })
-}
-
-function zoomOut() {
-  chart?.dispatchAction({
-    type: 'dataZoom',
-    start: 0,
-    end: 100,
+  chart.setOption({
+    xAxis: { min: startTime, max: endTime },
+    series,
   })
 }
 
@@ -705,6 +694,22 @@ watch(
   },
 )
 
+watch(
+  () => [config.value.timeRange, isRealtime.value],
+  () => {
+    if (isRealtime.value) {
+      pageOffset.value = 0
+    }
+  },
+)
+
+watch(
+  maxOffset,
+  () => {
+    if (pageOffset.value > maxOffset.value) pageOffset.value = maxOffset.value
+  },
+)
+
 onMounted(() => {
   initChart()
   updateTimer = window.setInterval(updateBuffers, 1000 / config.value.frequency)
@@ -739,19 +744,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Custom range input styling */
-input[type='range']::-webkit-slider-thumb {
-  appearance: none;
-  width: 12px;
-  height: 12px;
-  background: #1f2937;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-/* Scrollbar styling */
 .overflow-y-auto::-webkit-scrollbar {
   width: 4px;
 }
