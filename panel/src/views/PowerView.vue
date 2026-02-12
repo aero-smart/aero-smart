@@ -108,39 +108,7 @@
           </div>
         </div>
 
-        <!-- Chart Style -->
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4">
-          <div class="text-xs font-bold text-gray-700 flex items-center gap-2">
-            <Palette :size="14" class="text-gray-400" />
-            {{ $t('analysis.chart_style') }}
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="flex flex-col gap-1.5">
-              <span class="text-[10px] text-gray-500 font-medium">{{
-                $t('analysis.line_width')
-              }}</span>
-              <input
-                type="number"
-                v-model.number="config.lineWidth"
-                min="1"
-                max="5"
-                class="w-full bg-gray-50 border border-gray-100 rounded-lg px-2 py-1.5 text-[11px] font-medium"
-              />
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <span class="text-[10px] text-gray-500 font-medium">{{
-                $t('analysis.show_grid')
-              }}</span>
-              <div class="flex items-center h-full">
-                <input
-                  type="checkbox"
-                  v-model="config.showGrid"
-                  class="w-4 h-4 rounded border-gray-300 text-gray-800 focus:ring-gray-800"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+
       </div>
     </div>
 
