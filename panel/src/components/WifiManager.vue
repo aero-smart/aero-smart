@@ -8,11 +8,11 @@
     </div>
 
     <div class="flex justify-between items-center shrink-0">
-      <div v-if="status.connected" class="flex flex-col gap-0.5">
+      <div v-if="status.connected || status.ip" class="flex flex-col gap-0.5">
         <div class="flex items-center gap-2">
           <span class="text-xs text-green-600 font-bold flex items-center gap-1">
             <CheckCircle2 class="w-3 h-3" />
-            {{ status.ssid }}
+            {{ status.ssid || 'Unknown SSID' }}
           </span>
           <button
             @click="handleDisconnect"
@@ -23,8 +23,8 @@
           </button>
         </div>
         <!-- Requirement 2: Show IPv4 Address -->
-        <div v-if="status.ip" class="text-[10px] text-gray-400 font-mono ml-4">
-          IP: {{ status.ip }}
+        <div class="text-[10px] text-gray-400 font-mono ml-4">
+          IP: {{ status.ip || 'Obtaining IP...' }}
         </div>
       </div>
       <div v-else class="text-xs text-gray-500">Not Connected</div>
