@@ -568,7 +568,7 @@ async function confirmConnect() {
 
 function confirmSkipWifi() {
   showSkipWifiModal.value = false
-  currentStep.value++
+  currentStep.value += 2
 }
 
 const calibrationItems = [

@@ -76,7 +76,14 @@ body {
     sans-serif;
   overflow: hidden; /* Prevent scrolling for IoT kiosk mode */
   user-select: none; /* Disable text selection globally */
-  -webkit-user-select: none; /* Safari/Chrome */
+  touch-action: pan-x pan-y; /* Enable touch scrolling/panning */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow scrolling in containers with overflow */
+.overflow-y-auto, .overflow-x-auto, .overflow-auto {
+  -webkit-overflow-scrolling: touch;
+}  -webkit-user-select: none; /* Safari/Chrome */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

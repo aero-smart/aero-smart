@@ -3,7 +3,7 @@
     <!-- Main Content Grid -->
     <div class="flex-1 grid grid-cols-12 gap-4 min-h-0 items-stretch">
       <!-- Left Column (Wind Input + Wind Speed) -->
-      <div class="col-span-3 flex flex-col gap-4 min-h-0">
+      <div class="col-span-3 flex flex-col gap-4 min-h-0 overflow-y-auto">
         <!-- Wind Input -->
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4">
           <div class="text-xs font-bold text-gray-700">{{ $t('dashboard.wind_input') }}</div>
@@ -82,7 +82,7 @@
       </div>
 
       <!-- Middle Column (Pressure Monitor) -->
-      <div class="col-span-5 flex flex-col gap-4 min-h-0">
+      <div class="col-span-5 flex flex-col gap-4 min-h-0 overflow-y-auto">
         <div
           class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 h-full"
         >
@@ -144,7 +144,7 @@
       </div>
 
       <!-- Right Column (Sensor Output + IMU) -->
-      <div class="col-span-4 flex flex-col gap-4 min-h-0">
+      <div class="col-span-4 flex flex-col gap-4 min-h-0 overflow-y-auto">
         <!-- Sensor Output (Refactored to match Reference Card Layout) -->
         <div
           class="bg-white rounded-2xl p-4 shadow-sm border border-white relative overflow-hidden"
@@ -321,6 +321,14 @@ const commonChartOptions = {
     splitLine: { show: true, lineStyle: { type: 'dashed', color: '#eee' } },
     axisLabel: { fontSize: 11, color: '#666', margin: 10 },
   },
+  dataZoom: [
+    {
+      type: 'inside',
+      xAxisIndex: [0],
+      filterMode: 'filter',
+      zoomLock: false
+    }
+  ],
   animation: false,
 }
 
