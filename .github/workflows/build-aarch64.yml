@@ -6,11 +6,13 @@ on:
     paths:
       - "panel/**"
       - "shared/**"
+      - 'service/**'
       - ".github/workflows/build-aarch64.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "panel/**"
+      - 'service/**'
       - "shared/**"
   workflow_dispatch:
 
