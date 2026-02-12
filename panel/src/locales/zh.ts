@@ -72,6 +72,10 @@ export default {
     next_page: '下一页',
     page_info: '第 {current} / {total} 页',
     start: '开始使用',
+    back: '上一步',
+    next: '下一步',
+    finish: '完成',
+    confirm: '确认',
   },
   nav: {
     overview: '概览',
@@ -211,5 +215,6 @@ export default {
     chart_style: '图表样式',
     line_width: '线条宽度',
     show_grid: '显示网格',
+    pressure_unit: '压力单位',
   },
 }

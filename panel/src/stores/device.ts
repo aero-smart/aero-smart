@@ -191,6 +191,7 @@ export const useDeviceStore = defineStore('device', () => {
   function setThrottle(val: number) {
     const value = Math.max(0, Math.min(255, Math.floor(val)))
     controls.value.throttle = value
+    console.log(`Setting throttle to ${value}`)
     send({ ThrottleConfig: { airspeed: value } })
   }
 

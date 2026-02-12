@@ -141,7 +141,7 @@
 
           <div class="relative z-10 flex flex-col gap-4">
             <!-- Header -->
-            <div class="text-xs font-bold text-gray-700">Sensor Output</div>
+            <div class="text-xs font-bold text-gray-700">{{ $t('dashboard.sensor_output') }}</div>
 
             <!-- Main Big Metric (Pressure 1) -->
             <div class="flex flex-col gap-2">
@@ -242,6 +242,18 @@ function adjustSpeed(delta: number) {
   if (newSpeed < 4) newSpeed = 4
   if (newSpeed > 34) newSpeed = 34
   targetSpeed.value = newSpeed
+  // Automatically update speed when adjusting with +1/-1/+5/-5 buttons
+  // But wait, the user said "clicking the checkmark button didn't trigger TX"
+  // The checkmark button calls updateSpeed.
+  // The other buttons call adjustSpeed.
+  // Should adjustSpeed also trigger updateSpeed?
+  // The UI shows a big checkmark button, implying manual confirmation.
+  // But usually incremental buttons might want instant effect or just value change.
+  // Let's assume the user wants the checkmark button to work.
+  // If the user says "Adjust speed then click checkmark submit did not trigger TX",
+  // it means updateSpeed -> store.setThrottle -> send() chain might be broken or not called.
+  // I added log in store.setThrottle.
+  // Let's add log here too.
 }
 
 // Simulation for Demo
@@ -296,6 +308,7 @@ const cubeStyle = computed(() => {
 })
 
 function updateSpeed() {
+  console.log('Update speed button clicked', targetSpeed.value)
   store.setThrottle(targetSpeed.value)
 }
 

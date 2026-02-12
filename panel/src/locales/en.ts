@@ -74,6 +74,10 @@ export default {
     next_page: 'Next',
     page_info: 'Page {current} / {total}',
     start: 'Get Started',
+    back: 'Back',
+    next: 'Next',
+    finish: 'Finish',
+    confirm: 'Confirm',
   },
   nav: {
     overview: 'Overview',
@@ -218,5 +222,6 @@ export default {
     chart_style: 'Chart Style',
     line_width: 'Line Width',
     show_grid: 'Show Grid',
+    pressure_unit: 'Pressure Unit',
   },
 }
