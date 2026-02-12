@@ -59,7 +59,7 @@ impl Default for AppConfig {
             serial: SerialConfig {
                 port: default_port,
                 baud_rate: 915200,
-                handshake_timeout_secs: 2,
+                handshake_timeout_secs: 10,
                 retry_interval_secs: 5,
             },
             server: ServerConfig {
@@ -153,7 +153,7 @@ baud_rate = 915200
 
 # Handshake timeout (seconds)
 # Time to wait for the lower machine to respond to Ping during startup
-handshake_timeout_secs = 2
+handshake_timeout_secs = 10
 
 # Retry interval on failure (seconds)
 # How long to wait before retrying when the serial connection is disconnected or initialization fails

@@ -1,7 +1,7 @@
 [serial]
 port = "/dev/tty.usbmodem1234"
 baud_rate = 915200
-handshake_timeout_secs = 2
+handshake_timeout_secs = 10
 retry_interval_secs = 5
 
 [server]
