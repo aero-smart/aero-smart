@@ -76,7 +76,9 @@ export const useWifiStore = defineStore('wifi', () => {
 
   async function updateStatus() {
     try {
-      status.value = await getWifiStatus()
+      const s = await getWifiStatus()
+      console.log('WiFi Status Poll:', s)
+      status.value = s
     } catch (e: any) {
       console.error('Failed to update wifi status', e)
     }

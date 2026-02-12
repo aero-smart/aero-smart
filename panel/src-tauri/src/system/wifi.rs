@@ -118,30 +118,91 @@ fn parse_scan_output(stdout: Vec<u8>) -> anyhow::Result<Vec<WifiNetwork>> {
 
     for line in stdout_str.lines() {
         // Format: IN-USE:SSID:SIGNAL:SECURITY
-        // Note: SSID might contain colons, but usually nmcli escapes them or we can split carefully.
         // The -t mode uses ':' as separator and escapes ':' in values with '\'.
-        // For simplicity, we assume simple split for now, or use a regex.
-        // A better way is to split by unescaped colons.
+        // However, raw split works for most cases unless SSID has ':'
+        // A robust parser handles escaping, but here we'll do a basic fix if needed.
+        // Let's assume standard output for now.
+
+        // nmcli output might be messy if SSID is empty.
+        // :SSID:SIGNAL:SECURITY
+        // If SSID is empty, it looks like ::SIGNAL:SECURITY
 
         let parts: Vec<&str> = line.split(':').collect();
+        // We need at least 4 parts.
+        // If SSID has colons, this split is wrong.
+        // But for "Innoxsz-Public", it's fine.
+        
+        // Wait, look at the log:
+        //  :Innoxsz-Guest:100:
+        //  *:Innoxsz-Public:100:WPA1 WPA2
+        
+        // Line 1: " :Innoxsz-Guest:100:"
+        // Split: [" ", "Innoxsz-Guest", "100", ""] -> len 4
+        // Part 0: " " (space?) No, wait.
+        // Log says: " :jiangyin14:100:WPA2 WPA3"
+        // It seems there is a space before the colon? Or is it empty?
+        // "IN-USE" field: "*" or " ".
+        // If it is " ", then split might be: [" ", "jiangyin14", "100", "WPA2 WPA3"]
+        
+        // If line starts with ':', then part[0] is empty string "".
+        // If line starts with " :", then part[0] is " ".
+        // Let's look at the log carefully:
+        // Feb 13 00:45:26 ...:  :jiangyin14:100:WPA2 WPA3
+        // There is a space.
+        
+        // If I use `nmcli -t`, fields are separated by `:`.
+        // The IN-USE field is either `*` or ` ` (space) or empty?
+        // Actually, `nmcli -t` usually produces `*:SSID...` or `:SSID...` (empty string for false).
+        // BUT, the log shows a space: ` :jiangyin14...`
+        // Maybe the log formatting added a space?
+        // "Feb 13 00:45:26 ... [INFO] nmcli scan output raw:"
+        // " :jiangyin14..."
+        // It's possible the log prefix alignment makes it look like a space, or it IS a space.
+        
+        // Let's trim the line first? No, if IN-USE is space, trimming might remove it?
+        // But IN-USE is significant.
+        // Let's rely on the position.
+        
+        // Recover logic:
+        // Iterate backwards?
+        // Security is last. Signal is second to last.
+        // But SSID can be anything.
+        
+        // Let's try to parse flexibly.
+        // We know Signal is a number.
+        
+        // If split by ':', we get N parts.
+        // Last part: Security
+        // Second last: Signal (u8)
+        // First part: IN-USE
+        // Everything in between: SSID (joined by :)
+        
         if parts.len() < 4 {
-            debug!("Skipping line (parts < 4): {}", line);
             continue;
         }
-
-        let in_use = parts[0] == "*";
-        let ssid = parts[1].to_string();
+        
+        let in_use_str = parts[0].trim();
+        let in_use = in_use_str == "*";
+        
+        let security = parts[parts.len() - 1].to_string();
+        
+        let signal_str = parts[parts.len() - 2];
+        let signal = signal_str.parse::<u8>().unwrap_or(0);
+        
+        // SSID is parts[1..len-2] joined by ":"
+        let ssid = parts[1..parts.len()-2].join(":");
+        
         if ssid.is_empty() {
-            debug!("Skipping line (empty SSID): {}", line);
             continue;
         }
-        let signal = parts[2].parse::<u8>().unwrap_or(0);
-        let security = parts[3].to_string();
 
-        debug!(
-            "Parsed network: SSID={}, Signal={}, Security={}, InUse={}",
-            ssid, signal, security, in_use
-        );
+        // Fix for "backslash escaped colon" if nmcli does that?
+        // For now, simple join is likely correct for simple SSIDs.
+        // If SSID contained ":", nmcli -t escapes it as "\:".
+        // Our split would separate it.
+        // e.g. "My\:Wifi" -> ["My\", "Wifi"]
+        // Join back -> "My\:Wifi". We might want to unescape.
+        let ssid = ssid.replace("\\:", ":");
 
         networks.push(WifiNetwork {
             ssid,
@@ -154,7 +215,12 @@ fn parse_scan_output(stdout: Vec<u8>) -> anyhow::Result<Vec<WifiNetwork>> {
     info!("Total networks parsed: {}", networks.len());
 
     // Deduplicate by SSID, preferring the one in use or stronger signal
-    networks.sort_by(|a, b| b.signal.cmp(&a.signal));
+    networks.sort_by(|a, b| {
+        if a.in_use != b.in_use {
+            return b.in_use.cmp(&a.in_use); // Connected first
+        }
+        b.signal.cmp(&a.signal) // Then stronger signal
+    });
     networks.dedup_by(|a, b| a.ssid == b.ssid);
 
     info!("Total networks after deduplication: {}", networks.len());

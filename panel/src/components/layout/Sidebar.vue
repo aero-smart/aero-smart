@@ -170,13 +170,13 @@ onMounted(() => {
   wifiStore.testConnection()
   serialStore.startPolling()
 
-  // Poll every 30 seconds
+  // Poll every 5 seconds
   wifiInterval = window.setInterval(() => {
     wifiStore.updateStatus()
     if (wifiStatus.value.connected) {
       wifiStore.testConnection()
     }
-  }, 30000)
+  }, 5000)
 })
 
 onUnmounted(() => {
@@ -241,12 +241,18 @@ const batteryColorClass = computed(() => {
 })
 
 const wifiIcon = computed(() => {
+  // If test passes, force Wifi icon (no slash)
+  if (wifiTestResult.value === true) return Wifi
   return wifiStatus.value.connected ? Wifi : WifiOff
 })
 
 const wifiColorClass = computed(() => {
+  // Requirement 1: If internet test passes, mark as green regardless of wifiStatus.connected check
+  // (Assuming testResult implies connection is working)
+  if (wifiTestResult.value === true) return 'text-green-500'
+  
   if (!wifiStatus.value.connected) return 'text-red-500'
-  if (wifiTestResult.value) return 'text-green-500'
+  // Connected but no internet or testing
   return 'text-yellow-500'
 })
 

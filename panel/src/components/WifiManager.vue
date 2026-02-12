@@ -8,18 +8,24 @@
     </div>
 
     <div class="flex justify-between items-center shrink-0">
-      <div v-if="status.connected" class="flex items-center gap-2">
-        <span class="text-xs text-green-600 font-bold flex items-center gap-1">
-          <CheckCircle2 class="w-3 h-3" />
-          {{ status.ssid }}
-        </span>
-        <button
-          @click="handleDisconnect"
-          :disabled="connecting"
-          class="text-xs bg-red-50 text-red-600 px-2 py-1 rounded hover:bg-red-100 disabled:opacity-50"
-        >
-          Disconnect
-        </button>
+      <div v-if="status.connected" class="flex flex-col gap-0.5">
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-green-600 font-bold flex items-center gap-1">
+            <CheckCircle2 class="w-3 h-3" />
+            {{ status.ssid }}
+          </span>
+          <button
+            @click="handleDisconnect"
+            :disabled="connecting"
+            class="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded hover:bg-red-100 disabled:opacity-50"
+          >
+            Disconnect
+          </button>
+        </div>
+        <!-- Requirement 2: Show IPv4 Address -->
+        <div v-if="status.ip" class="text-[10px] text-gray-400 font-mono ml-4">
+          IP: {{ status.ip }}
+        </div>
       </div>
       <div v-else class="text-xs text-gray-500">Not Connected</div>
 
