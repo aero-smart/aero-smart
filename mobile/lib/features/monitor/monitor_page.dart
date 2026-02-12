@@ -35,9 +35,6 @@ class _MonitorPageState extends ConsumerState<MonitorPage> with SingleTickerProv
         centerTitle: false,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.black,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Colors.black,
           tabs: const [
             Tab(text: '图表'),
             Tab(text: '声学'),
@@ -68,46 +65,52 @@ class ChartsTab extends ConsumerWidget {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          _buildChartCard(state),
+          _buildChartCard(context, state),
           const SizedBox(height: 16),
-          _buildRealTimeDataCard(state),
+          _buildRealTimeDataCard(context, state),
         ],
       ),
     );
   }
 
-  Widget _buildCard({required Widget child}) {
+  Widget _buildCard(BuildContext context, {required Widget child}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
+        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF9F9F9),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
       ),
       child: child,
     );
   }
 
-  Widget _buildChartCard(MonitorState state) {
+  Widget _buildChartCard(BuildContext context, MonitorState state) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final gridColor = Theme.of(context).dividerColor.withOpacity(0.1);
+    final axisColor = Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey;
+    
     return _buildCard(
+      context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('数据源', style: TextStyle(color: Colors.grey, fontSize: 12)),
+          Text('数据源', style: TextStyle(color: axisColor, fontSize: 12)),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFFF0F0F0),
+              color: isDark ? const Color(0xFF2C2C2C) : const Color(0xFFF0F0F0),
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: Colors.black12),
+              border: Border.all(color: Theme.of(context).dividerColor),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text('风速', style: TextStyle(fontSize: 14)),
-                Icon(Icons.arrow_drop_down),
+              children: [
+                const Text('风速', style: TextStyle(fontSize: 14)),
+                Icon(Icons.arrow_drop_down, color: Theme.of(context).iconTheme.color),
               ],
             ),
           ),
@@ -120,12 +123,12 @@ class ChartsTab extends ConsumerWidget {
                   show: true,
                   drawVerticalLine: true,
                   getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: gridColor,
                     strokeWidth: 1,
                     dashArray: [5, 5],
                   ),
                   getDrawingVerticalLine: (value) => FlLine(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: gridColor,
                     strokeWidth: 1,
                     dashArray: [5, 5],
                   ),
@@ -138,18 +141,18 @@ class ChartsTab extends ConsumerWidget {
                       reservedSize: 30,
                       getTitlesWidget: (value, meta) {
                         if (value % 10 == 0) {
-                           return Text(value.toInt().toString(), style: const TextStyle(color: Colors.grey, fontSize: 10));
+                           return Text(value.toInt().toString(), style: TextStyle(color: axisColor, fontSize: 10));
                         }
                         return const SizedBox.shrink();
                       },
                     ),
                   ),
                   leftTitles: AxisTitles(
-                    axisNameWidget: const Text('风速 (m/s)', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                    axisNameWidget: Text('风速 (m/s)', style: TextStyle(fontSize: 10, color: axisColor)),
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
-                         return Text(value.toInt().toString(), style: const TextStyle(color: Colors.grey, fontSize: 10));
+                         return Text(value.toInt().toString(), style: TextStyle(color: axisColor, fontSize: 10));
                       },
                       reservedSize: 30,
                     ),
@@ -159,9 +162,9 @@ class ChartsTab extends ConsumerWidget {
                 ),
                 borderData: FlBorderData(
                   show: true,
-                  border: const Border(
-                    bottom: BorderSide(color: Colors.black12),
-                    left: BorderSide(color: Colors.black12),
+                  border: Border(
+                    bottom: BorderSide(color: Theme.of(context).dividerColor),
+                    left: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                 ),
                 minX: 0,
@@ -178,7 +181,7 @@ class ChartsTab extends ConsumerWidget {
                       const FlSpot(90, 3.5), const FlSpot(100, 3.2),
                     ],
                     isCurved: true,
-                    color: Colors.black,
+                    color: Theme.of(context).colorScheme.primary,
                     barWidth: 2,
                     isStrokeCapRound: true,
                     dotData: const FlDotData(show: false),
@@ -189,14 +192,15 @@ class ChartsTab extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Center(child: Text('-o- 风速 (m/s)', style: TextStyle(fontSize: 12))),
+          Center(child: Text('-o- 风速 (m/s)', style: TextStyle(fontSize: 12, color: axisColor))),
         ],
       ),
     );
   }
 
-  Widget _buildRealTimeDataCard(MonitorState state) {
+  Widget _buildRealTimeDataCard(BuildContext context, MonitorState state) {
     return _buildCard(
+      context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -204,15 +208,15 @@ class ChartsTab extends ConsumerWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _buildDataField('风速', '${state.currentAirspeed.toStringAsFixed(2)} m/s')),
-              Expanded(child: _buildDataField('压力', '${state.currentPressure.toStringAsFixed(2)} Pa')),
+              Expanded(child: _buildDataField(context, '风速', '${state.currentAirspeed.toStringAsFixed(2)} m/s')),
+              Expanded(child: _buildDataField(context, '压力', '${state.currentPressure.toStringAsFixed(2)} Pa')),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _buildDataField('震动', '${state.currentVibration.toStringAsFixed(3)} RMS')),
-              Expanded(child: _buildDataField('温度', '${state.currentTemperature.toStringAsFixed(1)} °C')),
+              Expanded(child: _buildDataField(context, '震动', '${state.currentVibration.toStringAsFixed(3)} RMS')),
+              Expanded(child: _buildDataField(context, '温度', '${state.currentTemperature.toStringAsFixed(1)} °C')),
             ],
           ),
         ],
@@ -220,11 +224,11 @@ class ChartsTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildDataField(String label, String value) {
+  Widget _buildDataField(BuildContext context, String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(label, style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color)),
         const SizedBox(height: 4),
         Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Monospace')),
       ],

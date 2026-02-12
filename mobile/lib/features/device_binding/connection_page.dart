@@ -1,323 +1,357 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:go_router/go_router.dart';
-
-// 页面状态枚举
-enum BindingStep {
-  scanning, // 扫描蓝牙设备
-  connecting, // 连接蓝牙设备
-  wifiInput, // 输入WiFi信息
-  configuring, // 推送WiFi并等待回传
-  success, // 绑定成功
-  failure, // 绑定失败
-}
+import 'device_api_service.dart';
+import '../settings/settings_provider.dart';
 
 class ConnectionPage extends ConsumerStatefulWidget {
   const ConnectionPage({super.key, this.qrData});
-  final String? qrData; // 扫码得到的数据（例如设备MAC地址或序列号）
+  final String? qrData; // This is the IP address from the QR code
 
   @override
   ConsumerState<ConnectionPage> createState() => _ConnectionPageState();
 }
 
 class _ConnectionPageState extends ConsumerState<ConnectionPage> {
-  BindingStep _currentStep = BindingStep.scanning;
-  String _statusMessage = '正在搜索设备...';
-  String _deviceIp = '';
-
-  final TextEditingController _ssidController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  // 模拟进度
-  double _progress = 0.0;
+  late DeviceApiService _apiService;
+  WifiStatus? _currentStatus;
+  List<WifiNetwork> _availableNetworks = [];
+  bool _isLoading = false;
+  String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _startBindingProcess();
-  }
+    if (widget.qrData != null) {
+      _apiService = DeviceApiService(widget.qrData!);
+      _loadInitialData();
 
-  @override
-  void dispose() {
-    _ssidController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _startBindingProcess() async {
-    // Step 1: 扫描蓝牙
-    // TODO: 实际接入时使用 FlutterBluePlus.startScan()
-    // if (await FlutterBluePlus.isSupported == false) { ... }
-
-    setState(() {
-      _currentStep = BindingStep.scanning;
-      _statusMessage = '正在搜索设备 ${widget.qrData ?? ""}...';
-    });
-
-    // 模拟搜索耗时
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Step 2: 模拟找到设备并连接
-    setState(() {
-      _currentStep = BindingStep.connecting;
-      _statusMessage = '正在连接设备...';
-    });
-
-    // 模拟连接耗时
-    await Future.delayed(const Duration(seconds: 1));
-
-    // 连接成功，跳转到 WiFi 输入
-    setState(() {
-      _currentStep = BindingStep.wifiInput;
-      _statusMessage = '请配置网络';
-    });
-  }
-
-  Future<void> _submitWifiConfig() async {
-    final ssid = _ssidController.text;
-    final password = _passwordController.text;
-
-    if (ssid.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('请输入WiFi名称')));
-      return;
-    }
-
-    setState(() {
-      _currentStep = BindingStep.configuring;
-      _statusMessage = '正在推送网络配置...';
-      _progress = 0.1;
-    });
-
-    // Step 3: 模拟配网过程
-    // TODO: 通过 BLE 特征值写入 SSID 和 Password
-    // await characteristic.write(utf8.encode('WIFI:$ssid:$password'));
-
-    // 模拟进度
-    for (int i = 1; i <= 10; i++) {
-      await Future.delayed(const Duration(milliseconds: 300));
-      if (!mounted) return;
-      setState(() {
-        _progress = 0.1 + (i * 0.05);
-        if (i == 5) _statusMessage = '设备正在连接 WiFi...';
-        if (i == 8) _statusMessage = '等待设备回传 IP...';
+      // 同步 IP 到全局设置并触发 WebSocket 连接
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(settingsProvider.notifier).setIpAddress(widget.qrData!);
       });
     }
-
-    // Step 4: 模拟回传 IP
-    // TODO: 监听 BLE 通知获取 IP
-    final mockIp = '192.168.1.105';
-
-    setState(() {
-      _progress = 1.0;
-      _currentStep = BindingStep.success;
-      _deviceIp = mockIp;
-      _statusMessage = '设备绑定成功！';
-    });
   }
 
-  void _retry() {
-    _startBindingProcess();
+  Future<void> _loadInitialData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+    try {
+      final status = await _apiService.getWifiStatus();
+      setState(() {
+        _currentStatus = status;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = '连接设备失败: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _scanNetworks() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final networks = await _apiService.scanWifi();
+      setState(() {
+        _availableNetworks = networks;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('扫描失败: $e')));
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _connectToNetwork(String ssid, String? security) async {
+    String? password;
+    if (security != null &&
+        security != '' &&
+        security.toUpperCase() != 'NONE') {
+      password = await _showPasswordDialog(ssid);
+      if (password == null) return; // User cancelled
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      await _apiService.connectWifi(ssid, password);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('已发送连接请求，请等待...')));
+      // Poll status after a delay
+      await Future.delayed(const Duration(seconds: 5));
+      await _loadInitialData();
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('连接失败: $e')));
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<String?> _showPasswordDialog(String ssid) async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('连接到 $ssid'),
+          content: TextField(
+            controller: controller,
+            obscureText: true,
+            decoration: const InputDecoration(labelText: '密码'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, controller.text),
+              child: const Text('连接'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _disconnect() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      await _apiService.disconnectWifi();
+      await Future.delayed(const Duration(seconds: 2));
+      await _loadInitialData();
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('断开连接失败: $e')));
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _testInternet() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final success = await _apiService.testInternet();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success ? '互联网连接正常' : '无法连接到互联网'),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.qrData == null) {
+      return const Scaffold(body: Center(child: Text('无效的设备IP')));
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('设备绑定')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
+      appBar: AppBar(
+        title: const Text('设备网络管理'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadInitialData,
+          ),
+        ],
+      ),
+      body: _isLoading && _currentStatus == null
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage.isNotEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadInitialData,
+                    child: const Text('重试'),
+                  ),
+                ],
+              ),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildStatusCard(),
+                  const SizedBox(height: 24),
+                  _buildActionsCard(),
+                  const SizedBox(height: 24),
+                  _buildNetworksList(),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildStatusCard() {
+    return Card(
+      elevation: 0,
+      color: Colors.grey[100],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildStepIndicator(),
-            const SizedBox(height: 40),
-            Expanded(child: _buildCurrentContent()),
+            const Text(
+              '当前状态',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(
+                  _currentStatus?.connected == true
+                      ? Icons.wifi
+                      : Icons.wifi_off,
+                  color: _currentStatus?.connected == true
+                      ? Colors.green
+                      : Colors.grey,
+                  size: 32,
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _currentStatus?.connected == true ? '已连接' : '未连接',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    if (_currentStatus?.ssid != null)
+                      Text('SSID: ${_currentStatus!.ssid}'),
+                    if (_currentStatus?.ip != null)
+                      Text('IP: ${_currentStatus!.ip}'),
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStepIndicator() {
-    // 简易步骤条
-    return Row(
+  Widget _buildActionsCard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildStepIcon(1, _currentStep.index >= BindingStep.scanning.index),
-        _buildStepLine(_currentStep.index >= BindingStep.wifiInput.index),
-        _buildStepIcon(2, _currentStep.index >= BindingStep.wifiInput.index),
-        _buildStepLine(_currentStep.index >= BindingStep.success.index),
-        _buildStepIcon(3, _currentStep.index == BindingStep.success.index),
+        const Text(
+          '操作',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _isLoading ? null : _testInternet,
+                icon: const Icon(Icons.language),
+                label: const Text('网络测试'),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _isLoading ? null : _disconnect,
+                icon: const Icon(Icons.link_off),
+                label: const Text('断开连接'),
+                style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _buildStepIcon(int step, bool isActive) {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isActive ? Colors.black : Colors.grey[300],
-      ),
-      child: Center(
-        child: Text(
-          '$step',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+  Widget _buildNetworksList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              '可用网络',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            TextButton.icon(
+              onPressed: _isLoading ? null : _scanNetworks,
+              icon: const Icon(Icons.refresh),
+              label: const Text('扫描'),
+            ),
+          ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildStepLine(bool isActive) {
-    return Expanded(
-      child: Container(
-        height: 2,
-        color: isActive ? Colors.black : Colors.grey[300],
-      ),
-    );
-  }
-
-  Widget _buildCurrentContent() {
-    switch (_currentStep) {
-      case BindingStep.scanning:
-      case BindingStep.connecting:
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircularProgressIndicator(color: Colors.black),
-            const SizedBox(height: 24),
-            Text(_statusMessage, style: const TextStyle(fontSize: 16)),
-          ],
-        );
-
-      case BindingStep.wifiInput:
-        return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '请输入无线网络信息',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                '设备需要连接到同一个局域网才能进行通讯。',
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 32),
-              TextField(
-                controller: _ssidController,
-                decoration: const InputDecoration(
-                  labelText: 'WiFi 名称 (SSID)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.wifi),
+        const SizedBox(height: 8),
+        if (_availableNetworks.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: Text('暂无网络列表，请点击扫描')),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _availableNetworks.length,
+            itemBuilder: (context, index) {
+              final network = _availableNetworks[index];
+              return ListTile(
+                leading: Icon(
+                  Icons.wifi,
+                  color: network.inUse ? Colors.green : null,
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'WiFi 密码',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock_outline),
+                title: Text(network.ssid),
+                subtitle: Text(
+                  '信号: ${network.signal}%  安全: ${network.security}',
                 ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _submitWifiConfig,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('连接设备'),
-                ),
-              ),
-            ],
+                trailing: network.inUse
+                    ? const Icon(Icons.check, color: Colors.green)
+                    : const Icon(Icons.chevron_right),
+                onTap: network.inUse
+                    ? null
+                    : () => _connectToNetwork(network.ssid, network.security),
+              );
+            },
           ),
-        );
-
-      case BindingStep.configuring:
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(value: _progress, color: Colors.black),
-            const SizedBox(height: 24),
-            Text(_statusMessage, style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 8),
-            Text(
-              '${(_progress * 100).toInt()}%',
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ],
-        );
-
-      case BindingStep.success:
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 80),
-            const SizedBox(height: 24),
-            const Text(
-              '绑定成功',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Text('设备 IP 地址: $_deviceIp', style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () {
-                  // 返回设置页或首页
-                  context.pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('完成'),
-              ),
-            ),
-          ],
-        );
-
-      case BindingStep.failure:
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error, color: Colors.red, size: 80),
-            const SizedBox(height: 24),
-            const Text(
-              '绑定失败',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Text(_statusMessage, style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _retry,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('重试'),
-              ),
-            ),
-          ],
-        );
-    }
+      ],
+    );
   }
 }

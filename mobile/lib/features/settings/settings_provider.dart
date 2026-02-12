@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/services/websocket_service.dart';
 
 enum ImuOrientation { horizontal, vertical, upsideDown }
 enum SamplingRate { hz50, hz100, hz200, hz400 }
@@ -54,19 +55,40 @@ class SettingsState {
 }
 
 class SettingsNotifier extends StateNotifier<SettingsState> {
-  SettingsNotifier() : super(SettingsState());
+  final ConnectionService _connectionService;
+
+  SettingsNotifier(this._connectionService) : super(SettingsState()) {
+    _init();
+  }
+
+  void _init() {
+    // 监听连接服务的状态变化
+    // 注意：这里无法直接监听 ConnectionService 的状态流，只能通过方法同步
+    // 或者让 SettingsNotifier 依赖 ref 并 watch connectionServiceProvider
+    // 为了简单起见，我们在 setIpAddress 中同步调用 ConnectionService
+    
+    // 初始化时同步当前 IP
+    if (_connectionService.currentIp != null) {
+      state = state.copyWith(ipAddress: _connectionService.currentIp);
+    }
+  }
+  
+  // 更新连接状态（由 ConnectionService 的状态变化驱动会更好，但这里先提供手动方法）
+  void updateConnectionStatus(bool isConnected) {
+    state = state.copyWith(isConnected: isConnected);
+  }
 
   void setIpAddress(String ip) {
     state = state.copyWith(ipAddress: ip);
+    _connectionService.connect(ip);
   }
 
   void connect() {
-    // Simulate connection
-    state = state.copyWith(isConnected: true);
+    _connectionService.connect(state.ipAddress);
   }
 
   void disconnect() {
-    state = state.copyWith(isConnected: false);
+    _connectionService.disconnect();
   }
 
   void setImuOrientation(ImuOrientation orientation) {
@@ -95,5 +117,15 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 }
 
 final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>((ref) {
-  return SettingsNotifier();
+  final connectionService = ref.watch(connectionServiceProvider.notifier);
+  final connectionStatus = ref.watch(connectionServiceProvider);
+  
+  final notifier = SettingsNotifier(connectionService);
+  
+  // 同步连接状态到 UI
+  // 这里用 scheduleMicrotask 避免构建期间 setState
+  // 但更优雅的方式是在 StateNotifier 中监听，或者直接在 build 中组合状态
+  // 这里我们仅同步 IP，状态由 UI 直接读取 connectionServiceProvider 即可
+  
+  return notifier;
 });

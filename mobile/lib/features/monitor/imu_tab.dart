@@ -13,31 +13,33 @@ class ImuTab extends ConsumerWidget {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          _buildAttitudeIndicator(state),
+          _buildAttitudeIndicator(context, state),
           const SizedBox(height: 16),
-          _buildEulerAnglesCard(state),
+          _buildEulerAnglesCard(context, state),
           const SizedBox(height: 16),
-          _buildVibrationCard(state),
+          _buildVibrationCard(context, state),
         ],
       ),
     );
   }
 
-  Widget _buildCard({required Widget child}) {
+  Widget _buildCard(BuildContext context, {required Widget child}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
+        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF9F9F9),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
       ),
       child: child,
     );
   }
 
-  Widget _buildAttitudeIndicator(MonitorState state) {
+  Widget _buildAttitudeIndicator(BuildContext context, MonitorState state) {
     return _buildCard(
+      context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -48,9 +50,9 @@ class ImuTab extends ConsumerWidget {
             width: double.infinity,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.black12),
+              border: Border.all(color: Theme.of(context).dividerColor),
             ),
             child: Stack(
               alignment: Alignment.center,
@@ -59,8 +61,8 @@ class ImuTab extends ConsumerWidget {
                 // In a real app, this would use flutter_3d_controller or custom painter
                 
                 // Crosshair
-                Container(width: 200, height: 1, color: Colors.black12),
-                Container(width: 1, height: 200, color: Colors.black12),
+                Container(width: 200, height: 1, color: Theme.of(context).dividerColor),
+                Container(width: 1, height: 200, color: Theme.of(context).dividerColor),
 
                 // Moving Object (Simplified Plane/Arrow)
                 Transform(
@@ -84,9 +86,9 @@ class ImuTab extends ConsumerWidget {
                       Container(
                         width: 60,
                         height: 100,
-                        decoration: const BoxDecoration(
-                          color: Colors.black87,
-                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.87),
+                          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(4)),
                         ),
                         child: CustomPaint(
                           painter: TrianglePainter(),
@@ -105,7 +107,7 @@ class ImuTab extends ConsumerWidget {
                     height: 40,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black),
+                      border: Border.all(color: Theme.of(context).colorScheme.onSurface),
                     ),
                     child: const Icon(Icons.navigation, size: 24),
                   ),
@@ -118,8 +120,9 @@ class ImuTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildEulerAnglesCard(MonitorState state) {
+  Widget _buildEulerAnglesCard(BuildContext context, MonitorState state) {
     return _buildCard(
+      context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -128,9 +131,9 @@ class ImuTab extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildAngleItem('Pitch (俯仰)', state.pitch),
-              _buildAngleItem('Roll (横滚)', state.roll),
-              _buildAngleItem('Yaw (偏航)', state.yaw),
+              _buildAngleItem(context, 'Pitch (俯仰)', state.pitch),
+              _buildAngleItem(context, 'Roll (横滚)', state.roll),
+              _buildAngleItem(context, 'Yaw (偏航)', state.yaw),
             ],
           ),
         ],
@@ -138,10 +141,10 @@ class ImuTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildAngleItem(String label, double value) {
+  Widget _buildAngleItem(BuildContext context, String label, double value) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(label, style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color)),
         const SizedBox(height: 4),
         Text(
           '${value.toStringAsFixed(1)}°',
@@ -151,8 +154,9 @@ class ImuTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildVibrationCard(MonitorState state) {
+  Widget _buildVibrationCard(BuildContext context, MonitorState state) {
     return _buildCard(
+      context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -174,7 +178,7 @@ class ImuTab extends ConsumerWidget {
               ),
             ),
           ),
-          const Center(child: Text('RMS 震动值', style: TextStyle(color: Colors.grey))),
+          Center(child: Text('RMS 震动值', style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color))),
           const SizedBox(height: 24),
           // Status Bar
           ClipRRect(
@@ -182,7 +186,7 @@ class ImuTab extends ConsumerWidget {
             child: LinearProgressIndicator(
               value: 0.1, // Dummy safe value
               minHeight: 12,
-              backgroundColor: Colors.grey[300],
+              backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[300],
               color: const Color(0xFF4CAF50),
             ),
           ),

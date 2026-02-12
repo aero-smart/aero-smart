@@ -19,34 +19,36 @@ class ControlsPage extends ConsumerWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildThrottleControl(state, notifier),
+            _buildThrottleControl(context, state, notifier),
             const SizedBox(height: 16),
-            _buildAngleControl(state, notifier),
+            _buildAngleControl(context, state, notifier),
             const SizedBox(height: 16),
-            _buildCommandPanel(state, notifier),
+            _buildCommandPanel(context, state, notifier),
             const SizedBox(height: 16),
-            _buildSensorSwitches(state, notifier),
+            _buildSensorSwitches(context, state, notifier),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCard({required Widget child}) {
+  Widget _buildCard(BuildContext context, {required Widget child}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
+        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF9F9F9),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
       ),
       child: child,
     );
   }
 
-  Widget _buildThrottleControl(ControlsState state, ControlsNotifier notifier) {
+  Widget _buildThrottleControl(BuildContext context, ControlsState state, ControlsNotifier notifier) {
     return _buildCard(
+      context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -57,10 +59,10 @@ class ControlsPage extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.grey[600],
+                  color: Theme.of(context).colorScheme.secondary,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text('${state.throttle.toInt()}%', style: const TextStyle(color: Colors.white, fontSize: 12)),
+                child: Text('${state.throttle.toInt()}%', style: TextStyle(color: Theme.of(context).colorScheme.onSecondary, fontSize: 12)),
               ),
             ],
           ),
@@ -71,10 +73,10 @@ class ControlsPage extends ConsumerWidget {
               Expanded(
                 child: SliderTheme(
                   data: SliderThemeData(
-                    activeTrackColor: Colors.black54,
-                    inactiveTrackColor: Colors.grey[300],
-                    thumbColor: Colors.black,
-                    overlayColor: Colors.black.withValues(alpha: 0.1),
+                    activeTrackColor: Theme.of(context).colorScheme.primary.withOpacity(0.54),
+                    inactiveTrackColor: Theme.of(context).dividerColor,
+                    thumbColor: Theme.of(context).colorScheme.primary,
+                    overlayColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                     trackHeight: 4.0,
                     thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10.0),
                   ),
@@ -94,12 +96,12 @@ class ControlsPage extends ConsumerWidget {
             child: Column(
               children: [
                 Text('${state.throttle.toInt()}%', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
-                const Text('当前风速: 0.00 m/s', style: TextStyle(color: Colors.grey)),
+                Text('当前风速: 0.00 m/s', style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color)),
               ],
             ),
           ),
           const SizedBox(height: 24),
-          const Text('预设档位', style: TextStyle(fontSize: 12, color: Colors.grey)),
+          Text('预设档位', style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -110,10 +112,10 @@ class ControlsPage extends ConsumerWidget {
                 child: OutlinedButton(
                   onPressed: () => notifier.setThrottle(val.toDouble()),
                   style: OutlinedButton.styleFrom(
-                    backgroundColor: isSelected ? Colors.black : Colors.transparent,
-                    foregroundColor: isSelected ? Colors.white : Colors.black,
+                    backgroundColor: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
+                    foregroundColor: isSelected ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
                     padding: EdgeInsets.zero,
-                    side: BorderSide(color: Colors.black.withValues(alpha: 0.2)),
+                    side: BorderSide(color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).dividerColor),
                   ),
                   child: Text('$val%'),
                 ),
@@ -125,8 +127,9 @@ class ControlsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildAngleControl(ControlsState state, ControlsNotifier notifier) {
+  Widget _buildAngleControl(BuildContext context, ControlsState state, ControlsNotifier notifier) {
     return _buildCard(
+      context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -137,10 +140,10 @@ class ControlsPage extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.grey[600],
+                  color: Theme.of(context).colorScheme.secondary,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text('${state.angle.toInt()}°', style: const TextStyle(color: Colors.white, fontSize: 12)),
+                child: Text('${state.angle.toInt()}°', style: TextStyle(color: Theme.of(context).colorScheme.onSecondary, fontSize: 12)),
               ),
             ],
           ),
@@ -151,10 +154,10 @@ class ControlsPage extends ConsumerWidget {
               Expanded(
                 child: SliderTheme(
                   data: SliderThemeData(
-                    activeTrackColor: Colors.black54,
-                    inactiveTrackColor: Colors.grey[300],
-                    thumbColor: Colors.black,
-                    overlayColor: Colors.black.withValues(alpha: 0.1),
+                    activeTrackColor: Theme.of(context).colorScheme.primary.withOpacity(0.54),
+                    inactiveTrackColor: Theme.of(context).dividerColor,
+                    thumbColor: Theme.of(context).colorScheme.primary,
+                    overlayColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                     trackHeight: 4.0,
                     thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10.0),
                   ),
@@ -174,7 +177,7 @@ class ControlsPage extends ConsumerWidget {
             child: Column(
               children: [
                 Text('${state.angle.toStringAsFixed(1)}°', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
-                const Text('攻角', style: TextStyle(color: Colors.grey)),
+                Text('攻角', style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color)),
               ],
             ),
           ),
@@ -183,8 +186,10 @@ class ControlsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildCommandPanel(ControlsState state, ControlsNotifier notifier) {
+  Widget _buildCommandPanel(BuildContext context, ControlsState state, ControlsNotifier notifier) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return _buildCard(
+      context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -210,8 +215,8 @@ class ControlsPage extends ConsumerWidget {
                   icon: const Icon(Icons.stop),
                   label: const Text('停止'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[300],
-                    foregroundColor: Colors.grey[600],
+                    backgroundColor: isDark ? Colors.grey[800] : Colors.grey[300],
+                    foregroundColor: isDark ? Colors.grey[400] : Colors.grey[600],
                     elevation: 0,
                   ),
                 ),
@@ -227,8 +232,8 @@ class ControlsPage extends ConsumerWidget {
                   icon: const Icon(Icons.tune),
                   label: const Text('校准'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.black,
-                    side: BorderSide(color: Colors.black.withValues(alpha: 0.2)),
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    side: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                 ),
               ),
@@ -237,8 +242,8 @@ class ControlsPage extends ConsumerWidget {
                 child: OutlinedButton(
                   onPressed: notifier.resetDefaults,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.black,
-                    side: BorderSide(color: Colors.black.withValues(alpha: 0.2)),
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    side: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                   child: const Text('清零'),
                 ),
@@ -250,23 +255,24 @@ class ControlsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildSensorSwitches(ControlsState state, ControlsNotifier notifier) {
+  Widget _buildSensorSwitches(BuildContext context, ControlsState state, ControlsNotifier notifier) {
     return _buildCard(
+      context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('传感器开关', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          _buildSwitch('IMU (惯性测量单元)', state.isImuEnabled, notifier.toggleImu),
-          _buildSwitch('Acoustic (声学传感器)', state.isAcousticEnabled, notifier.toggleAcoustic),
-          _buildSwitch('Lidar (激光雷达)', state.isLidarEnabled, notifier.toggleLidar),
-          _buildSwitch('Pressure (压力传感器)', state.isPressureEnabled, notifier.togglePressure),
+          _buildSwitch(context, 'IMU (惯性测量单元)', state.isImuEnabled, notifier.toggleImu),
+          _buildSwitch(context, 'Acoustic (声学传感器)', state.isAcousticEnabled, notifier.toggleAcoustic),
+          _buildSwitch(context, 'Lidar (激光雷达)', state.isLidarEnabled, notifier.toggleLidar),
+          _buildSwitch(context, 'Pressure (压力传感器)', state.isPressureEnabled, notifier.togglePressure),
         ],
       ),
     );
   }
 
-  Widget _buildSwitch(String label, bool value, Function(bool) onChanged) {
+  Widget _buildSwitch(BuildContext context, String label, bool value, Function(bool) onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -274,10 +280,10 @@ class ControlsPage extends ConsumerWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: Colors.black,
-            activeTrackColor: Colors.black,
+            activeThumbColor: Theme.of(context).colorScheme.primary,
+            activeTrackColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
             inactiveThumbColor: Colors.grey,
-            inactiveTrackColor: Colors.grey[300],
+            inactiveTrackColor: Theme.of(context).dividerColor,
           ),
           const SizedBox(width: 12),
           Text(label, style: const TextStyle(fontSize: 14)),

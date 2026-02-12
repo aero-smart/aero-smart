@@ -1,4 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../monitor/monitor_provider.dart';
+import '../controls/controls_provider.dart';
+
+// 直接复用 MonitorState 和 ControlsState 的数据来聚合 DashboardState
+// Dashboard 不需要自己维护独立的状态源，它只是 Monitor 和 Controls 的一个视图聚合
+
+final dashboardProvider = Provider<DashboardState>((ref) {
+  final monitorState = ref.watch(monitorProvider);
+  final controlsState = ref.watch(controlsProvider);
+
+  return DashboardState(
+    airspeed: monitorState.currentAirspeed,
+    diffPressure: 0.0, // 暂无直接字段，可从 Airspeed 反推或加字段
+    temperature: monitorState.currentTemperature,
+    humidity: 0.0, // BarometerData 含 humidity 但 MonitorState 目前未暴露
+    pressure: monitorState.currentPressure,
+    lidarDistance: 0.0, // 需从 LidarData 获取
+    voltage: monitorState.batteryVoltage,
+    current: 0.0,
+    pitch: monitorState.pitch,
+    roll: monitorState.roll,
+    yaw: monitorState.yaw,
+    status: controlsState.isRunning ? 'Running' : 'Idle',
+  );
+});
 
 class DashboardState {
   final double airspeed;
@@ -17,59 +42,15 @@ class DashboardState {
   DashboardState({
     this.airspeed = 0.00,
     this.diffPressure = 0.00,
-    this.temperature = 22.1,
-    this.humidity = 45.8,
-    this.pressure = 1013,
-    this.lidarDistance = 155.0,
-    this.voltage = 12.4,
-    this.current = 0.50,
+    this.temperature = 0.0,
+    this.humidity = 0.0,
+    this.pressure = 0.0,
+    this.lidarDistance = 0.0,
+    this.voltage = 0.0,
+    this.current = 0.00,
     this.pitch = 0.0,
     this.roll = 0.0,
     this.yaw = 0.0,
     this.status = 'Idle',
   });
-
-  DashboardState copyWith({
-    double? airspeed,
-    double? diffPressure,
-    double? temperature,
-    double? humidity,
-    double? pressure,
-    double? lidarDistance,
-    double? voltage,
-    double? current,
-    double? pitch,
-    double? roll,
-    double? yaw,
-    String? status,
-  }) {
-    return DashboardState(
-      airspeed: airspeed ?? this.airspeed,
-      diffPressure: diffPressure ?? this.diffPressure,
-      temperature: temperature ?? this.temperature,
-      humidity: humidity ?? this.humidity,
-      pressure: pressure ?? this.pressure,
-      lidarDistance: lidarDistance ?? this.lidarDistance,
-      voltage: voltage ?? this.voltage,
-      current: current ?? this.current,
-      pitch: pitch ?? this.pitch,
-      roll: roll ?? this.roll,
-      yaw: yaw ?? this.yaw,
-      status: status ?? this.status,
-    );
-  }
 }
-
-class DashboardNotifier extends StateNotifier<DashboardState> {
-  DashboardNotifier() : super(DashboardState());
-
-  void updateAirspeed(double value) {
-    state = state.copyWith(airspeed: value);
-  }
-
-  // Add other update methods as needed
-}
-
-final dashboardProvider = StateNotifierProvider<DashboardNotifier, DashboardState>((ref) {
-  return DashboardNotifier();
-});

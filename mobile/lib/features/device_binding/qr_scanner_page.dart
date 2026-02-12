@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +14,44 @@ class _QRScannerPageState extends State<QRScannerPage> {
   final MobileScannerController controller = MobileScannerController();
   bool _isProcessing = false;
 
+  void _handleScanResult(String rawValue) {
+    try {
+      final Map<String, dynamic> data = jsonDecode(rawValue);
+      final bool success = data['success'] ?? false;
+
+      if (success) {
+        final String ip = data['ip'] ?? '';
+        if (ip.isNotEmpty) {
+          context.pushReplacement('/settings/binding/connection', extra: ip);
+        } else {
+          _showError('Invalid QR Code: IP address missing');
+        }
+      } else {
+        _showError('请检查设备网络是否已连接');
+      }
+    } catch (e) {
+      _showError('Invalid QR Code format');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    // 延迟后允许再次扫描
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,13 +60,17 @@ class _QRScannerPageState extends State<QRScannerPage> {
         actions: [
           IconButton(
             icon: ValueListenableBuilder(
-              valueListenable: controller.torchState,
+              valueListenable: controller,
               builder: (context, state, child) {
-                switch (state) {
+                switch (state.torchState) {
                   case TorchState.off:
                     return const Icon(Icons.flash_off, color: Colors.grey);
                   case TorchState.on:
                     return const Icon(Icons.flash_on, color: Colors.yellow);
+                  case TorchState.auto: // Added auto case just to be safe
+                    return const Icon(Icons.flash_auto, color: Colors.white);
+                  case TorchState.unavailable: // Added unavailable
+                    return const Icon(Icons.no_flash, color: Colors.grey);
                 }
               },
             ),
@@ -35,13 +78,17 @@ class _QRScannerPageState extends State<QRScannerPage> {
           ),
           IconButton(
             icon: ValueListenableBuilder(
-              valueListenable: controller.cameraFacingState,
+              valueListenable: controller,
               builder: (context, state, child) {
-                switch (state) {
+                switch (state.cameraDirection) {
                   case CameraFacing.front:
                     return const Icon(Icons.camera_front);
                   case CameraFacing.back:
                     return const Icon(Icons.camera_rear);
+                  case CameraFacing.external:
+                    return const Icon(Icons.camera);
+                  case CameraFacing.unknown:
+                    return const Icon(Icons.error_outline);
                 }
               },
             ),
@@ -58,13 +105,10 @@ class _QRScannerPageState extends State<QRScannerPage> {
               final List<Barcode> barcodes = capture.barcodes;
               for (final barcode in barcodes) {
                 if (barcode.rawValue != null) {
-                  _isProcessing = true;
-                  // 扫码成功，跳转到连接页面
-                  // 传递扫描到的数据
-                  context.push(
-                    '/settings/binding/connection',
-                    extra: barcode.rawValue,
-                  );
+                  setState(() {
+                    _isProcessing = true;
+                  });
+                  _handleScanResult(barcode.rawValue!);
                   break;
                 }
               }

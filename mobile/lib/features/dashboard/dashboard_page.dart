@@ -31,29 +31,30 @@ class DashboardPage extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSystemStatusCard(state),
+            _buildSystemStatusCard(context, state),
             const SizedBox(height: 24),
             const Text('关键指标', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            _buildMetricsGrid(state),
+            _buildMetricsGrid(context, state),
             const SizedBox(height: 24),
             const Text('姿态预览', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            _buildAttitudePreview(state),
+            _buildAttitudePreview(context, state),
             const SizedBox(height: 24),
-            _buildEmergencyStopButton(),
+            _buildEmergencyStopButton(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSystemStatusCard(DashboardState state) {
+  Widget _buildSystemStatusCard(BuildContext context, DashboardState state) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5), // Light gray background
+        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF5F5F5), // Light gray background
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -65,7 +66,7 @@ class DashboardPage extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.black12,
+                  color: Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(state.status, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
@@ -77,16 +78,16 @@ class DashboardPage extends ConsumerWidget {
             state.airspeed.toStringAsFixed(2),
             style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, fontFamily: 'Monospace'),
           ),
-          const Text('m/s', style: TextStyle(fontSize: 16, color: Colors.grey)),
+          Text('m/s', style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodySmall?.color)),
           const SizedBox(height: 16),
-          Text('差压: ${state.diffPressure.toStringAsFixed(2)} Pa', style: const TextStyle(color: Colors.grey)),
+          Text('差压: ${state.diffPressure.toStringAsFixed(2)} Pa', style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color)),
           const SizedBox(height: 16),
         ],
       ),
     );
   }
 
-  Widget _buildMetricsGrid(DashboardState state) {
+  Widget _buildMetricsGrid(BuildContext context, DashboardState state) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double itemWidth = (constraints.maxWidth - 24) / 3; // 24 = 12 gap * 2
@@ -94,31 +95,32 @@ class DashboardPage extends ConsumerWidget {
           spacing: 12,
           runSpacing: 12,
           children: [
-            _buildMetricItem('温度', '${state.temperature}°C', Icons.thermostat, width: itemWidth),
-            _buildMetricItem('湿度', '${state.humidity}%', Icons.water_drop, width: itemWidth),
-            _buildMetricItem('大气压', '${state.pressure.toInt()} hPa', Icons.speed, width: itemWidth),
-            _buildMetricItem('Lidar距离', '${state.lidarDistance} cm', Icons.straighten, width: itemWidth),
-            _buildMetricItem('电压', '${state.voltage} V', Icons.flash_on, width: itemWidth),
-            _buildMetricItem('电流', '${state.current.toStringAsFixed(2)} A', Icons.electric_bolt, width: itemWidth),
+            _buildMetricItem(context, '温度', '${state.temperature}°C', Icons.thermostat, width: itemWidth),
+            _buildMetricItem(context, '湿度', '${state.humidity}%', Icons.water_drop, width: itemWidth),
+            _buildMetricItem(context, '大气压', '${state.pressure.toInt()} hPa', Icons.speed, width: itemWidth),
+            _buildMetricItem(context, 'Lidar距离', '${state.lidarDistance} cm', Icons.straighten, width: itemWidth),
+            _buildMetricItem(context, '电压', '${state.voltage} V', Icons.flash_on, width: itemWidth),
+            _buildMetricItem(context, '电流', '${state.current.toStringAsFixed(2)} A', Icons.electric_bolt, width: itemWidth),
           ],
         );
       },
     );
   }
 
-  Widget _buildMetricItem(String label, String value, IconData icon, {required double width}) {
+  Widget _buildMetricItem(BuildContext context, String label, String value, IconData icon, {required double width}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: width,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
+        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF9F9F9),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 24, color: Colors.black87),
+          Icon(icon, size: 24, color: Theme.of(context).colorScheme.onSurface),
           const SizedBox(height: 12),
           Text(
             value,
@@ -128,7 +130,7 @@ class DashboardPage extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color),
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
           ),
@@ -137,14 +139,15 @@ class DashboardPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildAttitudePreview(DashboardState state) {
+  Widget _buildAttitudePreview(BuildContext context, DashboardState state) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
+        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF9F9F9),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
       ),
       child: Column(
         children: [
@@ -154,7 +157,7 @@ class DashboardPage extends ConsumerWidget {
             width: double.infinity,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Stack(
@@ -171,7 +174,7 @@ class DashboardPage extends ConsumerWidget {
                    child: Container(
                      width: 80,
                      height: 10,
-                     color: Colors.black87,
+                     color: Theme.of(context).colorScheme.onSurface,
                    ),
                  ),
                  Transform(
@@ -184,13 +187,13 @@ class DashboardPage extends ConsumerWidget {
                    child: Container(
                      width: 10,
                      height: 80,
-                     color: Colors.black87,
+                     color: Theme.of(context).colorScheme.onSurface,
                    ),
                  ),
-                 const Positioned(
+                 Positioned(
                    right: 8,
                    top: 50, // Roughly centered vertically
-                   child: Icon(Icons.refresh, size: 16, color: Colors.grey),
+                   child: Icon(Icons.refresh, size: 16, color: Theme.of(context).textTheme.bodySmall?.color),
                  ),
               ],
             ),
@@ -199,9 +202,9 @@ class DashboardPage extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildAttitudeValue('Pitch', state.pitch),
-              _buildAttitudeValue('Roll', state.roll),
-              _buildAttitudeValue('Yaw', state.yaw),
+              _buildAttitudeValue(context, 'Pitch', state.pitch),
+              _buildAttitudeValue(context, 'Roll', state.roll),
+              _buildAttitudeValue(context, 'Yaw', state.yaw),
             ],
           ),
         ],
@@ -209,17 +212,17 @@ class DashboardPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildAttitudeValue(String label, double value) {
+  Widget _buildAttitudeValue(BuildContext context, String label, double value) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(label, style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color)),
         const SizedBox(height: 4),
         Text('${value.toStringAsFixed(1)}°', style: const TextStyle(fontWeight: FontWeight.bold)),
       ],
     );
   }
 
-  Widget _buildEmergencyStopButton() {
+  Widget _buildEmergencyStopButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -228,8 +231,8 @@ class DashboardPage extends ConsumerWidget {
           // TODO: Implement emergency stop logic
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFB3261E), // Material Design Error Red
-          foregroundColor: Colors.white,
+          backgroundColor: Theme.of(context).colorScheme.error,
+          foregroundColor: Theme.of(context).colorScheme.onError,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),

@@ -22,27 +22,30 @@ class SettingsPage extends ConsumerWidget {
           children: [
             _buildConnectionCard(context, state, notifier),
             const SizedBox(height: 16),
-            _buildSensorConfigCard(state, notifier),
+            _buildSensorConfigCard(context, state, notifier),
             const SizedBox(height: 16),
             _buildFirmwareUpdateCard(context, state, notifier),
             const SizedBox(height: 16),
-            _buildAppConfigCard(state, notifier),
+            _buildAppConfigCard(context, state, notifier),
             const SizedBox(height: 16),
-            _buildAboutCard(state),
+            _buildAboutCard(context, state),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCard({required Widget child}) {
+  Widget _buildCard(BuildContext context, {required Widget child}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
+        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF9F9F9),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.1),
+        ),
       ),
       child: child,
     );
@@ -53,7 +56,9 @@ class SettingsPage extends ConsumerWidget {
     SettingsState state,
     SettingsNotifier notifier,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return _buildCard(
+      context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -68,9 +73,12 @@ class SettingsPage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'IP地址',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).textTheme.bodySmall?.color,
+            ),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -81,11 +89,13 @@ class SettingsPage extends ConsumerWidget {
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(
-                  color: Colors.black.withValues(alpha: 0.2),
-                ),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
               ),
               hintText: '192.168.1.100',
+              hintStyle: TextStyle(color: Theme.of(context).hintColor),
+            ),
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
             controller: TextEditingController(text: state.ipAddress),
             onSubmitted: (value) => notifier.setIpAddress(value),
@@ -99,11 +109,11 @@ class SettingsPage extends ConsumerWidget {
                   : notifier.connect,
               style: ElevatedButton.styleFrom(
                 backgroundColor: state.isConnected
-                    ? Colors.grey[300]
-                    : Colors.black,
+                    ? (isDark ? Colors.grey[800] : Colors.grey[300])
+                    : Theme.of(context).colorScheme.primary,
                 foregroundColor: state.isConnected
                     ? Colors.grey[600]
-                    : Colors.white,
+                    : Theme.of(context).colorScheme.onPrimary,
                 elevation: 0,
               ),
               child: Text(state.isConnected ? '已连接' : '连接'),
@@ -112,25 +122,18 @@ class SettingsPage extends ConsumerWidget {
           const SizedBox(height: 16),
           const Divider(),
           const SizedBox(height: 16),
-          Row(
-            children: const [
-              Icon(Icons.bluetooth, size: 20),
-              SizedBox(width: 8),
-              Text('蓝牙设备', style: TextStyle(fontSize: 14)),
-            ],
-          ),
-          const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton(
+            child: OutlinedButton.icon(
               onPressed: () {
                 context.go('/settings/binding/scan');
               },
               style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.black,
-                side: BorderSide(color: Colors.black.withValues(alpha: 0.2)),
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
+                side: BorderSide(color: Theme.of(context).dividerColor),
               ),
-              child: const Text('扫描蓝牙设备'),
+              icon: const Icon(Icons.qr_code_scanner, size: 18),
+              label: const Text('连接设备 (扫码)'),
             ),
           ),
         ],
@@ -139,10 +142,12 @@ class SettingsPage extends ConsumerWidget {
   }
 
   Widget _buildSensorConfigCard(
+    BuildContext context,
     SettingsState state,
     SettingsNotifier notifier,
   ) {
     return _buildCard(
+      context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -158,6 +163,7 @@ class SettingsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           _buildDropdown<ImuOrientation>(
+            context: context,
             label: 'IMU方向',
             value: state.imuOrientation,
             items: const [
@@ -177,9 +183,12 @@ class SettingsPage extends ConsumerWidget {
             onChanged: (val) => notifier.setImuOrientation(val!),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             '空速管系数',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).textTheme.bodySmall?.color,
+            ),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -190,10 +199,11 @@ class SettingsPage extends ConsumerWidget {
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(
-                  color: Colors.black.withValues(alpha: 0.2),
-                ),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
               ),
+            ),
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
             controller: TextEditingController(
               text: state.pitotCoeff.toStringAsFixed(2),
@@ -204,6 +214,7 @@ class SettingsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           _buildDropdown<SamplingRate>(
+            context: context,
             label: '采样率',
             value: state.samplingRate,
             items: const [
@@ -229,6 +240,7 @@ class SettingsPage extends ConsumerWidget {
   }
 
   Widget _buildDropdown<T>({
+    required BuildContext context,
     required String label,
     required T value,
     required List<DropdownMenuItem<T>> items,
@@ -237,12 +249,18 @@ class SettingsPage extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).textTheme.bodySmall?.color,
+          ),
+        ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.black.withValues(alpha: 0.2)),
+            border: Border.all(color: Theme.of(context).dividerColor),
             borderRadius: BorderRadius.circular(4),
           ),
           child: DropdownButtonHideUnderline(
@@ -251,7 +269,14 @@ class SettingsPage extends ConsumerWidget {
               items: items,
               onChanged: onChanged,
               isExpanded: true,
-              icon: const Icon(Icons.arrow_drop_down),
+              icon: Icon(
+                Icons.arrow_drop_down,
+                color: Theme.of(context).iconTheme.color,
+              ),
+              dropdownColor: Theme.of(context).cardColor,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
             ),
           ),
         ),
@@ -265,6 +290,7 @@ class SettingsPage extends ConsumerWidget {
     SettingsNotifier notifier,
   ) {
     return _buildCard(
+      context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -279,9 +305,12 @@ class SettingsPage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             '当前版本',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).textTheme.bodySmall?.color,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -296,8 +325,8 @@ class SettingsPage extends ConsumerWidget {
                 context.go('/settings/firmware');
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
               ),
               child: const Text('检查更新'),
             ),
@@ -307,8 +336,13 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildAppConfigCard(SettingsState state, SettingsNotifier notifier) {
+  Widget _buildAppConfigCard(
+    BuildContext context,
+    SettingsState state,
+    SettingsNotifier notifier,
+  ) {
     return _buildCard(
+      context,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -324,6 +358,7 @@ class SettingsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           _buildDropdown<AppThemeMode>(
+            context: context,
             label: '主题',
             value: state.themeMode,
             items: const [
@@ -335,6 +370,7 @@ class SettingsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           _buildDropdown<UnitSystem>(
+            context: context,
             label: '单位偏好',
             value: state.unitSystem,
             items: const [
@@ -348,18 +384,27 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildAboutCard(SettingsState state) {
+  Widget _buildAboutCard(BuildContext context, SettingsState state) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
+        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF9F9F9),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.1),
+        ),
       ),
       child: Row(
         children: [
-          const Icon(Icons.info, size: 20, color: Colors.grey),
+          Icon(
+            Icons.info,
+            size: 20,
+            color:
+                Theme.of(context).iconTheme.color?.withOpacity(0.5) ??
+                Colors.grey,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -371,12 +416,20 @@ class SettingsPage extends ConsumerWidget {
                 ),
                 Text(
                   state.appVersion,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: Colors.grey),
+          Icon(
+            Icons.chevron_right,
+            color:
+                Theme.of(context).iconTheme.color?.withOpacity(0.5) ??
+                Colors.grey,
+          ),
         ],
       ),
     );
