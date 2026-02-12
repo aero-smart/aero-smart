@@ -8,11 +8,11 @@
 defineProps({
   maxWidth: {
     type: String,
-    default: '1280px' // max-w-7xl equivalent
+    default: '1280px', // max-w-7xl equivalent
   },
   className: {
     type: String,
-    default: ''
-  }
+    default: '',
+  },
 })
 </script>

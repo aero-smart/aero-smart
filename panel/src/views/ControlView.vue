@@ -4,7 +4,11 @@
       <div class="flex items-center gap-3">
         <span class="w-1.5 h-7 bg-black rounded-full"></span>
         <div class="text-lg font-bold tracking-tight">{{ $t('control.sensor_analysis') }}</div>
-        <Badge variant="outline" size="sm" class="bg-white border-gray-200 text-gray-500 font-normal">
+        <Badge
+          variant="outline"
+          size="sm"
+          class="bg-white border-gray-200 text-gray-500 font-normal"
+        >
           {{ $t('common.live') }}
         </Badge>
       </div>
@@ -13,7 +17,10 @@
 
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0 items-stretch">
       <div class="lg:col-span-5 flex flex-col gap-4 min-h-0 h-full">
-        <Card class="h-full flex flex-col" contentClass="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden">
+        <Card
+          class="h-full flex flex-col"
+          contentClass="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden"
+        >
           <template #header>
             <div class="text-xs font-bold text-gray-700">{{ $t('control.sensor_snapshot') }}</div>
             <div class="flex items-center gap-2">
@@ -42,7 +49,7 @@
               </div>
             </div>
           </template>
-          
+
           <div class="grid grid-cols-2 grid-rows-4 gap-3 flex-1 overflow-y-auto min-h-0">
             <div
               v-for="metric in pagedTelemetryData"
@@ -51,7 +58,9 @@
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-1">
-                  <span class="text-gray-400 text-xs cursor-move opacity-50 hover:opacity-100">⋮⋮</span>
+                  <span class="text-gray-400 text-xs cursor-move opacity-50 hover:opacity-100"
+                    >⋮⋮</span
+                  >
                   <div class="text-[11px] text-gray-500 font-medium">{{ metric.label }}</div>
                 </div>
                 <component :is="metric.icon" :size="14" class="text-gray-400" />
@@ -66,7 +75,10 @@
       </div>
 
       <div class="lg:col-span-7 flex flex-col gap-4 min-h-0 h-full">
-        <Card class="h-full flex flex-col" contentClass="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden">
+        <Card
+          class="h-full flex flex-col"
+          contentClass="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden"
+        >
           <template #header>
             <div class="text-xs font-bold text-gray-700">{{ $t('control.ai_suggestions') }}</div>
             <div class="flex items-center gap-2 text-[10px] text-gray-400">
@@ -74,7 +86,7 @@
               {{ $t('control.guided') }}
             </div>
           </template>
-          
+
           <div class="flex-1 min-h-0 flex flex-col gap-4 overflow-visible">
             <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 min-h-[100px]">
               <div class="text-[10px] text-gray-400 uppercase tracking-wider">
@@ -82,7 +94,7 @@
               </div>
               <div class="mt-2 text-[12px] text-gray-700 leading-relaxed">{{ aiResult }}</div>
             </div>
-            
+
             <div class="flex items-center justify-between text-[10px] text-gray-400">
               <span class="text-xs font-semibold text-gray-600">{{ $t('control.presets') }}</span>
               <div class="flex items-center gap-2">
@@ -111,7 +123,7 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="grid grid-cols-2 grid-rows-4 gap-2 flex-1 overflow-y-auto min-h-0">
               <button
                 v-for="(item, idx) in pagedSuggestions"
@@ -121,10 +133,15 @@
               >
                 <div class="flex items-center justify-between w-full">
                   <div class="flex items-center gap-1.5">
-                    <component :is="item.icon" :size="12" class="text-gray-500 group-hover:text-gray-700 transition-colors" />
-                    <span class="text-[9px] text-gray-400 uppercase tracking-wider group-hover:text-gray-600 transition-colors">{{
-                      item.category
-                    }}</span>
+                    <component
+                      :is="item.icon"
+                      :size="12"
+                      class="text-gray-500 group-hover:text-gray-700 transition-colors"
+                    />
+                    <span
+                      class="text-[9px] text-gray-400 uppercase tracking-wider group-hover:text-gray-600 transition-colors"
+                      >{{ item.category }}</span
+                    >
                   </div>
                 </div>
                 <div class="mt-1 text-xs font-semibold text-gray-800 leading-tight truncate">

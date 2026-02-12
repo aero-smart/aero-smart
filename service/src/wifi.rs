@@ -87,16 +87,18 @@ async fn test_connectivity() -> anyhow::Result<()> {
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(5))
         .build()?;
-    
+
     let res = client.get("https://www.bilibili.com").send().await?;
-    
+
     if res.status().is_success() {
         Ok(())
     } else {
-        Err(anyhow::anyhow!("Failed to reach bilibili.com, status: {}", res.status()))
+        Err(anyhow::anyhow!(
+            "Failed to reach bilibili.com, status: {}",
+            res.status()
+        ))
     }
 }
-
 
 #[cfg(target_os = "linux")]
 async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {

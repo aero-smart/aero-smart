@@ -7,7 +7,7 @@
   /* Neutral Colors */
   --color-white: #ffffff;
   --color-black: #000000;
-  
+
   --color-gray-50: #f9fafb;
   --color-gray-100: #f3f4f6;
   --color-gray-200: #e5e7eb;
@@ -22,7 +22,7 @@
   /* Semantic Colors */
   --color-primary: #000000; /* Primary Action Color (Black as per current usage) */
   --color-primary-foreground: #ffffff;
-  
+
   --color-secondary: #f3f4f6;
   --color-secondary-foreground: #1f2937;
 
@@ -35,23 +35,23 @@
   --color-info: #3b82f6;
 
   /* Background Colors */
-  --bg-page: #f9f9fb;      /* Main Page Background */
-  --bg-surface: #ffffff;   /* Card/Panel Background */
-  --bg-sidebar: #fbfbfd;   /* Sidebar Background */
+  --bg-page: #f9f9fb; /* Main Page Background */
+  --bg-surface: #ffffff; /* Card/Panel Background */
+  --bg-sidebar: #fbfbfd; /* Sidebar Background */
   --bg-overlay: rgba(0, 0, 0, 0.5);
 
   /* Text Colors */
-  --text-primary: #1f2937;   /* Main Content */
+  --text-primary: #1f2937; /* Main Content */
   --text-secondary: #6b7280; /* Subtitles/Meta */
-  --text-tertiary: #9ca3af;  /* Disabled/Placeholder */
+  --text-tertiary: #9ca3af; /* Disabled/Placeholder */
   --text-inverse: #ffffff;
 
   /* Borders */
   --border-color: #e5e7eb;
   --border-radius-sm: 0.375rem; /* 6px */
-  --border-radius-md: 0.5rem;   /* 8px */
-  --border-radius-lg: 0.75rem;  /* 12px */
-  --border-radius-xl: 1rem;     /* 16px */
+  --border-radius-md: 0.5rem; /* 8px */
+  --border-radius-lg: 0.75rem; /* 12px */
+  --border-radius-xl: 1rem; /* 16px */
   --border-radius-full: 9999px;
 
   /* Spacing */

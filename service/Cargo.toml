@@ -10,7 +10,7 @@ axum = { version = "0.7.5", features = [
   "ws",
 ] } # Downgrade to 0.7.x for better compatibility or stick to 0.8 if confident, but 0.8 is very new. Let's use 0.7 for stability with tower-http
 juniper = "0.17.0"
-reqwest = "0.12.5"
+reqwest = { version = "0.12.5", default-features = false, features = ["rustls-tls"] }
 rmcp = { version = "0.12.0", features = ["server"] }
 serde = { version = "1.0.204", features = ["derive"] }
 sqlx = { version = "0.8.0", features = ["postgres"] }

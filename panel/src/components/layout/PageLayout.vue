@@ -1,7 +1,10 @@
 <template>
   <div class="flex flex-col h-full bg-page text-primary font-sans overflow-hidden">
     <!-- Header -->
-    <header v-if="$slots.header || title" class="flex-none px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur sticky top-0 z-10">
+    <header
+      v-if="$slots.header || title"
+      class="flex-none px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur sticky top-0 z-10"
+    >
       <div class="flex items-center gap-3">
         <slot name="title-prefix" />
         <h1 v-if="title" class="text-lg font-bold tracking-tight text-gray-900">{{ title }}</h1>
@@ -25,7 +28,7 @@
 defineProps({
   title: {
     type: String,
-    default: ''
-  }
+    default: '',
+  },
 })
 </script>

@@ -29,7 +29,12 @@ export default defineConfig({
             if (id.includes('lucide-vue-next')) {
               return 'icons'
             }
-            if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router') || id.includes('vue-i18n')) {
+            if (
+              id.includes('vue') ||
+              id.includes('pinia') ||
+              id.includes('vue-router') ||
+              id.includes('vue-i18n')
+            ) {
               return 'vue-vendor'
             }
           }

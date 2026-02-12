@@ -2,14 +2,25 @@
   <div class="fixed inset-0 bg-white font-sans">
     <div class="absolute inset-0 bg-gradient-to-b from-white via-white to-gray-50"></div>
     <div class="relative h-full w-full flex items-center justify-center p-6">
-      <div class="w-full max-w-xl rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col max-h-full">
+      <div
+        class="w-full max-w-xl rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col max-h-full"
+      >
         <!-- Header -->
         <div class="px-8 pt-8 pb-6 shrink-0">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-2xl bg-black flex items-center justify-center">
-                <svg width="18" height="28" viewBox="0 0 18 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12.5348 21.7806L8.66407 16.8297L4.74836 21.7806H0L9.75257 13.7466L0.247552 6.02771H5.0184L8.73157 10.7761L12.3097 6.02771H17.0581L12.3097 13.8591L17.3056 21.7806H12.5348Z" fill="white" />
+                <svg
+                  width="18"
+                  height="28"
+                  viewBox="0 0 18 28"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12.5348 21.7806L8.66407 16.8297L4.74836 21.7806H0L9.75257 13.7466L0.247552 6.02771H5.0184L8.73157 10.7761L12.3097 6.02771H17.0581L12.3097 13.8591L17.3056 21.7806H12.5348Z"
+                    fill="white"
+                  />
                 </svg>
               </div>
               <div class="leading-tight">
@@ -23,7 +34,13 @@
                 v-for="(_, index) in steps"
                 :key="index"
                 class="h-1.5 w-8 rounded-full transition-colors"
-                :class="index === currentStep ? 'bg-black' : index < currentStep ? 'bg-black/40' : 'bg-gray-200'"
+                :class="
+                  index === currentStep
+                    ? 'bg-black'
+                    : index < currentStep
+                      ? 'bg-black/40'
+                      : 'bg-gray-200'
+                "
               ></div>
             </div>
           </div>
@@ -43,25 +60,37 @@
             <!-- Step 0: Language & Region -->
             <div v-if="currentStep === 0" key="step0" class="space-y-8">
               <div>
-                <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">{{ $t('onboarding.title') }}</h1>
+                <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
+                  {{ $t('onboarding.title') }}
+                </h1>
                 <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.subtitle') }}</p>
               </div>
 
               <div class="space-y-6">
                 <div class="space-y-2">
-                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('onboarding.language') }}</div>
+                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    {{ $t('onboarding.language') }}
+                  </div>
                   <div class="rounded-2xl bg-gray-100 p-1 flex gap-1">
                     <button
                       @click="setLocale('en')"
                       class="flex-1 h-11 rounded-xl text-sm font-medium transition-all"
-                      :class="currentLocale === 'en' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:text-gray-900'"
+                      :class="
+                        currentLocale === 'en'
+                          ? 'bg-white shadow-sm text-gray-900'
+                          : 'text-gray-600 hover:text-gray-900'
+                      "
                     >
                       English
                     </button>
                     <button
                       @click="setLocale('zh')"
                       class="flex-1 h-11 rounded-xl text-sm font-medium transition-all"
-                      :class="currentLocale === 'zh' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:text-gray-900'"
+                      :class="
+                        currentLocale === 'zh'
+                          ? 'bg-white shadow-sm text-gray-900'
+                          : 'text-gray-600 hover:text-gray-900'
+                      "
                     >
                       中文
                     </button>
@@ -69,14 +98,20 @@
                 </div>
 
                 <div class="space-y-2">
-                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('onboarding.region') }}</div>
+                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    {{ $t('onboarding.region') }}
+                  </div>
                   <div class="rounded-2xl bg-gray-100 p-1 grid grid-cols-3 gap-1">
                     <button
                       v-for="region in ['us', 'cn', 'eu']"
                       :key="region"
                       @click="setRegion(region)"
                       class="h-11 rounded-xl text-sm font-medium uppercase transition-all"
-                      :class="selectedRegion === region ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:text-gray-900'"
+                      :class="
+                        selectedRegion === region
+                          ? 'bg-white shadow-sm text-gray-900'
+                          : 'text-gray-600 hover:text-gray-900'
+                      "
                     >
                       {{ region }}
                     </button>
@@ -89,15 +124,19 @@
             <div v-else-if="currentStep === 1" key="step1" class="space-y-6 pb-20">
               <div class="flex justify-between items-start">
                 <div>
-                  <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">{{ $t('onboarding.wifi_title') }}</h1>
+                  <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
+                    {{ $t('onboarding.wifi_title') }}
+                  </h1>
                   <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.wifi_subtitle') }}</p>
                 </div>
-                <button 
-                  @click="wifiStore.scan()" 
+                <button
+                  @click="wifiStore.scan()"
                   :disabled="scanning"
                   class="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
                 >
-                  <RefreshCw :class="['w-5 h-5', scanning ? 'animate-spin text-blue-600' : 'text-gray-600']" />
+                  <RefreshCw
+                    :class="['w-5 h-5', scanning ? 'animate-spin text-blue-600' : 'text-gray-600']"
+                  />
                 </button>
               </div>
 
@@ -107,11 +146,16 @@
               </div>
 
               <!-- Wifi List -->
-              <div class="rounded-2xl border border-gray-200 overflow-hidden bg-white max-h-[300px] overflow-y-auto">
-                 <div v-if="networks.length === 0 && !scanning" class="p-6 text-center text-gray-400 text-sm">
-                   No networks found
-                 </div>
-                 
+              <div
+                class="rounded-2xl border border-gray-200 overflow-hidden bg-white max-h-[300px] overflow-y-auto"
+              >
+                <div
+                  v-if="networks.length === 0 && !scanning"
+                  class="p-6 text-center text-gray-400 text-sm"
+                >
+                  No networks found
+                </div>
+
                 <button
                   v-for="wifi in networks"
                   :key="wifi.ssid"
@@ -124,8 +168,8 @@
                     <div class="min-w-0">
                       <div class="text-sm font-medium text-gray-900 truncate">{{ wifi.ssid }}</div>
                       <div class="text-[10px] text-gray-400 flex items-center gap-2">
-                         <span>{{ wifi.security }}</span>
-                         <span v-if="wifi.in_use" class="text-green-600 font-bold">Connected</span>
+                        <span>{{ wifi.security }}</span>
+                        <span v-if="wifi.in_use" class="text-green-600 font-bold">Connected</span>
                       </div>
                     </div>
                   </div>
@@ -139,31 +183,45 @@
               </div>
 
               <!-- Connection Status -->
-              <div v-if="connecting || testing" class="flex items-center justify-center gap-2 py-4 text-sm text-gray-600">
+              <div
+                v-if="connecting || testing"
+                class="flex items-center justify-center gap-2 py-4 text-sm text-gray-600"
+              >
                 <Loader2 class="w-4 h-4 animate-spin" />
-                <span>{{ connecting ? 'Connecting to WiFi...' : 'Testing Internet Connection...' }}</span>
+                <span>{{
+                  connecting ? 'Connecting to WiFi...' : 'Testing Internet Connection...'
+                }}</span>
               </div>
-              <div v-else-if="testResult === true" class="flex items-center justify-center gap-2 py-4 text-sm text-green-600 font-medium">
+              <div
+                v-else-if="testResult === true"
+                class="flex items-center justify-center gap-2 py-4 text-sm text-green-600 font-medium"
+              >
                 <CheckCircle2 class="w-4 h-4" />
                 <span>Internet Connected (bilibili.com reachable)</span>
               </div>
-              <div v-else-if="testResult === false" class="flex items-center justify-center gap-2 py-4 text-sm text-red-600 font-medium">
+              <div
+                v-else-if="testResult === false"
+                class="flex items-center justify-center gap-2 py-4 text-sm text-red-600 font-medium"
+              >
                 <XCircle class="w-4 h-4" />
                 <span>Internet Unreachable</span>
               </div>
-
             </div>
 
             <!-- Step 2: Login -->
             <div v-else-if="currentStep === 2" key="step2" class="space-y-6 pb-20">
               <div>
-                <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">{{ $t('onboarding.login_title') }}</h1>
+                <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
+                  {{ $t('onboarding.login_title') }}
+                </h1>
                 <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.login_subtitle') }}</p>
               </div>
 
               <div class="space-y-4">
                 <div class="space-y-2">
-                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('onboarding.email') }}</div>
+                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    {{ $t('onboarding.email') }}
+                  </div>
                   <input
                     v-model="loginForm.email"
                     type="email"
@@ -174,7 +232,9 @@
                 </div>
 
                 <div class="space-y-2">
-                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('onboarding.password') }}</div>
+                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    {{ $t('onboarding.password') }}
+                  </div>
                   <input
                     v-model="loginForm.password"
                     type="password"
@@ -193,7 +253,9 @@
                     />
                     <span class="text-sm text-gray-600">{{ $t('onboarding.remember_me') }}</span>
                   </label>
-                  <a href="#" class="text-sm text-gray-900 font-medium hover:underline">{{ $t('onboarding.forgot_password') }}</a>
+                  <a href="#" class="text-sm text-gray-900 font-medium hover:underline">{{
+                    $t('onboarding.forgot_password')
+                  }}</a>
                 </div>
               </div>
             </div>
@@ -201,31 +263,43 @@
             <!-- Step 3: Terms -->
             <div v-else-if="currentStep === 3" key="step3" class="space-y-6">
               <div>
-                <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">{{ $t('onboarding.terms_title') }}</h1>
+                <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
+                  {{ $t('onboarding.terms_title') }}
+                </h1>
                 <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.terms_subtitle') }}</p>
               </div>
 
-              <div class="rounded-2xl border border-gray-200 bg-gray-50/50 p-4 h-40 overflow-y-auto">
+              <div
+                class="rounded-2xl border border-gray-200 bg-gray-50/50 p-4 h-40 overflow-y-auto"
+              >
                 <div class="text-sm text-gray-500 text-center py-6">
                   {{ $t('onboarding.terms_empty') }}
                 </div>
               </div>
 
-              <label class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors">
+              <label
+                class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
+              >
                 <input
                   v-model="acceptTerms"
                   type="checkbox"
                   class="w-4 h-4 rounded border-gray-300 text-black focus:ring-black"
                 />
-                <span class="text-sm font-medium text-gray-900">{{ $t('onboarding.terms_accept') }}</span>
+                <span class="text-sm font-medium text-gray-900">{{
+                  $t('onboarding.terms_accept')
+                }}</span>
               </label>
             </div>
 
             <!-- Step 4: Calibration -->
             <div v-else-if="currentStep === 4" key="step4" class="space-y-6">
               <div>
-                <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">{{ $t('onboarding.calibration_title') }}</h1>
-                <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.calibration_subtitle') }}</p>
+                <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
+                  {{ $t('onboarding.calibration_title') }}
+                </h1>
+                <p class="mt-2 text-sm text-gray-500">
+                  {{ $t('onboarding.calibration_subtitle') }}
+                </p>
               </div>
 
               <div class="space-y-3">
@@ -237,12 +311,18 @@
                   <div class="flex items-center gap-3 min-w-0">
                     <div
                       class="w-10 h-10 rounded-2xl flex items-center justify-center"
-                      :class="calibrationStatus[item.key] ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'"
+                      :class="
+                        calibrationStatus[item.key]
+                          ? 'bg-green-50 text-green-700'
+                          : 'bg-gray-100 text-gray-600'
+                      "
                     >
                       <component :is="item.icon" class="w-5 h-5" />
                     </div>
                     <div class="min-w-0">
-                      <div class="text-sm font-semibold text-gray-900 truncate">{{ item.title }}</div>
+                      <div class="text-sm font-semibold text-gray-900 truncate">
+                        {{ item.title }}
+                      </div>
                       <div class="text-xs text-gray-500 truncate">{{ item.description }}</div>
                     </div>
                   </div>
@@ -250,10 +330,18 @@
                   <button
                     @click="calibrate(item.key)"
                     class="shrink-0 h-9 px-4 rounded-full text-xs font-semibold transition-colors"
-                    :class="calibrationStatus[item.key] ? 'bg-gray-100 text-gray-500 cursor-default' : 'bg-black text-white hover:bg-gray-800'"
+                    :class="
+                      calibrationStatus[item.key]
+                        ? 'bg-gray-100 text-gray-500 cursor-default'
+                        : 'bg-black text-white hover:bg-gray-800'
+                    "
                     :disabled="calibrationStatus[item.key]"
                   >
-                    {{ calibrationStatus[item.key] ? $t('onboarding.calibration_done') : $t('onboarding.calibration_start') }}
+                    {{
+                      calibrationStatus[item.key]
+                        ? $t('onboarding.calibration_done')
+                        : $t('onboarding.calibration_start')
+                    }}
                   </button>
                 </div>
               </div>
@@ -262,7 +350,9 @@
         </div>
 
         <!-- Footer Actions -->
-        <div class="px-8 py-6 border-t border-gray-100 bg-gray-50/40 flex items-center justify-between shrink-0">
+        <div
+          class="px-8 py-6 border-t border-gray-100 bg-gray-50/40 flex items-center justify-between shrink-0"
+        >
           <button
             v-if="currentStep > 0"
             @click="prevStep"
@@ -287,20 +377,25 @@
     </div>
 
     <!-- WiFi Password Modal -->
-    <div v-if="showWifiModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40">
+    <div
+      v-if="showWifiModal"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40"
+    >
       <div class="bg-white p-6 rounded-3xl shadow-xl w-80 flex flex-col gap-4">
         <h3 class="text-lg font-bold text-gray-900">Connect to {{ selectedWifi?.ssid }}</h3>
-        <input 
-          v-model="wifiPassword" 
-          type="password" 
-          placeholder="Password" 
+        <input
+          v-model="wifiPassword"
+          type="password"
+          placeholder="Password"
           class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black"
           @focus="showKeyboardFor('wifiPassword')"
         />
         <div class="flex justify-end gap-2 mt-2">
-          <button @click="closeWifiModal" class="text-sm text-gray-500 px-4 py-2 font-medium">Cancel</button>
-          <button 
-            @click="confirmConnect" 
+          <button @click="closeWifiModal" class="text-sm text-gray-500 px-4 py-2 font-medium">
+            Cancel
+          </button>
+          <button
+            @click="confirmConnect"
             :disabled="connecting"
             class="text-sm bg-black text-white px-5 py-2 rounded-xl hover:bg-gray-800 disabled:opacity-50 font-bold"
           >
@@ -311,8 +406,8 @@
     </div>
 
     <!-- Virtual Keyboard -->
-    <VirtualKeyboard 
-      :show="showKeyboard" 
+    <VirtualKeyboard
+      :show="showKeyboard"
       :model-value="keyboardValue"
       @update:model-value="handleKeyboardInput"
       @close="showKeyboard = false"
@@ -324,7 +419,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowRight, Wifi, Gauge, Thermometer, Activity, RefreshCw, Loader2, CheckCircle2, XCircle } from 'lucide-vue-next'
+import {
+  ArrowRight,
+  Wifi,
+  Gauge,
+  Thermometer,
+  Activity,
+  RefreshCw,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-vue-next'
 import { useLocaleStore } from '@/stores/locale'
 import { useWifiStore } from '@/stores/wifi'
 import { storeToRefs } from 'pinia'
@@ -337,7 +442,14 @@ const wifiStore = useWifiStore()
 
 const { currentLocale } = storeToRefs(localeStore)
 const { setLocale } = localeStore
-const { networks, scanning, connecting, testing, testResult, error: wifiError } = storeToRefs(wifiStore)
+const {
+  networks,
+  scanning,
+  connecting,
+  testing,
+  testResult,
+  error: wifiError,
+} = storeToRefs(wifiStore)
 
 const currentStep = ref(0)
 const selectedRegion = ref('us')
@@ -345,7 +457,11 @@ const selectedWifi = ref<WifiNetwork | null>(null)
 const wifiPassword = ref('')
 const loginForm = ref({ email: '', password: '', remember: false })
 const acceptTerms = ref(false)
-const calibrationStatus = ref<{ [key: string]: boolean }>({ environment: false, temperature: false, engine: false })
+const calibrationStatus = ref<{ [key: string]: boolean }>({
+  environment: false,
+  temperature: false,
+  engine: false,
+})
 
 const steps = ['Language & Region', 'WiFi', 'Login', 'Terms', 'Calibration']
 
@@ -394,12 +510,12 @@ watch(currentStep, (newStep) => {
 
 function selectWifi(wifi: WifiNetwork) {
   if (wifi.in_use) {
-      selectedWifi.value = wifi
-      // Already connected, maybe test connectivity?
-      wifiStore.testConnection()
-      return
+    selectedWifi.value = wifi
+    // Already connected, maybe test connectivity?
+    wifiStore.testConnection()
+    return
   }
-  
+
   selectedWifi.value = wifi
   wifiPassword.value = ''
   showWifiModal.value = true
@@ -414,7 +530,7 @@ function closeWifiModal() {
 
 async function confirmConnect() {
   if (!selectedWifi.value) return
-  
+
   showKeyboard.value = false // Hide keyboard to show status
   try {
     await wifiStore.connect(selectedWifi.value.ssid, wifiPassword.value)
@@ -427,9 +543,19 @@ async function confirmConnect() {
 }
 
 const calibrationItems = [
-  { key: 'environment', title: 'Environment Pressure', description: 'Calibrate ambient pressure sensor', icon: Gauge },
-  { key: 'temperature', title: 'Temperature', description: 'Calibrate temperature sensor', icon: Thermometer },
-  { key: 'engine', title: 'Engine', description: 'Calibrate engine sensors', icon: Activity }
+  {
+    key: 'environment',
+    title: 'Environment Pressure',
+    description: 'Calibrate ambient pressure sensor',
+    icon: Gauge,
+  },
+  {
+    key: 'temperature',
+    title: 'Temperature',
+    description: 'Calibrate temperature sensor',
+    icon: Thermometer,
+  },
+  { key: 'engine', title: 'Engine', description: 'Calibrate engine sensors', icon: Activity },
 ]
 
 const canProceed = computed(() => {
@@ -445,7 +571,7 @@ const canProceed = computed(() => {
     case 3:
       return acceptTerms.value
     case 4:
-      return Object.values(calibrationStatus.value).every(status => status)
+      return Object.values(calibrationStatus.value).every((status) => status)
     default:
       return false
   }

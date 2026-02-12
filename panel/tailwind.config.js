@@ -17,7 +17,7 @@ export default {
           DEFAULT: 'var(--color-accent)',
           foreground: 'var(--color-accent-foreground)',
         },
-        
+
         // Status Colors
         success: 'var(--color-success)',
         warning: 'var(--color-warning)',
@@ -60,9 +60,9 @@ export default {
         128: '32rem',
       },
       boxShadow: {
-        'soft': '0 2px 10px rgba(0, 0, 0, 0.03)',
-        'card': '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)',
-        'float': '0 10px 30px -10px rgba(0, 0, 0, 0.1)',
+        soft: '0 2px 10px rgba(0, 0, 0, 0.03)',
+        card: '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)',
+        float: '0 10px 30px -10px rgba(0, 0, 0, 0.1)',
       },
     },
   },

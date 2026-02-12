@@ -6,7 +6,9 @@
       <div class="h-14 px-4 flex items-center justify-between border-b border-gray-200/50">
         <div class="flex items-center gap-2">
           <Database :size="16" class="text-gray-500" />
-          <span class="text-xs font-semibold text-gray-900 tracking-tight">{{ $t('analysis.data_sources') }}</span>
+          <span class="text-xs font-semibold text-gray-900 tracking-tight">{{
+            $t('analysis.data_sources')
+          }}</span>
         </div>
       </div>
 
@@ -17,40 +19,50 @@
           :key="source.id"
           @click="toggleSource(source.id)"
           class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 text-left group relative overflow-hidden"
-          :class="selectedSources.includes(source.id) ? 'bg-white shadow-sm ring-1 ring-black/5' : 'hover:bg-black/5'"
+          :class="
+            selectedSources.includes(source.id)
+              ? 'bg-white shadow-sm ring-1 ring-black/5'
+              : 'hover:bg-black/5'
+          "
         >
           <!-- Active State Indicator Background (Optional, if we want a colored tint) -->
-          <div 
+          <div
             v-if="selectedSources.includes(source.id)"
             class="absolute inset-0 opacity-[0.03]"
             :style="{ backgroundColor: source.color }"
           ></div>
 
           <div class="flex items-center gap-3 relative z-10">
-            <div 
+            <div
               class="w-2.5 h-2.5 rounded-full shadow-sm transition-all duration-300 border border-white/50"
-              :class="selectedSources.includes(source.id) ? 'scale-100' : 'scale-90 opacity-60 grayscale'"
+              :class="
+                selectedSources.includes(source.id) ? 'scale-100' : 'scale-90 opacity-60 grayscale'
+              "
               :style="{ backgroundColor: source.color }"
             ></div>
-            <span 
-              class="text-[13px] font-medium transition-colors duration-200" 
+            <span
+              class="text-[13px] font-medium transition-colors duration-200"
               :class="selectedSources.includes(source.id) ? 'text-gray-900' : 'text-gray-600'"
             >
               {{ source.label }}
             </span>
           </div>
-          
-          <span 
+
+          <span
             class="relative z-10 text-[10px] font-semibold px-2 py-0.5 rounded-md border transition-all duration-200"
-            :style="selectedSources.includes(source.id) ? { 
-              color: source.color, 
-              backgroundColor: `${source.color}10`,
-              borderColor: `${source.color}20`
-            } : {
-              color: '#9ca3af',
-              backgroundColor: '#f9fafb',
-              borderColor: '#f3f4f6'
-            }"
+            :style="
+              selectedSources.includes(source.id)
+                ? {
+                    color: source.color,
+                    backgroundColor: `${source.color}10`,
+                    borderColor: `${source.color}20`,
+                  }
+                : {
+                    color: '#9ca3af',
+                    backgroundColor: '#f9fafb',
+                    borderColor: '#f3f4f6',
+                  }
+            "
           >
             {{ source.unit }}
           </span>
@@ -61,15 +73,20 @@
       <div class="p-4 border-t border-gray-200 bg-gray-50/50 backdrop-blur-sm">
         <div class="flex items-center gap-2 mb-4">
           <Sliders :size="14" class="text-gray-400" />
-          <span class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{{ $t('analysis.display_settings') }}</span>
+          <span class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{{
+            $t('analysis.display_settings')
+          }}</span>
         </div>
-        
+
         <div class="space-y-5">
           <!-- Time Range -->
           <div class="space-y-2.5">
             <div class="flex justify-between items-center text-[11px]">
               <span class="text-gray-500 font-medium">{{ $t('analysis.time_range') }}</span>
-              <span class="text-gray-900 font-bold bg-white px-2 py-0.5 rounded-md border border-gray-200 shadow-sm min-w-[32px] text-center">{{ config.timeRange }}s</span>
+              <span
+                class="text-gray-900 font-bold bg-white px-2 py-0.5 rounded-md border border-gray-200 shadow-sm min-w-[32px] text-center"
+                >{{ config.timeRange }}s</span
+              >
             </div>
             <div class="relative h-4 flex items-center">
               <input
@@ -81,7 +98,11 @@
                 class="w-full h-1 bg-gray-200 rounded-full appearance-none cursor-pointer accent-gray-800 z-10 relative"
               />
               <div class="absolute inset-0 flex justify-between px-0.5 pointer-events-none">
-                <div v-for="n in 12" :key="n" class="w-0.5 h-0.5 rounded-full bg-gray-300 mt-2"></div>
+                <div
+                  v-for="n in 12"
+                  :key="n"
+                  class="w-0.5 h-0.5 rounded-full bg-gray-300 mt-2"
+                ></div>
               </div>
             </div>
           </div>
@@ -101,33 +122,51 @@
                 <option :value="50">50 Hz</option>
                 <option :value="100">100 Hz</option>
               </select>
-              <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-400 group-hover:text-gray-600 transition-colors">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              <div
+                class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-400 group-hover:text-gray-600 transition-colors"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  ></path>
+                </svg>
               </div>
             </div>
           </div>
         </div>
-
-
       </div>
     </div>
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col min-w-0 bg-white">
       <!-- Toolbar -->
-      <div class="h-14 px-4 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur sticky top-0 z-10">
+      <div
+        class="h-14 px-4 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur sticky top-0 z-10"
+      >
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-3">
-            <h1 class="text-lg font-bold text-gray-900 tracking-tight">{{ $t('analysis.title') }}</h1>
-            <span 
+            <h1 class="text-lg font-bold text-gray-900 tracking-tight">
+              {{ $t('analysis.title') }}
+            </h1>
+            <span
               class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border transition-colors"
-              :class="isRealtime ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-600 border-gray-200'"
+              :class="
+                isRealtime
+                  ? 'bg-green-50 text-green-700 border-green-200'
+                  : 'bg-gray-50 text-gray-600 border-gray-200'
+              "
             >
-              <span class="w-1.5 h-1.5 rounded-full" :class="isRealtime ? 'bg-green-500 animate-pulse' : 'bg-gray-400'"></span>
+              <span
+                class="w-1.5 h-1.5 rounded-full"
+                :class="isRealtime ? 'bg-green-500 animate-pulse' : 'bg-gray-400'"
+              ></span>
               {{ isRealtime ? $t('common.live') : $t('common.history') }}
             </span>
           </div>
-          
+
           <div class="h-4 w-px bg-gray-200 mx-2"></div>
 
           <!-- View Controls -->
@@ -135,14 +174,22 @@
             <button
               @click="isRealtime = true"
               class="px-3 py-1 text-[11px] font-medium rounded-md transition-all"
-              :class="isRealtime ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700'"
+              :class="
+                isRealtime
+                  ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
+                  : 'text-gray-500 hover:text-gray-700'
+              "
             >
               {{ $t('common.real_time') }}
             </button>
             <button
               @click="isRealtime = false"
               class="px-3 py-1 text-[11px] font-medium rounded-md transition-all"
-              :class="!isRealtime ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700'"
+              :class="
+                !isRealtime
+                  ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
+                  : 'text-gray-500 hover:text-gray-700'
+              "
             >
               {{ $t('common.history') }}
             </button>
@@ -152,17 +199,29 @@
         <div class="flex items-center gap-3">
           <!-- Chart Actions -->
           <div class="flex items-center gap-1">
-            <button @click="resetView" class="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors" title="Reset View">
+            <button
+              @click="resetView"
+              class="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+              title="Reset View"
+            >
               <RotateCcw :size="15" />
             </button>
-            <button @click="zoomIn" class="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors" title="Zoom In">
+            <button
+              @click="zoomIn"
+              class="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+              title="Zoom In"
+            >
               <ZoomIn :size="15" />
             </button>
-            <button @click="zoomOut" class="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors" title="Zoom Out">
+            <button
+              @click="zoomOut"
+              class="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+              title="Zoom Out"
+            >
               <ZoomOut :size="15" />
             </button>
           </div>
-          
+
           <div class="h-4 w-px bg-gray-200"></div>
 
           <button
@@ -183,11 +242,13 @@
         </div>
 
         <!-- Dashboard Panel (Bottom) -->
-        <div class="h-28 bg-gray-50/50 border-t border-gray-200/60 p-4 flex gap-4 backdrop-blur-sm z-10 items-center justify-between">
+        <div
+          class="h-28 bg-gray-50/50 border-t border-gray-200/60 p-4 flex gap-4 backdrop-blur-sm z-10 items-center justify-between"
+        >
           <!-- Prev Button -->
-          <button 
+          <button
             v-if="totalPages > 1"
-            @click="prevPage" 
+            @click="prevPage"
             :disabled="currentPage === 1"
             class="flex-shrink-0 p-1.5 rounded-lg border border-gray-200 bg-white shadow-sm hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white transition-all active:scale-95"
           >
@@ -202,24 +263,33 @@
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: source.color }"></span>
-                  <div class="text-[11px] text-gray-500 font-medium truncate">{{ source.label }}</div>
+                  <span
+                    class="w-1.5 h-1.5 rounded-full"
+                    :style="{ backgroundColor: source.color }"
+                  ></span>
+                  <div class="text-[11px] text-gray-500 font-medium truncate">
+                    {{ source.label }}
+                  </div>
                 </div>
-                <component :is="getSourceIcon(source.id)" class="text-gray-400 w-3.5 h-3.5 transition-colors" />
+                <component
+                  :is="getSourceIcon(source.id)"
+                  class="text-gray-400 w-3.5 h-3.5 transition-colors"
+                />
               </div>
-              
+
               <div>
                 <div class="mt-2 text-lg font-bold text-gray-800 leading-none">
-                  {{ getCurrentValue(source.id) }} <span class="text-xs font-normal text-gray-500 ml-0.5">{{ source.unit }}</span>
+                  {{ getCurrentValue(source.id) }}
+                  <span class="text-xs font-normal text-gray-500 ml-0.5">{{ source.unit }}</span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Next Button -->
-          <button 
+          <button
             v-if="totalPages > 1"
-            @click="nextPage" 
+            @click="nextPage"
             :disabled="currentPage === totalPages"
             class="flex-shrink-0 p-1.5 rounded-lg border border-gray-200 bg-white shadow-sm hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white transition-all active:scale-95"
           >
@@ -236,13 +306,13 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useDeviceStore } from '@/stores/device'
 import { storeToRefs } from 'pinia'
 import * as echarts from 'echarts'
-import { 
-  Database, 
-  Sliders, 
+import {
+  Database,
+  Sliders,
   Palette,
-  Download, 
-  RotateCcw, 
-  ZoomIn, 
+  Download,
+  RotateCcw,
+  ZoomIn,
   ZoomOut,
   Wind,
   Gauge,
@@ -250,7 +320,7 @@ import {
   Zap,
   Activity,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 
@@ -295,27 +365,42 @@ const activeSourceInfo = computed(() =>
 
 const getCurrentValue = (id: string) => {
   switch (id) {
-    case 'airspeed': return airspeed.value.toFixed(2)
-    case 'pressureDiff': return pressureDiff.value.toFixed(2)
-    case 'env_pressure': return env.value.pressure.toFixed(0)
-    case 'env_temp': return env.value.temperature.toFixed(1)
-    case 'battery_v': return battery.value.voltage.toFixed(2)
-    case 'imu_roll': return imu.value.attitude.roll.toFixed(1)
-    case 'imu_pitch': return imu.value.attitude.pitch.toFixed(1)
-    default: return '0'
+    case 'airspeed':
+      return airspeed.value.toFixed(2)
+    case 'pressureDiff':
+      return pressureDiff.value.toFixed(2)
+    case 'env_pressure':
+      return env.value.pressure.toFixed(0)
+    case 'env_temp':
+      return env.value.temperature.toFixed(1)
+    case 'battery_v':
+      return battery.value.voltage.toFixed(2)
+    case 'imu_roll':
+      return imu.value.attitude.roll.toFixed(1)
+    case 'imu_pitch':
+      return imu.value.attitude.pitch.toFixed(1)
+    default:
+      return '0'
   }
 }
 
 const getSourceIcon = (id: string) => {
   switch (id) {
-    case 'airspeed': return Wind
-    case 'pressureDiff': return Gauge
-    case 'env_pressure': return Gauge
-    case 'env_temp': return Thermometer
-    case 'battery_v': return Zap
-    case 'imu_roll': 
-    case 'imu_pitch': return Activity
-    default: return Activity
+    case 'airspeed':
+      return Wind
+    case 'pressureDiff':
+      return Gauge
+    case 'env_pressure':
+      return Gauge
+    case 'env_temp':
+      return Thermometer
+    case 'battery_v':
+      return Zap
+    case 'imu_roll':
+    case 'imu_pitch':
+      return Activity
+    default:
+      return Activity
   }
 }
 
@@ -421,7 +506,7 @@ function initChart() {
           `
         })
         return result
-      }
+      },
     },
     legend: { show: false },
     grid: {
@@ -465,11 +550,11 @@ function initChart() {
         moveHandleStyle: { color: '#1f2937', opacity: 0.8 },
         dataBackground: {
           lineStyle: { opacity: 0 },
-          areaStyle: { opacity: 0 }
+          areaStyle: { opacity: 0 },
         },
         selectedDataBackground: {
           lineStyle: { opacity: 0 },
-          areaStyle: { opacity: 0 }
+          areaStyle: { opacity: 0 },
         },
         textStyle: { show: false },
         showDetail: false, // Hide the detail text on the sides
@@ -631,11 +716,14 @@ onMounted(() => {
         const width = entry.contentRect.width
         // card min-width 150 + gap 12 ~ 162
         // We use floor to ensure they fit without scrolling
-        const count = Math.floor((width + 12) / 162) 
+        const count = Math.floor((width + 12) / 162)
         itemsPerPage.value = Math.max(1, count)
         // Adjust page if current page becomes invalid due to resize
         if (currentPage.value > Math.ceil(activeSourceInfo.value.length / itemsPerPage.value)) {
-           currentPage.value = Math.max(1, Math.ceil(activeSourceInfo.value.length / itemsPerPage.value))
+          currentPage.value = Math.max(
+            1,
+            Math.ceil(activeSourceInfo.value.length / itemsPerPage.value),
+          )
         }
       }
     })
