@@ -3,7 +3,7 @@
 [package]
 edition.workspace = true
 version.workspace = true
-name              = "aerosmart-firmware"
+name              = "asfirmware"
 
 [features]
 default = [
@@ -92,7 +92,7 @@ embedded-hal-async = "1.0.0"
 embedded-hal = "1.0.0"
 
 [[bin]]
-name  = "aerosmart-firmware"
+name  = "asfirmware"
 test  = false
 bench = false
 

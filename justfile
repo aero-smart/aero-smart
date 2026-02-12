@@ -27,9 +27,9 @@ ci-shared:
 # CI for firmware
 ci-firmware:
   @echo "Running CI for firmware..."
-  cargo check -p aerosmart-firmware --target thumbv7em-none-eabi
-  cargo clippy -p aerosmart-firmware --target thumbv7em-none-eabi -- -D warnings
-  cargo build -p aerosmart-firmware --target thumbv7em-none-eabi
+  cargo check -p asfirmware --target thumbv7em-none-eabi
+  cargo clippy -p asfirmware --target thumbv7em-none-eabi -- -D warnings
+  cargo build -p asfirmware --target thumbv7em-none-eabi
 
 # CI for panel
 ci-panel:
@@ -46,7 +46,7 @@ ci-panel:
 # Build firmware
 build-firmware:
   @echo "Building firmware in release mode..."
-  cargo build -p aerosmart-firmware --target thumbv7em-none-eabi --release
+  cargo build -p asfirmware --target thumbv7em-none-eabi --release
 
 # Build panel (Tauri application)
 build-panel:
@@ -59,6 +59,11 @@ build-panel-aarch64:
   @echo "Building panel application for aarch64 (OrangePi Zero 3)..."
   cd panel && pnpm install
   cd panel && pnpm run tauri:build:aarch64
+
+build-firmware:
+  @echo "Building firmware in release mode..."
+  cd firmware && cargo build --release --target thumbv7em-none-eabi
+  cd firmware && cargo objcopy --release -- -O binary asfirmware.bin
 
 fmt:
   cargo fmt

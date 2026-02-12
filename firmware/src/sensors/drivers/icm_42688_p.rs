@@ -1,4 +1,4 @@
-use crate::consts::sensors::IMU_SAMPLE_RATE_HZ;
+use crate::{consts::sensors::IMU_SAMPLE_RATE_HZ, linear_transfer_function};
 
 /// - Name: PWR_MGMT0
 /// - Address: 78 (4Eh)
@@ -469,3 +469,6 @@ impl IntSource0 {
         byte
     }
 }
+
+linear_transfer_function!(icm_42688_p, accel, 16, 1.0f32, (-2.0, 2.0));
+linear_transfer_function!(icm_42688_p, gyro, 16, 1.0f32, (-31.25, 31.25));

@@ -3,7 +3,9 @@
 //! ICM-42688-P
 //!
 //! Poll @ 1 kHz at 1 MHz SPIuse defmt::info;
-use crate::sensors::drivers::icm_42688_p::{AccelConfig0, GyroConfig0, IntSource0, PwrMgmt0};
+use crate::sensors::drivers::icm_42688_p::{
+    AccelConfig0, GyroConfig0, IntSource0, PwrMgmt0, icm_42688_p_accel, icm_42688_p_gyro,
+};
 use defmt::info;
 use embassy_stm32::{
     gpio::Output,
@@ -77,7 +79,6 @@ impl<'a> ImuSpi<'a> {
     }
 
     pub async fn poll(&mut self) -> Result<ImuData, ImuError> {
-        const RAW_MAX: f32 = 32768.0;
         self.cs.set_low();
         // perform SPI operations here
         let mut buffer = [0u8; { 1 + 6 * 2 }];
@@ -91,18 +92,12 @@ impl<'a> ImuSpi<'a> {
 
         info!("IMU Raw Data: {:?}", buffer);
 
-        let accel_x = i16::from_be_bytes([buffer[1], buffer[2]]) as f32 / RAW_MAX
-            * self.accel_config.fs_sel.scale_factor();
-        let accel_y = i16::from_be_bytes([buffer[3], buffer[4]]) as f32 / RAW_MAX
-            * self.accel_config.fs_sel.scale_factor();
-        let accel_z = i16::from_be_bytes([buffer[5], buffer[6]]) as f32 / RAW_MAX
-            * self.accel_config.fs_sel.scale_factor();
-        let gyro_x = i16::from_be_bytes([buffer[7], buffer[8]]) as f32 / RAW_MAX
-            * self.gyro_config.fs_sel.scale_factor();
-        let gyro_y = i16::from_be_bytes([buffer[9], buffer[10]]) as f32 / RAW_MAX
-            * self.gyro_config.fs_sel.scale_factor();
-        let gyro_z = i16::from_be_bytes([buffer[11], buffer[12]]) as f32 / RAW_MAX
-            * self.gyro_config.fs_sel.scale_factor();
+        let accel_x = icm_42688_p_accel(u16::from_be_bytes([buffer[1], buffer[2]]));
+        let accel_y = icm_42688_p_accel(u16::from_be_bytes([buffer[3], buffer[4]]));
+        let accel_z = icm_42688_p_accel(u16::from_be_bytes([buffer[5], buffer[6]]));
+        let gyro_x = icm_42688_p_gyro(u16::from_be_bytes([buffer[7], buffer[8]]));
+        let gyro_y = icm_42688_p_gyro(u16::from_be_bytes([buffer[9], buffer[10]]));
+        let gyro_z = icm_42688_p_gyro(u16::from_be_bytes([buffer[11], buffer[12]]));
 
         Ok(ImuData::new(
             accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z,

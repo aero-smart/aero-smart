@@ -1,0 +1,159 @@
+name: Build Embassy Firmware for STM32H7
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "firmware/**"
+      - "shared/**"
+      - ".github/workflows/build-firmware.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "firmware/**"
+      - "shared/**"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-stm32h7-firmware:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv7em-none-eabihf
+          components: rust-src, llvm-tools-preview
+
+      - name: Install cargo-binutils
+        run: cargo install cargo-binutils
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update &&
+          sudo apt-get install -y \
+            gcc-arm-none-eabi \
+            binutils-arm-none-eabi \
+            libnewlib-arm-none-eabi \
+            protobuf-compiler
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-thumbv7em-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-thumbv7em-
+
+      - name: Cache cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-git-thumbv7em-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-git-thumbv7em-
+
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: |
+            target
+            firmware/target
+          key: ${{ runner.os }}-cargo-build-thumbv7em-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-build-thumbv7em-
+
+      - name: Build firmware for STM32H7
+        working-directory: firmware
+        run: |
+          # Build the Embassy firmware for STM32H7
+          cargo build --release --target thumbv7em-none-eabihf --verbose
+
+      - name: Generate firmware binaries
+        working-directory: firmware
+        run: |
+          # Get the binary name from Cargo.toml
+          BINARY_NAME=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].targets[] | select(.kind[] | contains("bin")) | .name' | head -n1)
+          echo "Binary name: $BINARY_NAME"
+          
+          # Create firmware directory
+          mkdir -p ../artifacts/firmware
+          
+          # Generate .bin file (raw binary for flashing)
+          cargo objcopy --release --target thumbv7em-none-eabihf -- -O binary ../artifacts/firmware/${BINARY_NAME}.bin
+          
+          # Generate .hex file (Intel HEX format)
+          cargo objcopy --release --target thumbv7em-none-eabihf -- -O ihex ../artifacts/firmware/${BINARY_NAME}.hex
+          
+          # Copy ELF file for debugging
+          cp target/thumbv7em-none-eabihf/release/${BINARY_NAME} ../artifacts/firmware/${BINARY_NAME}.elf
+          
+          # Generate size report
+          cargo size --release --target thumbv7em-none-eabihf -- -A > ../artifacts/firmware/size_report.txt
+          
+          echo "=== Firmware Size Report ==="
+          cat ../artifacts/firmware/size_report.txt
+
+      - name: Generate firmware metadata
+        run: |
+          cd artifacts/firmware
+          
+          # Calculate checksums
+          sha256sum *.bin *.hex *.elf > checksums.txt
+          
+          # Get binary sizes
+          ls -lh *.bin *.hex *.elf > file_sizes.txt
+
+      - name: Create release info
+        run: |
+          echo "# STM32H7 Firmware Build Info" > artifacts/firmware/BUILD_INFO.txt
+          echo "" >> artifacts/firmware/BUILD_INFO.txt
+          echo "Branch: ${{ github.ref_name }}" >> artifacts/firmware/BUILD_INFO.txt
+          echo "Commit: ${{ github.sha }}" >> artifacts/firmware/BUILD_INFO.txt
+          echo "Short SHA: ${GITHUB_SHA::8}" >> artifacts/firmware/BUILD_INFO.txt
+          echo "Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> artifacts/firmware/BUILD_INFO.txt
+          echo "Target: thumbv7em-none-eabihf (STM32H7)" >> artifacts/firmware/BUILD_INFO.txt
+          echo "" >> artifacts/firmware/BUILD_INFO.txt
+          echo "## Files:" >> artifacts/firmware/BUILD_INFO.txt
+          echo "- .bin: Raw binary for direct flash programming" >> artifacts/firmware/BUILD_INFO.txt
+          echo "- .hex: Intel HEX format for various programmers" >> artifacts/firmware/BUILD_INFO.txt
+          echo "- .elf: ELF with debug symbols for debugging" >> artifacts/firmware/BUILD_INFO.txt
+          echo "" >> artifacts/firmware/BUILD_INFO.txt
+          echo "## Flash Instructions:" >> artifacts/firmware/BUILD_INFO.txt
+          echo "Using probe-rs:" >> artifacts/firmware/BUILD_INFO.txt
+          echo "  probe-rs download --format bin --chip STM32H7xxxx firmware.bin" >> artifacts/firmware/BUILD_INFO.txt
+          echo "" >> artifacts/firmware/BUILD_INFO.txt
+          echo "Using st-flash:" >> artifacts/firmware/BUILD_INFO.txt
+          echo "  st-flash write firmware.bin 0x8000000" >> artifacts/firmware/BUILD_INFO.txt
+          echo "" >> artifacts/firmware/BUILD_INFO.txt
+          cat artifacts/firmware/size_report.txt >> artifacts/firmware/BUILD_INFO.txt
+          cat artifacts/firmware/BUILD_INFO.txt
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: stm32h7-firmware-${{ github.sha }}
+          path: |
+            artifacts/firmware/*.bin
+            artifacts/firmware/*.hex
+            artifacts/firmware/*.elf
+            artifacts/firmware/BUILD_INFO.txt
+            artifacts/firmware/checksums.txt
+            artifacts/firmware/size_report.txt
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: List final artifacts
+        run: |
+          echo "=== Final Firmware Artifacts ==="
+          ls -lh artifacts/firmware/
+          echo ""
+          echo "=== Checksums ==="
+          cat artifacts/firmware/checksums.txt
