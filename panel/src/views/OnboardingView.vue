@@ -219,60 +219,8 @@
               </div>
             </div>
 
-            <!-- Step 2: Login -->
-            <div v-else-if="currentStep === 2" key="step2" class="space-y-6 pb-20">
-              <div>
-                <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
-                  {{ $t('onboarding.login_title') }}
-                </h1>
-                <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.login_subtitle') }}</p>
-              </div>
-
-              <div class="space-y-4">
-                <div class="space-y-2">
-                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    {{ $t('onboarding.email') }}
-                  </div>
-                  <input
-                    v-model="loginForm.email"
-                    type="email"
-                    class="w-full h-12 px-4 rounded-2xl border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition"
-                    placeholder="name@example.com"
-                    @focus="showKeyboardFor('email')"
-                  />
-                </div>
-
-                <div class="space-y-2">
-                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    {{ $t('onboarding.password') }}
-                  </div>
-                  <input
-                    v-model="loginForm.password"
-                    type="password"
-                    class="w-full h-12 px-4 rounded-2xl border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition"
-                    placeholder="••••••••"
-                    @focus="showKeyboardFor('loginPassword')"
-                  />
-                </div>
-
-                <div class="flex items-center justify-between pt-1">
-                  <label class="flex items-center gap-2 cursor-pointer">
-                    <input
-                      v-model="loginForm.remember"
-                      type="checkbox"
-                      class="w-4 h-4 rounded border-gray-300 text-black focus:ring-black"
-                    />
-                    <span class="text-sm text-gray-600">{{ $t('onboarding.remember_me') }}</span>
-                  </label>
-                  <a href="#" class="text-sm text-gray-900 font-medium hover:underline">{{
-                    $t('onboarding.forgot_password')
-                  }}</a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Step 3: Terms -->
-            <div v-else-if="currentStep === 3" key="step3" class="space-y-6">
+            <!-- Step 2: Terms -->
+            <div v-else-if="currentStep === 2" key="step2" class="space-y-6">
               <div>
                 <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
                   {{ $t('onboarding.terms_title') }}
@@ -302,8 +250,8 @@
               </label>
             </div>
 
-            <!-- Step 4: Calibration -->
-            <div v-else-if="currentStep === 4" key="step4" class="space-y-6">
+            <!-- Step 3: Calibration -->
+            <div v-else-if="currentStep === 3" key="step3" class="space-y-6">
               <div>
                 <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
                   {{ $t('onboarding.calibration_title') }}
@@ -501,7 +449,7 @@ const calibrationStatus = ref<{ [key: string]: boolean }>({
   engine: false,
 })
 
-const steps = ['Language & Region', 'WiFi', 'Login', 'Terms', 'Calibration']
+const steps = ['Language & Region', 'WiFi', 'Terms', 'Calibration']
 
 // Keyboard State
 const showKeyboard = ref(false)
@@ -509,8 +457,6 @@ const activeInput = ref<string | null>(null)
 
 const keyboardValue = computed(() => {
   if (activeInput.value === 'wifiPassword') return wifiPassword.value
-  if (activeInput.value === 'email') return loginForm.value.email
-  if (activeInput.value === 'loginPassword') return loginForm.value.password
   return ''
 })
 
@@ -521,8 +467,6 @@ function showKeyboardFor(field: string) {
 
 function handleKeyboardInput(val: string) {
   if (activeInput.value === 'wifiPassword') wifiPassword.value = val
-  else if (activeInput.value === 'email') loginForm.value.email = val
-  else if (activeInput.value === 'loginPassword') loginForm.value.password = val
 }
 
 function handleKeyboardEnter() {
@@ -611,10 +555,8 @@ const canProceed = computed(() => {
       // Or if user insists on skipping? For now strict requirement as per user request "confirm network connection"
       return testResult.value === true
     case 2:
-      return loginForm.value.email && loginForm.value.password
-    case 3:
       return acceptTerms.value
-    case 4:
+    case 3:
       return Object.values(calibrationStatus.value).every((status) => status)
     default:
       return false
