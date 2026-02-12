@@ -46,6 +46,20 @@
 
     <!-- Bottom: Settings (Icons 4) -->
     <div class="flex flex-col items-center gap-1 mb-1">
+      <!-- WiFi Indicator -->
+      <button
+        @click="isSettingsOpen = true"
+        class="w-[36px] h-[36px] rounded-[7px] flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-gray-100 transition-all group relative cursor-pointer"
+      >
+        <component :is="wifiIcon" :size="18" stroke-width="2" :class="wifiColorClass" />
+        <!-- Tooltip -->
+        <div
+          class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50"
+        >
+          {{ wifiTooltip }}
+        </div>
+      </button>
+
       <!-- Battery Indicator -->
       <div
         class="w-[36px] h-[36px] flex items-center justify-center text-text-secondary relative group"
@@ -89,18 +103,44 @@ import {
   BatteryMedium,
   BatteryFull,
   BatteryCharging,
+  Wifi,
+  WifiOff,
 } from 'lucide-vue-next'
 import { useDeviceStore } from '@/stores/device'
+import { useWifiStore } from '@/stores/wifi'
 import { storeToRefs } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import SettingsModal from '@/components/SettingsModal.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const store = useDeviceStore()
+const wifiStore = useWifiStore()
 const { isConnected, battery } = storeToRefs(store)
+const { status: wifiStatus, testResult: wifiTestResult } = storeToRefs(wifiStore)
 
 const isSettingsOpen = ref(false)
+let wifiInterval: number | null = null
+
+onMounted(() => {
+  // Initial check
+  wifiStore.updateStatus()
+  wifiStore.testConnection()
+
+  // Poll every 30 seconds
+  wifiInterval = window.setInterval(() => {
+    wifiStore.updateStatus()
+    if (wifiStatus.value.connected) {
+      wifiStore.testConnection()
+    }
+  }, 30000)
+})
+
+onUnmounted(() => {
+  if (wifiInterval) {
+    clearInterval(wifiInterval)
+  }
+})
 
 const menuItems = computed(() => [
   { label: t('nav.overview'), path: '/', icon: Compass },
@@ -124,6 +164,22 @@ const batteryColorClass = computed(() => {
   if (soc >= 50) return 'text-green-500'
   if (soc >= 20) return 'text-yellow-500'
   return 'text-red-500'
+})
+
+const wifiIcon = computed(() => {
+  return wifiStatus.value.connected ? Wifi : WifiOff
+})
+
+const wifiColorClass = computed(() => {
+  if (!wifiStatus.value.connected) return 'text-red-500'
+  if (wifiTestResult.value) return 'text-green-500'
+  return 'text-yellow-500'
+})
+
+const wifiTooltip = computed(() => {
+  if (!wifiStatus.value.connected) return 'Disconnected'
+  const status = wifiTestResult.value ? 'Online' : 'Offline'
+  return `${wifiStatus.value.ssid || 'WiFi'} (${status})`
 })
 </script>
 

@@ -1,92 +1,78 @@
 <template>
   <div
-    class="fixed inset-x-0 bottom-0 z-50 bg-gray-900 p-2 pb-6 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] transition-transform duration-200"
+    class="fixed inset-x-0 bottom-0 z-[100] bg-gray-900 pb-2 pt-1 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] transition-transform duration-200 select-none"
     :class="{ 'translate-y-full': !show }"
   >
     <!-- Close Handle/Bar -->
-    <div class="flex justify-center mb-2" @click="$emit('close')">
+    <div class="flex justify-center mb-1 h-6 items-center w-full" @click="$emit('close')">
       <div class="w-12 h-1 bg-gray-600 rounded-full"></div>
     </div>
 
-    <div class="flex flex-col gap-2 max-w-4xl mx-auto select-none">
-      <!-- Row 1: Numbers -->
-      <div class="flex gap-1 justify-center">
-        <button
-          v-for="key in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']"
-          :key="key"
-          class="key-btn"
-          @click="handleInput(key)"
-        >
-          {{ key }}
+    <div class="flex flex-col w-full px-1 gap-1.5">
+      <!-- Row 1: QWERTY / Numbers -->
+      <div class="flex gap-1.5 w-full justify-center">
+        <button v-for="key in row1" :key="key" class="key-btn flex-1" @click="handleInput(key)">
+          {{ getKeyDisplay(key) }}
         </button>
       </div>
 
-      <!-- Row 2: QWERTY -->
-      <div class="flex gap-1 justify-center">
-        <button
-          v-for="key in ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p']"
-          :key="key"
-          class="key-btn"
-          @click="handleInput(key)"
-        >
-          {{ isShift ? key.toUpperCase() : key }}
+      <!-- Row 2: ASDFGH / Symbols 1 -->
+      <div class="flex gap-1.5 w-full justify-center px-[4%]">
+        <button v-for="key in row2" :key="key" class="key-btn flex-1" @click="handleInput(key)">
+          {{ getKeyDisplay(key) }}
         </button>
       </div>
 
-      <!-- Row 3: ASDFGH -->
-      <div class="flex gap-1 justify-center px-4">
+      <!-- Row 3: Shift + ZXCVBNM + Backspace / Symbols 2 -->
+      <div class="flex gap-1.5 w-full justify-center">
+        <!-- Shift / Symbol Switch -->
         <button
-          v-for="key in ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l']"
-          :key="key"
-          class="key-btn"
-          @click="handleInput(key)"
+          class="key-btn special bg-gray-700 w-[14%]"
+          :class="{
+            'bg-gray-200 text-gray-900': isShift && !isSymbolMode,
+            'bg-gray-700 text-white': !isShift || isSymbolMode,
+          }"
+          @click="handleShiftOrSymbol"
         >
-          {{ isShift ? key.toUpperCase() : key }}
-        </button>
-      </div>
-
-      <!-- Row 4: ZXCVBNM + Shift + Backspace -->
-      <div class="flex gap-1 justify-center">
-        <button
-          class="key-btn special bg-gray-700 active:bg-gray-600 w-12"
-          :class="{ 'text-blue-400': isShift }"
-          @click="isShift = !isShift"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M10 12h4" />
-            <path d="M12 14v-4" />
-            <path d="m18 9-6-6-6 6" />
-            <path d="M6 9v3a6 6 0 0 0 12 0V9" />
-          </svg>
+          <template v-if="!isSymbolMode">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M10 12h4" />
+              <path d="M12 14v-4" />
+              <path d="m18 9-6-6-6 6" />
+              <path d="M6 9v3a6 6 0 0 0 12 0V9" />
+            </svg>
+          </template>
+          <template v-else>
+            <span class="text-sm font-bold">{{ isSymbolPage2 ? '1/2' : '2/2' }}</span>
+          </template>
         </button>
 
-        <button
-          v-for="key in ['z', 'x', 'c', 'v', 'b', 'n', 'm']"
-          :key="key"
-          class="key-btn"
-          @click="handleInput(key)"
-        >
-          {{ isShift ? key.toUpperCase() : key }}
-        </button>
+        <!-- Keys -->
+        <div class="flex flex-1 gap-1.5">
+          <button v-for="key in row3" :key="key" class="key-btn flex-1" @click="handleInput(key)">
+            {{ getKeyDisplay(key) }}
+          </button>
+        </div>
 
+        <!-- Backspace -->
         <button
-          class="key-btn special bg-gray-700 active:bg-gray-600 w-12"
+          class="key-btn special bg-gray-700 active:bg-gray-600 w-[14%]"
           @click="handleBackspace"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
+            width="24"
+            height="24"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -101,18 +87,51 @@
         </button>
       </div>
 
-      <!-- Row 5: Space + Symbols + Enter -->
-      <div class="flex gap-1 justify-center mt-1">
-        <button class="key-btn special w-16 text-xs" @click="handleInput(isSymbol ? 'abc' : '!#1')">
-          {{ isSymbol ? 'ABC' : '?123' }}
-        </button>
-        <button class="key-btn flex-1 max-w-[200px]" @click="handleInput(' ')">Space</button>
-        <button class="key-btn special w-16 text-xs" @click="handleInput('.')">.</button>
+      <!-- Row 4: Mode + Space + Enter -->
+      <div class="flex gap-1.5 w-full justify-center mt-1">
         <button
-          class="key-btn special bg-blue-600 text-white active:bg-blue-700 w-20"
+          class="key-btn special bg-gray-700 w-[14%] text-sm font-bold"
+          @click="toggleSymbolMode"
+        >
+          {{ isSymbolMode ? 'ABC' : '?123' }}
+        </button>
+
+        <button
+          class="key-btn special bg-gray-700 w-[10%] text-sm font-bold"
+          @click="handleInput(',')"
+        >
+          ,
+        </button>
+
+        <button class="key-btn flex-1 bg-gray-700 active:bg-gray-600" @click="handleInput(' ')">
+          Space
+        </button>
+
+        <button
+          class="key-btn special bg-gray-700 w-[10%] text-sm font-bold"
+          @click="handleInput('.')"
+        >
+          .
+        </button>
+
+        <button
+          class="key-btn special bg-blue-600 text-white active:bg-blue-700 w-[14%]"
           @click="$emit('enter')"
         >
-          Enter
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="9 10 4 15 9 20" />
+            <path d="M20 4v7a4 4 0 0 1-4 4H4" />
+          </svg>
         </button>
       </div>
     </div>
@@ -120,7 +139,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed } from 'vue'
 
 const props = defineProps<{
   show: boolean
@@ -130,60 +149,58 @@ const props = defineProps<{
 const emit = defineEmits(['update:modelValue', 'close', 'enter'])
 
 const isShift = ref(false)
-const isSymbol = ref(false)
+const isSymbolMode = ref(false)
+const isSymbolPage2 = ref(false)
 
-// Simple symbol mapping (can be expanded)
-const symbolMap: Record<string, string> = {
-  q: '1',
-  w: '2',
-  e: '3',
-  r: '4',
-  t: '5',
-  y: '6',
-  u: '7',
-  i: '8',
-  o: '9',
-  p: '0',
-  a: '@',
-  s: '#',
-  d: '$',
-  f: '_',
-  g: '&',
-  h: '-',
-  j: '+',
-  k: '(',
-  l: ')',
-  z: '*',
-  x: '"',
-  c: "'",
-  v: ':',
-  b: ';',
-  n: '!',
-  m: '?',
+// Layout Definitions
+const qwerty = {
+  row1: ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+  row2: ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+  row3: ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
+}
+
+const symbols1 = {
+  row1: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+  row2: ['@', '#', '$', '_', '&', '-', '+', '(', ')', '/'],
+  row3: ['*', '"', "'", ':', ';', '!', '?'],
+}
+
+const symbols2 = {
+  row1: ['~', '`', '|', '•', '√', 'π', '÷', '×', '¶', '∆'],
+  row2: ['£', '¢', '€', '¥', '^', '°', '=', '{', '}', '\\'],
+  row3: ['%', '©', '®', '™', '✓', '[', ']'],
+}
+
+// Computed Rows based on current mode
+const row1 = computed(() => {
+  if (!isSymbolMode.value) return qwerty.row1
+  return isSymbolPage2.value ? symbols2.row1 : symbols1.row1
+})
+
+const row2 = computed(() => {
+  if (!isSymbolMode.value) return qwerty.row2
+  return isSymbolPage2.value ? symbols2.row2 : symbols1.row2
+})
+
+const row3 = computed(() => {
+  if (!isSymbolMode.value) return qwerty.row3
+  return isSymbolPage2.value ? symbols2.row3 : symbols1.row3
+})
+
+function getKeyDisplay(key: string) {
+  if (!isSymbolMode.value && isShift.value) {
+    return key.toUpperCase()
+  }
+  return key
 }
 
 function handleInput(key: string) {
-  if (key === '!#1') {
-    isSymbol.value = !isSymbol.value
-    return
-  }
-  if (key === 'abc') {
-    isSymbol.value = false
-    return
-  }
-
   let char = key
-  if (isSymbol.value) {
-    // Map char to symbol if in symbol mode
-    // For now, if we are in symbol mode, we might want to display different keys
-    // But to keep it simple, we just mapped standard QWERTY keys to symbols logic or rely on separate row.
-    // Wait, the template above renders numbers in Row 1.
-    // Let's implement a better symbol toggle later if needed.
-    // For now, let's just stick to the printed keys.
-  } else {
-    if (isShift.value) char = char.toUpperCase()
+  if (!isSymbolMode.value && isShift.value) {
+    char = char.toUpperCase()
+    // Auto-disable shift after one char unless caps lock (not implemented yet)
+    // isShift.value = false
   }
-
   emit('update:modelValue', props.modelValue + char)
 }
 
@@ -192,13 +209,26 @@ function handleBackspace() {
     emit('update:modelValue', props.modelValue.slice(0, -1))
   }
 }
+
+function toggleSymbolMode() {
+  isSymbolMode.value = !isSymbolMode.value
+  isSymbolPage2.value = false // Reset to page 1 when entering symbol mode
+}
+
+function handleShiftOrSymbol() {
+  if (isSymbolMode.value) {
+    isSymbolPage2.value = !isSymbolPage2.value
+  } else {
+    isShift.value = !isShift.value
+  }
+}
 </script>
 
 <style scoped>
 .key-btn {
-  @apply h-12 w-10 bg-gray-800 text-white rounded-md flex items-center justify-center text-lg font-medium shadow-sm active:bg-gray-700 transition-colors active:scale-95;
+  @apply h-14 bg-gray-800 text-white rounded-[6px] flex items-center justify-center text-xl font-medium shadow-[0_1px_0_rgba(0,0,0,0.3)] transition-all active:bg-gray-600 active:translate-y-[1px] active:shadow-none select-none touch-manipulation;
 }
 .special {
-  @apply text-sm font-bold;
+  @apply bg-gray-700 active:bg-gray-600;
 }
 </style>

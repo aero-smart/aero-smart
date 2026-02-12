@@ -139,7 +139,8 @@ pub fn create_default_config_file_if_missing() {
         #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         let default_port = "/dev/tty.usbmodem1234";
 
-        let content = format!(r#"# AeroSmart Service Configuration File
+        let content = format!(
+            r#"# AeroSmart Service Configuration File
 # Restart the application after modifying this file to apply changes.
 
 # [serial] Serial communication configuration
@@ -173,7 +174,9 @@ debug_mode = false
 
 # Enable onboarding screen on startup
 enable_onboarding = true
-"#, default_port);
+"#,
+            default_port
+        );
         if let Err(e) = fs::write(&config_path, content) {
             info!("Failed to create default config file: {}", e);
         } else {

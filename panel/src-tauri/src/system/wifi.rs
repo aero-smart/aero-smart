@@ -3,12 +3,12 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 #[cfg(target_os = "linux")]
 use std::process::Stdio;
 #[cfg(target_os = "linux")]
 use tokio::process::Command;
-use log::{debug, error, info, warn};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct WifiNetwork {
