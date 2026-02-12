@@ -4,9 +4,11 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use serde::{Deserialize, Serialize};
+#[cfg(target_os = "linux")]
 use std::process::Stdio;
+#[cfg(target_os = "linux")]
 use tokio::process::Command;
-use tracing::{error, info};
+use tracing::{debug, error, info, warn};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct WifiNetwork {
@@ -107,11 +109,14 @@ async fn test_connectivity() -> anyhow::Result<()> {
     }
 }
 
+#[cfg(target_os = "linux")]
 fn parse_scan_output(stdout: Vec<u8>) -> anyhow::Result<Vec<WifiNetwork>> {
-    let stdout = String::from_utf8(stdout)?;
+    let stdout_str = String::from_utf8(stdout)?;
+    info!("nmcli scan output raw:\n{}", stdout_str);
+
     let mut networks = Vec::new();
 
-    for line in stdout.lines() {
+    for line in stdout_str.lines() {
         // Format: IN-USE:SSID:SIGNAL:SECURITY
         // Note: SSID might contain colons, but usually nmcli escapes them or we can split carefully.
         // The -t mode uses ':' as separator and escapes ':' in values with '\'.
@@ -120,16 +125,23 @@ fn parse_scan_output(stdout: Vec<u8>) -> anyhow::Result<Vec<WifiNetwork>> {
 
         let parts: Vec<&str> = line.split(':').collect();
         if parts.len() < 4 {
+            debug!("Skipping line (parts < 4): {}", line);
             continue;
         }
 
         let in_use = parts[0] == "*";
         let ssid = parts[1].to_string();
         if ssid.is_empty() {
+            debug!("Skipping line (empty SSID): {}", line);
             continue;
         }
         let signal = parts[2].parse::<u8>().unwrap_or(0);
         let security = parts[3].to_string();
+
+        debug!(
+            "Parsed network: SSID={}, Signal={}, Security={}, InUse={}",
+            ssid, signal, security, in_use
+        );
 
         networks.push(WifiNetwork {
             ssid,
@@ -139,15 +151,20 @@ fn parse_scan_output(stdout: Vec<u8>) -> anyhow::Result<Vec<WifiNetwork>> {
         });
     }
 
+    info!("Total networks parsed: {}", networks.len());
+
     // Deduplicate by SSID, preferring the one in use or stronger signal
     networks.sort_by(|a, b| b.signal.cmp(&a.signal));
     networks.dedup_by(|a, b| a.ssid == b.ssid);
+
+    info!("Total networks after deduplication: {}", networks.len());
 
     Ok(networks)
 }
 
 #[cfg(target_os = "linux")]
 async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {
+    info!("Starting WiFi scan (Linux)...");
     // nmcli -t -f IN-USE,SSID,SIGNAL,SECURITY device wifi list
     let args = &[
         "-t",
@@ -160,46 +177,57 @@ async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {
         "yes",
     ];
 
+    info!("Executing command: nmcli {:?}", args);
     let mut output = Command::new("nmcli").args(args).output().await?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        info!(
+        warn!(
             "Scan failed (might be disabled): {}. Attempting to enable WiFi...",
             stderr
         );
 
         // Try to enable wifi
+        info!("Executing: nmcli radio wifi on");
         let _ = Command::new("nmcli")
             .args(&["radio", "wifi", "on"])
             .output()
             .await;
 
         // Try to unblock rfkill
+        info!("Executing: rfkill unblock wifi");
         let _ = Command::new("rfkill")
             .args(&["unblock", "wifi"])
             .output()
             .await;
 
         // Wait a bit for interface to come up
+        info!("Waiting 3s for interface to come up...");
         tokio::time::sleep(std::time::Duration::from_secs(3)).await;
 
         // Retry scan
+        info!("Retrying scan: nmcli {:?}", args);
         output = Command::new("nmcli").args(args).output().await?;
 
         if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            error!("nmcli failed after retry: {}", stderr);
             return Err(anyhow::anyhow!(
                 "nmcli failed: {}",
-                String::from_utf8_lossy(&output.stderr)
+                stderr
             ));
         }
     }
 
+    info!("Scan command successful, parsing output...");
     parse_scan_output(output.stdout)
 }
 
 #[cfg(not(target_os = "linux"))]
 async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {
+    info!("Handling scan request on non-linux OS");
+    debug!("Non-linux platform detected in scan_networks");
+    warn!("WiFi scanning requested but not supported on this OS (non-linux).");
     // Return empty list or error on non-linux
     // For development convenience, we might return a dummy list if allowed,
     // but user said "No simulated data". So we return error or empty.
