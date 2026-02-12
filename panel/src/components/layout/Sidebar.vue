@@ -229,10 +229,11 @@ let wifiInterval: number | null = null
 
 const qrCodeValue = computed(() => {
   if (wifiStatus.value.connected && wifiStatus.value.ip) {
+    const ip = wifiStatus.value.ip.split('/')[0]
     return JSON.stringify({
       success: true,
       ssid: wifiStatus.value.ssid,
-      ip: wifiStatus.value.ip,
+      ip,
     })
   }
   return JSON.stringify({
