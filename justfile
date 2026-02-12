@@ -60,7 +60,7 @@ build-panel-aarch64:
   cd panel && pnpm install
   cd panel && pnpm run tauri:build:aarch64
 
-build-firmware:
+build-firmware-thumbv7em:
   @echo "Building firmware in release mode..."
   cd firmware && cargo build --release --target thumbv7em-none-eabi
   cd firmware && cargo objcopy --release -- -O binary asfirmware.bin

@@ -21,7 +21,7 @@ export interface WifiStatus {
 async function handleResponseError(res: Response, defaultMsg: string): Promise<never> {
   // First, read the text body once.
   const text = await res.text()
-  
+
   // Log it for debugging
   console.error(`API Error [${res.url}]:`, text)
 
@@ -47,7 +47,8 @@ async function handleResponseError(res: Response, defaultMsg: string): Promise<n
 export async function scanWifi(): Promise<WifiNetwork[]> {
   const res = await fetch(`${API_BASE}/scan`)
   if (!res.ok) {
-    await handleResponseError(res, 'Failed to scan wifi')
+    const text = await res.text()
+    throw new Error(text || 'Failed to scan wifi')
   }
   return res.json()
 }
@@ -66,14 +67,16 @@ export async function connectWifi(ssid: string, password?: string): Promise<void
 export async function disconnectWifi(): Promise<void> {
   const res = await fetch(`${API_BASE}/disconnect`, { method: 'POST' })
   if (!res.ok) {
-    await handleResponseError(res, 'Failed to disconnect')
+    const text = await res.text()
+    throw new Error(text || 'Failed to disconnect')
   }
 }
 
 export async function getWifiStatus(): Promise<WifiStatus> {
   const res = await fetch(`${API_BASE}/status`)
   if (!res.ok) {
-    await handleResponseError(res, 'Failed to get status')
+    const text = await res.text()
+    throw new Error(text || 'Failed to get status')
   }
   return res.json()
 }

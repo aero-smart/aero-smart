@@ -74,32 +74,7 @@ jobs:
         working-directory: firmware
         run: |
           # Build the Embassy firmware for STM32H7
-          cargo build --release --target thumbv7em-none-eabihf --verbose
-
-      - name: Generate firmware binaries
-        working-directory: firmware
-        run: |
-          # Get the binary name from Cargo.toml
-          BINARY_NAME=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].targets[] | select(.kind[] | contains("bin")) | .name' | head -n1)
-          echo "Binary name: $BINARY_NAME"
-          
-          # Create firmware directory
-          mkdir -p ../artifacts/firmware
-          
-          # Generate .bin file (raw binary for flashing)
-          cargo objcopy --release --target thumbv7em-none-eabihf -- -O binary ../artifacts/firmware/${BINARY_NAME}.bin
-          
-          # Generate .hex file (Intel HEX format)
-          cargo objcopy --release --target thumbv7em-none-eabihf -- -O ihex ../artifacts/firmware/${BINARY_NAME}.hex
-          
-          # Copy ELF file for debugging
-          cp target/thumbv7em-none-eabihf/release/${BINARY_NAME} ../artifacts/firmware/${BINARY_NAME}.elf
-          
-          # Generate size report
-          cargo size --release --target thumbv7em-none-eabihf -- -A > ../artifacts/firmware/size_report.txt
-          
-          echo "=== Firmware Size Report ==="
-          cat ../artifacts/firmware/size_report.txt
+          just build-firmware-thumbv7em
 
       - name: Generate firmware metadata
         run: |

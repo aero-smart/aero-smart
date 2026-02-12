@@ -22,12 +22,12 @@
 
     <!-- Step Progress -->
     <div class="flex items-center justify-center gap-4 py-6 px-4">
-      <div 
-        v-for="(step, index) in steps" 
+      <div
+        v-for="(step, index) in steps"
         :key="index"
         class="flex items-center"
       >
-        <div 
+        <div
           class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300"
           :class="{
             'bg-black text-white': currentStep <= index,
@@ -36,7 +36,7 @@
         >
           {{ index + 1 }}
         </div>
-        <div 
+        <div
           v-if="index < steps.length - 1"
           class="h-1 w-12 md:w-16 mx-2 transition-all duration-300"
           :class="{
@@ -134,8 +134,8 @@
         </div>
 
         <div class="space-y-1.5">
-          <div 
-            v-for="wifi in availableWifi" 
+          <div
+            v-for="wifi in availableWifi"
             :key="wifi.ssid"
             @click="selectWifi(wifi)"
             class="p-2 rounded-xl border transition-all duration-200 cursor-pointer"
@@ -149,14 +149,70 @@
               <div class="flex items-center gap-2">
                 <Wifi class="w-3 h-3" />
                 <div>
-                  <div class="font-medium text-sm">{{ wifi.ssid }}</div>
-                  <div class="text-xs text-gray-400" v-if="selectedWifi?.ssid === wifi.ssid">
-                    {{ $t('onboarding.wifi_selected') }}
-                  </div>
+                  <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
+                    {{ $t('onboarding.wifi_title') }}
+                  </h1>
+                  <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.wifi_subtitle') }}</p>
+                </div>
+                <div class="flex items-center">
+                  <button
+                    @click="showSkipWifiModal = true"
+                    class="mr-2 text-sm text-gray-500 hover:text-gray-900 font-medium px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    {{ $t('onboarding.wifi_skip') }}
+                  </button>
+                  <button
+                    @click="wifiStore.scan()"
+                    :disabled="scanning"
+                    class="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
+                  >
+                    <RefreshCw
+                      :class="[
+                        'w-5 h-5',
+                        scanning ? 'animate-spin text-blue-600' : 'text-gray-600',
+                      ]"
+                    />
+                  </button>
                 </div>
               </div>
+
+              <!-- Error Message -->
+              <div v-if="wifiError" class="p-3 bg-red-50 text-red-600 text-xs rounded-xl">
+                {{ wifiError }}
+              </div>
+
+              <!-- Wifi List -->
+              <div
+                class="rounded-2xl border border-gray-200 overflow-hidden bg-white max-h-[300px] overflow-y-auto"
+              >
+                <div
+                  v-if="networks.length === 0 && !scanning"
+                  class="p-6 text-center text-gray-400 text-sm"
+                >
+                  No networks found
+                </div>
+
+                <button
+                  v-for="wifi in networks"
+                  :key="wifi.ssid"
+                  @click="selectWifi(wifi)"
+                  class="w-full px-4 py-3 flex items-center justify-between text-left transition-colors hover:bg-gray-50 border-b border-gray-100 last:border-0"
+                  :class="selectedWifi?.ssid === wifi.ssid ? 'bg-gray-50' : ''"
+                >
+                  <div class="flex items-center gap-3 min-w-0">
+                    <Wifi class="w-4 h-4 text-gray-500" />
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium text-gray-900 truncate">{{ wifi.ssid }}</div>
+                      <div class="text-[10px] text-gray-400 flex items-center gap-2">
+                        <span>{{ wifi.security }}</span>
+                        <span v-if="wifi.in_use" class="text-green-600 font-bold">Connected</span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              </div>
               <div class="flex items-center gap-1">
-                <div 
+                <div
                   class="w-2 h-2 rounded-full"
                   :class="{
                     'bg-green-500': wifi.signal > 70,
@@ -167,11 +223,11 @@
                 <span class="text-xs">{{ wifi.signal }}%</span>
               </div>
             </div>
-            
+
             <!-- Password input for selected WiFi -->
             <div v-if="selectedWifi?.ssid === wifi.ssid" class="mt-2 space-y-1.5">
               <h3 class="text-xs font-semibold text-gray-700">{{ $t('onboarding.wifi_password') }}</h3>
-              <input 
+              <input
                 v-model="wifiPassword"
                 type="password"
                 class="w-full px-2 py-1.5 rounded-xl border border-gray-200 focus:outline-none focus:border-black transition-all duration-200 text-sm"
@@ -192,7 +248,7 @@
         <div class="space-y-2">
           <div class="space-y-1.5">
             <label class="text-xs font-semibold text-gray-700 block">{{ $t('onboarding.email') }}</label>
-            <input 
+            <input
               v-model="loginForm.email"
               type="email"
               class="w-full px-2 py-1.5 rounded-xl border border-gray-200 focus:outline-none focus:border-black transition-all duration-200 text-sm"
@@ -202,7 +258,7 @@
 
           <div class="space-y-1.5">
             <label class="text-xs font-semibold text-gray-700 block">{{ $t('onboarding.password') }}</label>
-            <input 
+            <input
               v-model="loginForm.password"
               type="password"
               class="w-full px-2 py-1.5 rounded-xl border border-gray-200 focus:outline-none focus:border-black transition-all duration-200 text-sm"
@@ -212,7 +268,7 @@
 
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <input 
+              <input
                 v-model="loginForm.remember"
                 type="checkbox"
                 id="remember"
@@ -240,7 +296,7 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <input 
+          <input
             v-model="acceptTerms"
             type="checkbox"
             id="terms"
@@ -258,8 +314,8 @@
         </div>
 
         <div class="space-y-2">
-          <div 
-            v-for="(item, index) in calibrationItems" 
+          <div
+            v-for="(item, index) in calibrationItems"
             :key="index"
             class="p-2 rounded-xl border transition-all duration-200"
             :class="{
@@ -292,29 +348,60 @@
       </div>
     </div>
 
-    <!-- Navigation Buttons - Bottom Area -->
-    <div class="py-6 px-4 flex items-center justify-between">
-      <button
-        v-if="currentStep > 0"
-        @click="prevStep"
-        class="min-w-[120px] h-12 px-6 py-3 rounded-full border border-gray-200 text-black font-medium transition-all duration-200 hover:border-black hover:bg-gray-50 text-base flex items-center justify-center"
-      >
-        {{ $t('common.back') }}
-      </button>
-      <div v-else class="min-w-[120px]"></div>
+    <!-- WiFi Password Modal -->
+    <div
+      v-if="showWifiModal"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40"
+    >
+      <div class="bg-white p-6 rounded-3xl shadow-xl w-80 flex flex-col gap-4">
+        <h3 class="text-lg font-bold text-gray-900">Connect to {{ selectedWifi?.ssid }}</h3>
+        <input
+          v-model="wifiPassword"
+          type="password"
+          placeholder="Password"
+          class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-black focus:ring-1 focus:ring-black"
+          @focus="showKeyboardFor('wifiPassword')"
+        />
+        <div class="flex justify-end gap-2 mt-2">
+          <button @click="closeWifiModal" class="text-sm text-gray-500 px-4 py-2 font-medium">
+            Cancel
+          </button>
+          <button
+            @click="confirmConnect"
+            :disabled="connecting"
+            class="text-sm bg-black text-white px-5 py-2 rounded-xl hover:bg-gray-800 disabled:opacity-50 font-bold"
+          >
+            {{ connecting ? 'Connecting...' : 'Connect' }}
+          </button>
+        </div>
+      </div>
+    </div>
 
-      <button
-        @click="nextStep"
-        class="group relative min-w-[160px] h-12 px-8 py-3 bg-black text-white rounded-full font-medium text-base overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
-        :disabled="!canProceed"
-        :class="{
-          'opacity-50 cursor-not-allowed': !canProceed,
-          'opacity-100 cursor-pointer': canProceed
-        }"
-      >
-        {{ currentStep === steps.length - 1 ? $t('common.finish') : $t('common.next') }}
-        <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-      </button>
+    <!-- Skip WiFi Confirmation Modal -->
+    <div
+      v-if="showSkipWifiModal"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40"
+    >
+      <div class="bg-white p-6 rounded-3xl shadow-xl w-80 flex flex-col gap-4">
+        <h3 class="text-lg font-bold text-gray-900">{{ $t('onboarding.skip_wifi_title') }}</h3>
+        <p class="text-sm text-gray-500">
+          {{ $t('onboarding.skip_wifi_message') }}
+        </p>
+        <div class="flex justify-end gap-2 mt-2">
+          <button
+            @click="showSkipWifiModal = false"
+            class="text-sm text-gray-500 px-4 py-2 font-medium hover:bg-gray-50 rounded-xl"
+          >
+            {{ $t('common.cancel') }}
+          </button>
+          <button
+            @click="confirmSkipWifi"
+            class="text-sm bg-black text-white px-5 py-2 rounded-xl hover:bg-gray-800 font-bold"
+          >
+            {{ $t('common.confirm') }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>

@@ -95,7 +95,11 @@
                 type="button"
                 @click="config.timeRange = option"
                 class="px-2 py-1 rounded-md text-[11px] font-semibold border transition-colors"
-                :class="config.timeRange === option ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'"
+                :class="
+                  config.timeRange === option
+                    ? 'bg-gray-900 text-white border-gray-900'
+                    : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                "
               >
                 {{ option }}s
               </button>
@@ -208,7 +212,9 @@
         <div class="flex-1 w-full p-0">
           <div ref="chartEl" class="w-full h-full"></div>
         </div>
-        <div class="h-12 px-4 border-t border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur">
+        <div
+          class="h-12 px-4 border-t border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur"
+        >
           <div class="text-[11px] text-gray-500 font-medium">
             {{ formatTime(timelineStart) }} - {{ formatTime(timelineEnd) }}
           </div>
@@ -353,7 +359,9 @@ const maxOffset = computed(() => {
   return Math.max(0, Math.floor(span / timelineWindowMs.value))
 })
 
-const timelineEnd = computed(() => latestTimestamp.value - pageOffset.value * timelineWindowMs.value)
+const timelineEnd = computed(
+  () => latestTimestamp.value - pageOffset.value * timelineWindowMs.value,
+)
 const timelineStart = computed(() => timelineEnd.value - timelineWindowMs.value)
 
 const goPrevWindow = () => {
@@ -365,7 +373,11 @@ const goNextWindow = () => {
 }
 
 const formatTime = (timestamp: number) =>
-  new Date(Math.max(0, timestamp)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  new Date(Math.max(0, timestamp)).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
 
 const availableSources = computed(() => [
   { id: 'airspeed', label: t('control.sensors.airspeed'), unit: 'm/s', color: '#1f2937' },
@@ -703,12 +715,9 @@ watch(
   },
 )
 
-watch(
-  maxOffset,
-  () => {
-    if (pageOffset.value > maxOffset.value) pageOffset.value = maxOffset.value
-  },
-)
+watch(maxOffset, () => {
+  if (pageOffset.value > maxOffset.value) pageOffset.value = maxOffset.value
+})
 
 onMounted(() => {
   initChart()
