@@ -48,9 +48,16 @@ impl Default for RulesConfig {
 
 impl Default for AppConfig {
     fn default() -> Self {
+        #[cfg(target_os = "linux")]
+        let default_port = "/dev/ttyUSB0".to_string();
+        #[cfg(target_os = "windows")]
+        let default_port = "COM3".to_string();
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+        let default_port = "/dev/tty.usbmodem1234".to_string();
+
         Self {
             serial: SerialConfig {
-                port: "/dev/tty.usbmodem1234".to_string(),
+                port: default_port,
                 baud_rate: 915200,
                 handshake_timeout_secs: 2,
                 retry_interval_secs: 5,
@@ -125,13 +132,20 @@ pub fn save_config(config: &AppConfig) -> Result<(), String> {
 pub fn create_default_config_file_if_missing() {
     let config_path = get_config_path();
     if !config_path.exists() {
-        let content = r#"# AeroSmart Service Configuration File
+        #[cfg(target_os = "linux")]
+        let default_port = "/dev/ttyUSB0";
+        #[cfg(target_os = "windows")]
+        let default_port = "COM3";
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+        let default_port = "/dev/tty.usbmodem1234";
+
+        let content = format!(r#"# AeroSmart Service Configuration File
 # Restart the application after modifying this file to apply changes.
 
 # [serial] Serial communication configuration
 [serial]
 # Serial port name (e.g., /dev/tty.usbmodem1234, COM3, /dev/ttyUSB0)
-port = "/dev/tty.usbmodem1234"
+port = "{}"
 
 # Baud rate (default: 915200)
 baud_rate = 915200
@@ -159,7 +173,7 @@ debug_mode = false
 
 # Enable onboarding screen on startup
 enable_onboarding = true
-"#;
+"#, default_port);
         if let Err(e) = fs::write(&config_path, content) {
             info!("Failed to create default config file: {}", e);
         } else {

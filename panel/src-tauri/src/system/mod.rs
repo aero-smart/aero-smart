@@ -1,1 +1,1 @@
-mod wifi;
+pub mod wifi;

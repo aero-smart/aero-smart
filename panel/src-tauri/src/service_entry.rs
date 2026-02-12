@@ -1,4 +1,5 @@
 use crate::config::{self, AppConfig};
+use crate::system::wifi;
 use aerosmart_shared::serial::{AcknowledgementConfig, ArchivedSerialMessage, SerialMessage};
 use anyhow::Context;
 use axum::{
@@ -7,7 +8,7 @@ use axum::{
         State,
     },
     response::IntoResponse,
-    routing::get,
+    routing::{get, post},
     Router,
 };
 // use clap::Parser; // No longer needed
@@ -74,6 +75,11 @@ pub async fn run() -> anyhow::Result<()> {
     // Setup Axum Router
     let app = Router::new()
         .route("/ws", get(ws_handler))
+        .route("/api/wifi/scan", get(wifi::scan_handler))
+        .route("/api/wifi/connect", post(wifi::connect_handler))
+        .route("/api/wifi/disconnect", post(wifi::disconnect_handler))
+        .route("/api/wifi/status", get(wifi::status_handler))
+        .route("/api/wifi/test", get(wifi::test_handler))
         .layer(CorsLayer::permissive())
         .with_state(state);
 
