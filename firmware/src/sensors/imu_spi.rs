@@ -14,6 +14,9 @@ use embassy_stm32::{
 pub struct ImuSpi<'a> {
     pub spi: Spi<'a, Async>,
     pub cs: Output<'a>,
+
+    pub accel_config: AccelConfig0,
+    pub gyro_config: GyroConfig0,
 }
 
 #[derive(defmt::Format)]
@@ -59,11 +62,22 @@ impl<'a> ImuSpi<'a> {
     const ACCEL_DATA_X1: u8 = 0x1F;
     const INT_SOURCE0: u8 = 0x66;
 
-    pub fn new(spi: Spi<'a, Async>, cs: Output<'a>) -> Self {
-        ImuSpi { spi, cs }
+    pub fn new(
+        spi: Spi<'a, Async>,
+        cs: Output<'a>,
+        accel_config: AccelConfig0,
+        gyro_config: GyroConfig0,
+    ) -> Self {
+        ImuSpi {
+            spi,
+            cs,
+            accel_config,
+            gyro_config,
+        }
     }
 
     pub async fn poll(&mut self) -> Result<ImuData, ImuError> {
+        const RAW_MAX: f32 = 32768.0;
         self.cs.set_low();
         // perform SPI operations here
         let mut buffer = [0u8; { 1 + 6 * 2 }];
@@ -77,13 +91,18 @@ impl<'a> ImuSpi<'a> {
 
         info!("IMU Raw Data: {:?}", buffer);
 
-        // TODO make it correct
-        let accel_x = ((buffer[1] as i16) << 8 | (buffer[2] as i16)) as f32 / 16384.0;
-        let accel_y = ((buffer[3] as i16) << 8 | (buffer[4] as i16)) as f32 / 16384.0;
-        let accel_z = ((buffer[5] as i16) << 8 | (buffer[6] as i16)) as f32 / 16384.0;
-        let gyro_x = ((buffer[7] as i16) << 8 | (buffer[8] as i16)) as f32 / 131.0;
-        let gyro_y = ((buffer[9] as i16) << 8 | (buffer[10] as i16)) as f32 / 131.0;
-        let gyro_z = ((buffer[11] as i16) << 8 | (buffer[12] as i16)) as f32 / 131.0;
+        let accel_x = i16::from_be_bytes([buffer[1], buffer[2]]) as f32 / RAW_MAX
+            * self.accel_config.fs_sel.scale_factor();
+        let accel_y = i16::from_be_bytes([buffer[3], buffer[4]]) as f32 / RAW_MAX
+            * self.accel_config.fs_sel.scale_factor();
+        let accel_z = i16::from_be_bytes([buffer[5], buffer[6]]) as f32 / RAW_MAX
+            * self.accel_config.fs_sel.scale_factor();
+        let gyro_x = i16::from_be_bytes([buffer[7], buffer[8]]) as f32 / RAW_MAX
+            * self.gyro_config.fs_sel.scale_factor();
+        let gyro_y = i16::from_be_bytes([buffer[9], buffer[10]]) as f32 / RAW_MAX
+            * self.gyro_config.fs_sel.scale_factor();
+        let gyro_z = i16::from_be_bytes([buffer[11], buffer[12]]) as f32 / RAW_MAX
+            * self.gyro_config.fs_sel.scale_factor();
 
         Ok(ImuData::new(
             accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z,
@@ -98,11 +117,11 @@ impl<'a> ImuSpi<'a> {
         self.spi.write(&tx_buf).await.map_err(ImuError::SpiError)?;
 
         // Configure Gyroscope
-        tx_buf = [Self::GYRO_CONFIG0, GyroConfig0::default().to_byte()]; // Set full scale to ±250 dps
+        tx_buf = [Self::GYRO_CONFIG0, self.gyro_config.to_byte()]; // Set full scale to ±250 dps
         self.spi.write(&tx_buf).await.map_err(ImuError::SpiError)?;
 
         // Configure Accelerometer
-        tx_buf = [Self::ACCEL_CONFIG0, AccelConfig0::default().to_byte()]; // Set full scale to ±2g
+        tx_buf = [Self::ACCEL_CONFIG0, self.accel_config.to_byte()]; // Set full scale to ±2g
         self.spi.write(&tx_buf).await.map_err(ImuError::SpiError)?;
 
         tx_buf = [

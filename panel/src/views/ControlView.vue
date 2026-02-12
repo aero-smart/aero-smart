@@ -123,7 +123,9 @@
                 <div class="mt-1 text-xs font-semibold text-gray-800 leading-tight truncate">
                   {{ item.title }}
                 </div>
-                <div class="text-[10px] text-gray-500 mt-0.5 leading-tight truncate w-full">{{ item.detail }}</div>
+                <div class="text-[10px] text-gray-500 mt-0.5 leading-tight truncate w-full">
+                  {{ item.detail }}
+                </div>
               </button>
             </div>
           </div>
@@ -137,7 +139,17 @@
 import { ref, computed } from 'vue'
 import { useDeviceStore } from '@/stores/device'
 import { storeToRefs } from 'pinia'
-import { Sparkles, Wind, Gauge, Thermometer, Database, Zap, Activity, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import {
+  Sparkles,
+  Wind,
+  Gauge,
+  Thermometer,
+  Database,
+  Zap,
+  Activity,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -212,7 +224,7 @@ const baseSensorOptions = computed<SensorOption[]>(() => [
     sub: t('control.subs.attitude'),
     icon: Activity,
     getValue: () => `${imu.value.attitude.pitch.toFixed(1)}°`,
-  }
+  },
 ])
 
 const extraSensorOptions = computed<SensorOption[]>(() => [
@@ -347,7 +359,9 @@ const suggestions = computed(() => [
   },
 ])
 
-const totalPages = computed(() => Math.max(1, Math.ceil(suggestions.value.length / suggestionsPerPage)))
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(suggestions.value.length / suggestionsPerPage)),
+)
 
 const pagedSuggestions = computed(() => {
   const start = (currentPage.value - 1) * suggestionsPerPage

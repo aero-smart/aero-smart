@@ -1,6 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { type WifiNetwork, type WifiStatus, scanWifi, connectWifi, disconnectWifi, getWifiStatus } from '@/api/wifi'
+import {
+  type WifiNetwork,
+  type WifiStatus,
+  scanWifi,
+  connectWifi,
+  disconnectWifi,
+  getWifiStatus,
+} from '@/api/wifi'
 
 export const useWifiStore = defineStore('wifi', () => {
   const networks = ref<WifiNetwork[]>([])
@@ -29,7 +36,7 @@ export const useWifiStore = defineStore('wifi', () => {
       await updateStatus()
     } catch (e: any) {
       error.value = e.message
-      throw e 
+      throw e
     } finally {
       connecting.value = false
     }
@@ -65,6 +72,6 @@ export const useWifiStore = defineStore('wifi', () => {
     scan,
     connect,
     disconnect,
-    updateStatus
+    updateStatus,
   }
 })

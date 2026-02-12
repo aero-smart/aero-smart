@@ -104,7 +104,7 @@ async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {
         // The -t mode uses ':' as separator and escapes ':' in values with '\'.
         // For simplicity, we assume simple split for now, or use a regex.
         // A better way is to split by unescaped colons.
-        
+
         let parts: Vec<&str> = line.split(':').collect();
         if parts.len() < 4 {
             continue;
@@ -136,7 +136,7 @@ async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {
 #[cfg(not(target_os = "linux"))]
 async fn scan_networks() -> anyhow::Result<Vec<WifiNetwork>> {
     // Return empty list or error on non-linux
-    // For development convenience, we might return a dummy list if allowed, 
+    // For development convenience, we might return a dummy list if allowed,
     // but user said "No simulated data". So we return error or empty.
     // However, to allow frontend dev, maybe I should return error "Not supported on this OS".
     Err(anyhow::anyhow!("WiFi scanning not supported on this OS"))
@@ -150,10 +150,7 @@ async fn connect_network(ssid: &str, password: Option<&str>) -> anyhow::Result<(
         args.push(pwd);
     }
 
-    let output = Command::new("nmcli")
-        .args(&args)
-        .output()
-        .await?;
+    let output = Command::new("nmcli").args(&args).output().await?;
 
     if !output.status.success() {
         return Err(anyhow::anyhow!(
@@ -175,16 +172,16 @@ async fn disconnect_network() -> anyhow::Result<()> {
     // Disconnect current interface. Assuming 'wlan0' or finding the active one.
     // Safer: nmcli device disconnect wlan0
     // Or find the active connection.
-    
+
     // First find the active wifi device
     let output = Command::new("nmcli")
         .args(&["-t", "-f", "DEVICE,TYPE,STATE", "device", "status"])
         .output()
         .await?;
-        
+
     let stdout = String::from_utf8(output.stdout)?;
     let mut wifi_dev = None;
-    
+
     for line in stdout.lines() {
         let parts: Vec<&str> = line.split(':').collect();
         if parts.len() >= 3 && parts[1] == "wifi" && parts[2] == "connected" {
@@ -192,15 +189,18 @@ async fn disconnect_network() -> anyhow::Result<()> {
             break;
         }
     }
-    
+
     if let Some(dev) = wifi_dev {
         let output = Command::new("nmcli")
             .args(&["device", "disconnect", dev])
             .output()
             .await?;
-            
+
         if !output.status.success() {
-            return Err(anyhow::anyhow!("Failed to disconnect: {}", String::from_utf8_lossy(&output.stderr)));
+            return Err(anyhow::anyhow!(
+                "Failed to disconnect: {}",
+                String::from_utf8_lossy(&output.stderr)
+            ));
         }
     } else {
         return Err(anyhow::anyhow!("No active wifi connection found"));
@@ -211,19 +211,27 @@ async fn disconnect_network() -> anyhow::Result<()> {
 
 #[cfg(not(target_os = "linux"))]
 async fn disconnect_network() -> anyhow::Result<()> {
-    Err(anyhow::anyhow!("WiFi disconnection not supported on this OS"))
+    Err(anyhow::anyhow!(
+        "WiFi disconnection not supported on this OS"
+    ))
 }
 
 #[cfg(target_os = "linux")]
 async fn get_status() -> anyhow::Result<WifiStatus> {
     // nmcli -t -f TYPE,STATE,CONNECTION device status
     let output = Command::new("nmcli")
-        .args(&["-t", "-f", "TYPE,STATE,CONNECTION,IP4.ADDRESS", "device", "status"])
+        .args(&[
+            "-t",
+            "-f",
+            "TYPE,STATE,CONNECTION,IP4.ADDRESS",
+            "device",
+            "status",
+        ])
         .output()
         .await?;
-        
+
     let stdout = String::from_utf8(output.stdout)?;
-    
+
     for line in stdout.lines() {
         // wifi:connected:MyWifi:192.168.1.100/24
         let parts: Vec<&str> = line.split(':').collect();

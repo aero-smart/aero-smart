@@ -101,8 +101,44 @@
                 <option :value="50">50 Hz</option>
                 <option :value="100">100 Hz</option>
               </select>
+<<<<<<< Updated upstream
               <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-400 group-hover:text-gray-600 transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+=======
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Style -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4">
+          <div class="text-xs font-bold text-gray-700 flex items-center gap-2">
+            <Palette :size="14" class="text-gray-400" />
+            {{ $t('analysis.chart_style') }}
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1.5">
+              <span class="text-[10px] text-gray-500 font-medium">{{
+                $t('analysis.line_width')
+              }}</span>
+              <input
+                type="number"
+                v-model.number="config.lineWidth"
+                min="1"
+                max="5"
+                class="w-full bg-gray-50 border border-gray-100 rounded-lg px-2 py-1.5 text-[11px] font-medium"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <span class="text-[10px] text-gray-500 font-medium">{{
+                $t('analysis.show_grid')
+              }}</span>
+              <div class="flex items-center h-full">
+                <input
+                  type="checkbox"
+                  v-model="config.showGrid"
+                  class="w-4 h-4 rounded border-gray-300 text-gray-800 focus:ring-gray-800"
+                />
+>>>>>>> Stashed changes
               </div>
             </div>
           </div>

@@ -52,7 +52,9 @@
         <div
           class="bg-white rounded-2xl p-3 shadow-sm border border-white flex-1 flex flex-col gap-3 min-h-0"
         >
-          <div class="text-xs font-bold text-gray-700">{{ $t('dashboard.wind_speed_display') }}</div>
+          <div class="text-xs font-bold text-gray-700">
+            {{ $t('dashboard.wind_speed_display') }}
+          </div>
 
           <!-- Gauge -->
           <div class="flex-1 relative min-h-[240px] w-full overflow-visible pb-2">
@@ -84,11 +86,15 @@
         <div
           class="bg-white rounded-2xl p-4 shadow-sm border border-white flex flex-col gap-4 h-full"
         >
-          <div class="text-xs font-bold text-gray-700">{{ $t('dashboard.pressure_diff_monitor') }}</div>
+          <div class="text-xs font-bold text-gray-700">
+            {{ $t('dashboard.pressure_diff_monitor') }}
+          </div>
 
           <!-- Big Number -->
           <div class="bg-gray-100 rounded-xl p-6 flex flex-col items-center justify-center">
-            <div class="text-xs text-gray-500 font-medium mb-1">{{ $t('dashboard.current_pressure_diff') }}</div>
+            <div class="text-xs text-gray-500 font-medium mb-1">
+              {{ $t('dashboard.current_pressure_diff') }}
+            </div>
             <div class="flex items-baseline gap-2">
               <span class="text-4xl font-bold text-gray-800 tracking-tight">{{
                 pressureDiff.toFixed(2)

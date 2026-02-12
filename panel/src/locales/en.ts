@@ -153,7 +153,8 @@ export default {
     },
     ai_default_result:
       'Pressure diff and airflow curves are stable. Suggest smoothing with 2s window before assessing anomalies.',
-    ai_apply_suffix: '. Suggest evaluating whether further experiments are needed based on sensor trends.',
+    ai_apply_suffix:
+      '. Suggest evaluating whether further experiments are needed based on sensor trends.',
   },
   analysis: {
     title: 'Data Analysis',

@@ -20,7 +20,13 @@ use crate::{
         },
     },
     executors::{edf_pwm::EdfPwm, servo::Servo},
-    sensors::{audio_i2s::Audio, imu_spi::ImuSpi, lidar_uart::LidarUart, pitot_i2c::Airspeed},
+    sensors::{
+        audio_i2s::Audio,
+        drivers::icm_42688_p::{AccelConfig0, GyroConfig0},
+        imu_spi::ImuSpi,
+        lidar_uart::LidarUart,
+        pitot_i2c::Airspeed,
+    },
     state::{AUDIO_CHANNEL, GLOBAL_STATE, SAI_BUFFER},
     tasks::*,
 };
@@ -295,7 +301,7 @@ async fn main(spawner: Spawner) {
     info!("SPI2 initialized for WS2812 LED control");
 
     let icm_ss = Output::new(p.PB2, Level::High, Speed::VeryHigh);
-    let mut imu = ImuSpi::new(spi, icm_ss);
+    let mut imu = ImuSpi::new(spi, icm_ss, AccelConfig0::default(), GyroConfig0::default());
     let icm_drdy = ExtiInput::new(p.PB1, p.EXTI1, Pull::Up);
 
     info!("IMU SPI interface initialized");

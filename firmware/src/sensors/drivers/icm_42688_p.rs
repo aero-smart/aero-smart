@@ -142,6 +142,21 @@ pub enum GyroFullScale {
     Dps15_625 = 0b111,
 }
 
+impl GyroFullScale {
+    pub fn scale_factor(&self) -> f32 {
+        match self {
+            GyroFullScale::Dps2000 => 2000.0,
+            GyroFullScale::Dps1000 => 1000.0,
+            GyroFullScale::Dps500 => 500.0,
+            GyroFullScale::Dps250 => 250.0,
+            GyroFullScale::Dps125 => 125.0,
+            GyroFullScale::Dps62_5 => 62.5,
+            GyroFullScale::Dps31_25 => 31.25,
+            GyroFullScale::Dps15_625 => 15.625,
+        }
+    }
+}
+
 /// Gyroscope ODR selection for UI interface output
 /// - 0000: Reserved
 /// - 0001: 32kHz
@@ -241,6 +256,18 @@ pub enum AccelFullScale {
     Reserved1 = 0b101,
     Reserved2 = 0b110,
     Reserved3 = 0b111,
+}
+
+impl AccelFullScale {
+    pub fn scale_factor(&self) -> f32 {
+        match self {
+            AccelFullScale::G16 => 16.0,
+            AccelFullScale::G8 => 8.0,
+            AccelFullScale::G4 => 4.0,
+            AccelFullScale::G2 => 2.0,
+            _ => 16.0, // Default to ±16g
+        }
+    }
 }
 
 /// Accelerometer ODR selection for UI interface output
@@ -401,7 +428,7 @@ impl AccelConfig0 {
 impl Default for GyroConfig0 {
     fn default() -> Self {
         GyroConfig0 {
-            fs_sel: GyroFullScale::Dps250,
+            fs_sel: GyroFullScale::Dps31_25,
             odr: GyroOdr::from_hz(IMU_SAMPLE_RATE_HZ as f32),
         }
     }
@@ -410,7 +437,7 @@ impl Default for GyroConfig0 {
 impl Default for AccelConfig0 {
     fn default() -> Self {
         AccelConfig0 {
-            fs_sel: AccelFullScale::G16,
+            fs_sel: AccelFullScale::G2,
             odr: AccelOdr::from_hz(IMU_SAMPLE_RATE_HZ as f32),
         }
     }
