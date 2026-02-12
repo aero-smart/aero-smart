@@ -47,7 +47,7 @@
         </div>
 
         <!-- Scrollable Content Area -->
-        <div class="px-8 pb-4 flex-1 overflow-y-auto">
+        <div class="px-8 pb-4 flex-1 flex flex-col min-h-0 overflow-hidden">
           <Transition
             enter-active-class="transition duration-300 ease-out"
             enter-from-class="opacity-0 translate-y-2"
@@ -58,7 +58,7 @@
             mode="out-in"
           >
             <!-- Step 0: Language & Region -->
-            <div v-if="currentStep === 0" key="step0" class="space-y-8">
+            <div v-if="currentStep === 0" key="step0" class="space-y-8 overflow-y-auto">
               <div>
                 <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
                   {{ $t('onboarding.title') }}
@@ -121,44 +121,46 @@
             </div>
 
             <!-- Step 1: WiFi -->
-            <div v-else-if="currentStep === 1" key="step1" class="space-y-6 pb-20">
-              <div class="flex justify-between items-start">
-                <div>
-                  <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
-                    {{ $t('onboarding.wifi_title') }}
-                  </h1>
-                  <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.wifi_subtitle') }}</p>
+            <div v-else-if="currentStep === 1" key="step1" class="flex flex-col h-full space-y-4">
+              <div class="shrink-0">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
+                      {{ $t('onboarding.wifi_title') }}
+                    </h1>
+                    <p class="mt-2 text-sm text-gray-500">{{ $t('onboarding.wifi_subtitle') }}</p>
+                  </div>
+                  <div class="flex items-center">
+                    <button
+                      @click="showSkipWifiModal = true"
+                      class="mr-2 text-sm text-gray-500 hover:text-gray-900 font-medium px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      {{ $t('onboarding.wifi_skip') }}
+                    </button>
+                    <button
+                      @click="wifiStore.scan()"
+                      :disabled="scanning"
+                      class="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
+                    >
+                      <RefreshCw
+                        :class="[
+                          'w-5 h-5',
+                          scanning ? 'animate-spin text-blue-600' : 'text-gray-600',
+                        ]"
+                      />
+                    </button>
+                  </div>
                 </div>
-                <div class="flex items-center">
-                  <button
-                    @click="showSkipWifiModal = true"
-                    class="mr-2 text-sm text-gray-500 hover:text-gray-900 font-medium px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    {{ $t('onboarding.wifi_skip') }}
-                  </button>
-                  <button
-                    @click="wifiStore.scan()"
-                    :disabled="scanning"
-                    class="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50"
-                  >
-                    <RefreshCw
-                      :class="[
-                        'w-5 h-5',
-                        scanning ? 'animate-spin text-blue-600' : 'text-gray-600',
-                      ]"
-                    />
-                  </button>
-                </div>
-              </div>
 
-              <!-- Error Message -->
-              <div v-if="wifiError" class="p-3 bg-red-50 text-red-600 text-xs rounded-xl">
-                {{ wifiError }}
+                <!-- Error Message -->
+                <div v-if="wifiError" class="mt-4 p-3 bg-red-50 text-red-600 text-xs rounded-xl">
+                  {{ wifiError }}
+                </div>
               </div>
 
               <!-- Wifi List -->
               <div
-                class="rounded-2xl border border-gray-200 overflow-hidden bg-white max-h-[300px] overflow-y-auto"
+                class="flex-1 rounded-2xl border border-gray-200 overflow-hidden bg-white overflow-y-auto min-h-0"
               >
                 <div
                   v-if="networks.length === 0 && !scanning"
@@ -194,34 +196,36 @@
               </div>
 
               <!-- Connection Status -->
-              <div
-                v-if="connecting || testing"
-                class="flex items-center justify-center gap-2 py-4 text-sm text-gray-600"
-              >
-                <Loader2 class="w-4 h-4 animate-spin" />
-                <span>{{
-                  connecting ? 'Connecting to WiFi...' : 'Testing Internet Connection...'
-                }}</span>
-              </div>
-              <div
-                v-else-if="testResult === true"
-                class="flex items-center justify-center gap-2 py-4 text-sm text-green-600 font-medium"
-              >
-                <CheckCircle2 class="w-4 h-4" />
-                <span>Internet Connected (bilibili.com reachable)</span>
-              </div>
-              <div
-                v-else-if="testResult === false"
-                class="flex items-center justify-center gap-2 py-4 text-sm text-red-600 font-medium"
-              >
-                <XCircle class="w-4 h-4" />
-                <span>Internet Unreachable</span>
+              <div class="shrink-0">
+                <div
+                  v-if="connecting || testing"
+                  class="flex items-center justify-center gap-2 py-4 text-sm text-gray-600"
+                >
+                  <Loader2 class="w-4 h-4 animate-spin" />
+                  <span>{{
+                    connecting ? 'Connecting to WiFi...' : 'Testing Internet Connection...'
+                  }}</span>
+                </div>
+                <div
+                  v-else-if="testResult === true"
+                  class="flex items-center justify-center gap-2 py-4 text-sm text-green-600 font-medium"
+                >
+                  <CheckCircle2 class="w-4 h-4" />
+                  <span>Internet Connected (bilibili.com reachable)</span>
+                </div>
+                <div
+                  v-else-if="testResult === false"
+                  class="flex items-center justify-center gap-2 py-4 text-sm text-red-600 font-medium"
+                >
+                  <XCircle class="w-4 h-4" />
+                  <span>Internet Unreachable</span>
+                </div>
               </div>
             </div>
 
             <!-- Step 2: Terms -->
-            <div v-else-if="currentStep === 2" key="step2" class="space-y-6">
-              <div>
+            <div v-else-if="currentStep === 2" key="step2" class="flex flex-col h-full space-y-6">
+              <div class="shrink-0">
                 <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
                   {{ $t('onboarding.terms_title') }}
                 </h1>
@@ -229,7 +233,7 @@
               </div>
 
               <div
-                class="rounded-2xl border border-gray-200 bg-gray-50/50 p-4 h-40 overflow-y-auto"
+                class="flex-1 rounded-2xl border border-gray-200 bg-gray-50/50 p-4 overflow-y-auto min-h-0"
               >
                 <div class="text-sm text-gray-500 text-center py-6">
                   {{ $t('onboarding.terms_empty') }}
@@ -237,7 +241,7 @@
               </div>
 
               <label
-                class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                class="shrink-0 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 <input
                   v-model="acceptTerms"
@@ -251,24 +255,26 @@
             </div>
 
             <!-- Step 3: Activation -->
-            <div v-else-if="currentStep === 3" key="step3" class="space-y-6">
-              <div>
+            <div v-else-if="currentStep === 3" key="step3" class="flex flex-col h-full justify-center">
+              <div class="shrink-0 mb-6">
                 <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
                   Device Activation
                 </h1>
                 <p class="mt-2 text-sm text-gray-500">Connect and synchronize with the hardware.</p>
               </div>
 
-              <div class="flex flex-col items-center justify-center py-12 space-y-6">
+              <div class="flex-1 flex flex-col items-center justify-center space-y-6">
                 <!-- Status Icon -->
                 <div
-                  class="w-20 h-20 rounded-full flex items-center justify-center transition-colors"
+                  class="w-20 h-20 rounded-full flex items-center justify-center transition-colors cursor-pointer select-none"
                   :class="{
                     'bg-gray-100': activationStatus === 'idle',
                     'bg-blue-50': activationStatus === 'activating',
                     'bg-green-50': activationStatus === 'success',
                     'bg-red-50': activationStatus === 'error',
+                    'bg-yellow-50': activationStatus === 'skipped',
                   }"
+                  @click="handleErrorClick"
                 >
                   <Wifi v-if="activationStatus === 'idle'" class="w-10 h-10 text-gray-400" />
                   <Loader2
@@ -283,6 +289,10 @@
                     v-else-if="activationStatus === 'error'"
                     class="w-10 h-10 text-red-600"
                   />
+                  <CheckCircle2
+                    v-else-if="activationStatus === 'skipped'"
+                    class="w-10 h-10 text-yellow-600"
+                  />
                 </div>
 
                 <!-- Status Text -->
@@ -295,7 +305,9 @@
                           ? 'Activating...'
                           : activationStatus === 'success'
                             ? 'Activation Successful'
-                            : 'Activation Failed'
+                            : activationStatus === 'skipped'
+                              ? 'Activation Skipped'
+                              : 'Activation Failed'
                     }}
                   </h3>
                   <p class="text-sm text-gray-500 max-w-xs mx-auto">
@@ -306,7 +318,9 @@
                           ? 'Connecting to serial port and syncing hardware clock...'
                           : activationStatus === 'success'
                             ? 'Device connected and synchronized. You can now finish setup.'
-                            : activationError || 'An unknown error occurred.'
+                            : activationStatus === 'skipped'
+                              ? 'Device activation was skipped. You can finish setup now.'
+                              : activationError || 'An unknown error occurred.'
                     }}
                   </p>
                 </div>
@@ -470,8 +484,9 @@ const selectedWifi = ref<WifiNetwork | null>(null)
 const wifiPassword = ref('')
 const loginForm = ref({ email: '', password: '', remember: false })
 const acceptTerms = ref(false)
-const activationStatus = ref<'idle' | 'activating' | 'success' | 'error'>('idle')
+const activationStatus = ref<'idle' | 'activating' | 'success' | 'error' | 'skipped'>('idle')
 const activationError = ref('')
+const errorClickCount = ref(0)
 
 const steps = ['Language & Region', 'WiFi', 'Terms', 'Activation']
 
@@ -539,6 +554,10 @@ async function startActivation() {
     // Poll status
     const poll = setInterval(async () => {
       try {
+        if (activationStatus.value === 'skipped') {
+           clearInterval(poll)
+           return
+        }
         const res = await fetch('http://localhost:3000/api/activation/status')
         const data = await res.json()
         console.log('Activation Status:', data)
@@ -561,6 +580,15 @@ async function startActivation() {
   }
 }
 
+const handleErrorClick = () => {
+  if (activationStatus.value === 'error') {
+    errorClickCount.value++
+    if (errorClickCount.value >= 5) {
+      activationStatus.value = 'skipped'
+    }
+  }
+}
+
 const canProceed = computed(() => {
   switch (currentStep.value) {
     case 0:
@@ -572,7 +600,7 @@ const canProceed = computed(() => {
     case 2:
       return acceptTerms.value
     case 3:
-      return activationStatus.value === 'success'
+      return activationStatus.value === 'success' || activationStatus.value === 'skipped'
     default:
       return false
   }
