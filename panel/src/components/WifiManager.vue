@@ -8,11 +8,11 @@
     </div>
 
     <div class="flex justify-between items-center shrink-0">
-      <div v-if="status.connected || status.ip" class="flex flex-col gap-0.5">
+      <div v-if="activeConnection.connected" class="flex flex-col gap-0.5">
         <div class="flex items-center gap-2">
           <span class="text-xs text-green-600 font-bold flex items-center gap-1">
             <CheckCircle2 class="w-3 h-3" />
-            {{ status.ssid || 'Unknown SSID' }}
+            {{ activeConnection.ssid || 'Unknown SSID' }}
           </span>
           <button
             @click="handleDisconnect"
@@ -24,7 +24,7 @@
         </div>
         <!-- Requirement 2: Show IPv4 Address -->
         <div class="text-[10px] text-gray-400 font-mono ml-4">
-          IP: {{ status.ip || 'Obtaining IP...' }}
+          IP: {{ activeConnection.ip || 'Obtaining IP...' }}
         </div>
       </div>
       <div v-else class="text-xs text-gray-500">Not Connected</div>
@@ -120,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useWifiStore } from '@/stores/wifi'
 import { useKeyboardStore } from '@/stores/keyboard'
 import { storeToRefs } from 'pinia'
@@ -136,6 +136,34 @@ const { networks, status, scanning, connecting, error } = storeToRefs(store)
 const showPasswordModal = ref(false)
 const selectedSsid = ref('')
 const password = ref('')
+
+// Compute active connection state by merging store status and scan results
+const activeConnection = computed(() => {
+  // Priority 1: Status from backend says connected or has IP
+  if (status.value.connected || status.value.ip) {
+    return {
+      connected: true,
+      ssid: status.value.ssid,
+      ip: status.value.ip
+    }
+  }
+
+  // Priority 2: Scan list shows an in-use network
+  const connectedNet = networks.value.find(n => n.in_use)
+  if (connectedNet) {
+    return {
+      connected: true,
+      ssid: connectedNet.ssid,
+      ip: null // Scan result doesn't provide IP
+    }
+  }
+
+  return {
+    connected: false,
+    ssid: null,
+    ip: null
+  }
+})
 
 onMounted(() => {
   store.updateStatus()
