@@ -14,18 +14,40 @@ export interface WifiStatus {
   ip: string | null
 }
 
+/**
+ * Helper function to handle API errors by parsing JSON or text response.
+ * This ensures we don't try to read the stream twice.
+ */
+async function handleResponseError(res: Response, defaultMsg: string): Promise<never> {
+  // First, read the text body once.
+  const text = await res.text()
+  
+  // Log it for debugging
+  console.error(`API Error [${res.url}]:`, text)
+
+  let errorMessage = defaultMsg
+  try {
+    // Try to parse as JSON
+    const data = JSON.parse(text)
+    if (data && data.error) {
+      errorMessage = data.error
+    } else if (text) {
+        // If valid JSON but no 'error' field, use the raw text if available
+        errorMessage = text
+    }
+  } catch (e) {
+    // Not JSON, fall back to raw text if available
+    if (text) {
+      errorMessage = text
+    }
+  }
+  throw new Error(errorMessage)
+}
+
 export async function scanWifi(): Promise<WifiNetwork[]> {
   const res = await fetch(`${API_BASE}/scan`)
   if (!res.ok) {
-    let errorMessage = 'Failed to scan wifi'
-    const text = await res.text()
-    try {
-      const data = JSON.parse(text)
-      if (data && data.error) errorMessage = data.error
-    } catch (e) {
-      if (text) errorMessage = text
-    }
-    throw new Error(errorMessage)
+    await handleResponseError(res, 'Failed to scan wifi')
   }
   return res.json()
 }
@@ -37,45 +59,21 @@ export async function connectWifi(ssid: string, password?: string): Promise<void
     body: JSON.stringify({ ssid, password }),
   })
   if (!res.ok) {
-    let errorMessage = 'Failed to connect'
-    const text = await res.text()
-    try {
-      const data = JSON.parse(text)
-      if (data && data.error) errorMessage = data.error
-    } catch (e) {
-      if (text) errorMessage = text
-    }
-    throw new Error(errorMessage)
+    await handleResponseError(res, 'Failed to connect')
   }
 }
 
 export async function disconnectWifi(): Promise<void> {
   const res = await fetch(`${API_BASE}/disconnect`, { method: 'POST' })
   if (!res.ok) {
-    let errorMessage = 'Failed to disconnect'
-    const text = await res.text()
-    try {
-      const data = JSON.parse(text)
-      if (data && data.error) errorMessage = data.error
-    } catch (e) {
-      if (text) errorMessage = text
-    }
-    throw new Error(errorMessage)
+    await handleResponseError(res, 'Failed to disconnect')
   }
 }
 
 export async function getWifiStatus(): Promise<WifiStatus> {
   const res = await fetch(`${API_BASE}/status`)
   if (!res.ok) {
-    let errorMessage = 'Failed to get status'
-    const text = await res.text()
-    try {
-      const data = JSON.parse(text)
-      if (data && data.error) errorMessage = data.error
-    } catch (e) {
-      if (text) errorMessage = text
-    }
-    throw new Error(errorMessage)
+    await handleResponseError(res, 'Failed to get status')
   }
   return res.json()
 }
@@ -83,14 +81,6 @@ export async function getWifiStatus(): Promise<WifiStatus> {
 export async function testWifiConnection(): Promise<void> {
   const res = await fetch(`${API_BASE}/test`)
   if (!res.ok) {
-    let errorMessage = 'Connectivity test failed'
-    const text = await res.text()
-    try {
-      const data = JSON.parse(text)
-      if (data && data.error) errorMessage = data.error
-    } catch (e) {
-      if (text) errorMessage = text
-    }
-    throw new Error(errorMessage)
+    await handleResponseError(res, 'Connectivity test failed')
   }
 }
