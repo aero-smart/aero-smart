@@ -63,6 +63,21 @@
         </div>
       </button>
 
+      <!-- Mobile Connect Indicator -->
+      <button
+        @click="isMobileConnectOpen = true"
+        class="w-[36px] h-[36px] rounded-[7px] flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-gray-100 transition-all group relative cursor-pointer"
+        :class="{ 'bg-nav-active text-text-primary': isMobileConnectOpen }"
+      >
+        <Smartphone :size="18" stroke-width="2" />
+        <!-- Tooltip -->
+        <div
+          class="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50"
+        >
+          Connect Mobile
+        </div>
+      </button>
+
       <!-- WiFi Indicator -->
       <button
         @click="isWifiManagerOpen = true"
@@ -109,6 +124,51 @@
 
   <SettingsModal v-model:isOpen="isSettingsOpen" @close="isSettingsOpen = false" />
 
+  <!-- Mobile Connect Modal -->
+  <Transition
+    enter-active-class="transition duration-200 ease-out"
+    enter-from-class="opacity-0"
+    enter-to-class="opacity-100"
+    leave-active-class="transition duration-150 ease-in"
+    leave-from-class="opacity-100"
+    leave-to-class="opacity-0"
+  >
+    <div v-if="isMobileConnectOpen" class="fixed inset-0 z-[100] flex items-center justify-center">
+      <div
+        class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        @click="isMobileConnectOpen = false"
+      ></div>
+      <div
+        class="relative z-10 bg-surface rounded-xl shadow-xl p-6 w-[400px] flex flex-col gap-6 bg-white"
+      >
+        <div class="flex flex-row gap-6 items-center">
+          <!-- Left: QR Code -->
+          <div
+            class="flex items-center justify-center bg-white p-2 rounded-lg border border-gray-100 shrink-0"
+          >
+            <QrcodeVue :value="qrCodeValue" :size="120" level="H" />
+          </div>
+
+          <!-- Right: Instructions -->
+          <div class="flex flex-col justify-center flex-1 gap-2">
+            <h3 class="font-medium text-lg text-text-primary">连接手机</h3>
+            <p class="text-text-secondary text-sm leading-relaxed">
+              在 AeroSmart Mobile 中点击“连接设备”
+            </p>
+          </div>
+        </div>
+
+        <!-- Close Button -->
+        <button
+          @click="isMobileConnectOpen = false"
+          class="flex items-center justify-center w-full py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-text-secondary hover:text-text-primary transition-colors font-medium text-sm"
+        >
+          关闭
+        </button>
+      </div>
+    </div>
+  </Transition>
+
   <!-- Wifi Manager Modal -->
   <Transition
     enter-active-class="transition duration-200 ease-out"
@@ -143,6 +203,7 @@ import {
   BatteryCharging,
   Wifi,
   WifiOff,
+  Smartphone,
 } from 'lucide-vue-next'
 import { useDeviceStore } from '@/stores/device'
 import { useWifiStore } from '@/stores/wifi'
@@ -151,18 +212,35 @@ import { storeToRefs } from 'pinia'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import SettingsModal from '@/components/SettingsModal.vue'
 import WifiManager from '@/components/WifiManager.vue'
+import QrcodeVue from 'qrcode.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const store = useDeviceStore()
 const wifiStore = useWifiStore()
 const serialStore = useSerialStore()
-const { isConnected, battery } = storeToRefs(store)
+const { battery } = storeToRefs(store)
 const { status: wifiStatus, testResult: wifiTestResult } = storeToRefs(wifiStore)
 
 const isSettingsOpen = ref(false)
 const isWifiManagerOpen = ref(false)
+const isMobileConnectOpen = ref(false)
 let wifiInterval: number | null = null
+
+const qrCodeValue = computed(() => {
+  if (wifiStatus.value.connected && wifiStatus.value.ip) {
+    return JSON.stringify({
+      success: true,
+      ssid: wifiStatus.value.ssid,
+      ip: wifiStatus.value.ip,
+    })
+  }
+  return JSON.stringify({
+    success: false,
+    ssid: '',
+    ip: '',
+  })
+})
 
 onMounted(() => {
   // Initial check
