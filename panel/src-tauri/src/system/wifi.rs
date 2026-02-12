@@ -374,12 +374,13 @@ async fn disconnect_network() -> anyhow::Result<()> {
 
 #[cfg(target_os = "linux")]
 async fn get_status() -> anyhow::Result<WifiStatus> {
-    // nmcli -t -f TYPE,STATE,CONNECTION device status
+    // Step 1: Find the connected wifi device
+    // nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device status
     let output = Command::new("nmcli")
         .args(&[
             "-t",
             "-f",
-            "TYPE,STATE,CONNECTION,IP4.ADDRESS",
+            "DEVICE,TYPE,STATE,CONNECTION",
             "device",
             "status",
         ])
@@ -387,19 +388,78 @@ async fn get_status() -> anyhow::Result<WifiStatus> {
         .await?;
 
     let stdout = String::from_utf8(output.stdout)?;
+    
+    let mut active_dev = None;
+    let mut active_ssid = None;
 
     for line in stdout.lines() {
-        // wifi:connected:MyWifi:192.168.1.100/24
+        // Format: wlan0:wifi:connected:MySSID
+        // Note: Connection name might contain colons, escaped.
+        // But for status, it's usually the connection ID.
         let parts: Vec<&str> = line.split(':').collect();
-        if parts.len() >= 3 && parts[0] == "wifi" {
-            if parts[1] == "connected" {
-                return Ok(WifiStatus {
-                    connected: true,
-                    ssid: Some(parts[2].to_string()),
-                    ip: parts.get(3).map(|s| s.to_string()),
-                });
+        if parts.len() >= 4 {
+            let dev = parts[0];
+            let type_ = parts[1];
+            let state = parts[2];
+            let connection = parts[3];
+
+            if type_ == "wifi" && state == "connected" {
+                active_dev = Some(dev.to_string());
+                active_ssid = Some(connection.to_string());
+                break;
             }
         }
+    }
+
+    if let Some(dev) = active_dev {
+        // Step 2: Get IP address for the device
+        // nmcli -t -f IP4.ADDRESS device show <dev>
+        let ip_output = Command::new("nmcli")
+            .args(&[
+                "-t",
+                "-f",
+                "IP4.ADDRESS",
+                "device",
+                "show",
+                &dev,
+            ])
+            .output()
+            .await?;
+        
+        let ip_stdout = String::from_utf8(ip_output.stdout)?;
+        // Output format: IP4.ADDRESS:192.168.1.100/24
+        // Or multiple lines. We take the first non-empty one.
+        
+        let mut ip = None;
+        for line in ip_stdout.lines() {
+            if let Some(val) = line.strip_prefix("IP4.ADDRESS:") {
+                if !val.is_empty() {
+                    ip = Some(val.to_string());
+                    break;
+                }
+            } else if !line.is_empty() {
+                // Sometimes it might just be the value if field selection behavior varies?
+                // But standard behavior with -f KEY is KEY:VALUE in show mode (terse).
+                // Let's try to parse flexibly.
+                if line.contains(':') {
+                     let parts: Vec<&str> = line.splitn(2, ':').collect();
+                     if parts.len() == 2 && !parts[1].is_empty() {
+                         ip = Some(parts[1].to_string());
+                         break;
+                     }
+                } else {
+                    // Just value?
+                     ip = Some(line.to_string());
+                     break;
+                }
+            }
+        }
+
+        return Ok(WifiStatus {
+            connected: true,
+            ssid: active_ssid,
+            ip,
+        });
     }
 
     Ok(WifiStatus {
