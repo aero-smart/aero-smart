@@ -326,11 +326,19 @@ async fn serial_task(
                 let mut buf = vec![0u8; len];
                 port.read_exact(&mut buf).await.context("Failed to read payload")?;
 
+                info!("RX [{} bytes]: {:02X?}", len, buf);
+                if len == 96 {
+                    info!("Confirmed packet size: 96 bytes (Exact Match)");
+                } else {
+                    warn!("Packet size mismatch: expected 96, got {}", len);
+                }
+
                 // 3. Deserialize & Broadcast
                 match rkyv::access::<ArchivedSerialMessage, rkyv::rancor::Error>(&buf) {
                     Ok(archived) => {
                         match rkyv::deserialize::<SerialMessage, rkyv::rancor::Error>(archived) {
                             Ok(native) => {
+                                info!("RX Deserialized: {:?}", native);
                                 // Update status if waiting
                                 {
                                     // Use try_write to avoid blocking if not needed, or just write.
@@ -368,6 +376,7 @@ async fn serial_task(
 
             // Downlink: WebSocket -> Serial
             Some(msg) = cmd_rx.recv() => {
+                info!("TX Command: {:?}", msg);
                 let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&msg)
                     .map_err(|e| anyhow::anyhow!("Serialization error: {:?}", e))?;
 
@@ -377,6 +386,7 @@ async fn serial_task(
                 port.write_all(&len.to_le_bytes()).await.context("Failed to write command length prefix")?;
 
                 port.write_all(&bytes).await?;
+                info!("TX [{} bytes]: {:02X?}", len, bytes);
             }
         }
     }
