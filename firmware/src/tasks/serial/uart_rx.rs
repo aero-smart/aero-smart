@@ -1,4 +1,4 @@
-use crate::state::{MachineStatus, STATUS_UPDATED_SIGNAL};
+use crate::state::{AIRSPEED_UPDATED_SIGNAL, MachineStatus, STATUS_UPDATED_SIGNAL};
 
 use {defmt_rtt as _, panic_probe as _};
 
@@ -56,6 +56,10 @@ pub async fn serial_uart_rx_task(mut rx: UartRx<'static, Async>) {
                         "Updated desired airspeed to {} m/s",
                         state.desired_airspeed_meters_per_second
                     );
+                    if state.machine_status == MachineStatus::Idle && *airspeed > 0 {
+                        state.machine_status = MachineStatus::Running;
+                        STATUS_UPDATED_SIGNAL.signal(());
+                    }
                 }
 
                 ArchivedSerialMessage::ServoConfig(ArchivedServoConfig { angle }) => {
@@ -74,7 +78,10 @@ pub async fn serial_uart_rx_task(mut rx: UartRx<'static, Async>) {
                             state.machine_status = MachineStatus::Running;
                         }
                         ArchivedCommand::Stop => {
+                            info!("Received Stop Command via Serial");
                             state.machine_status = MachineStatus::Idle;
+                            state.desired_airspeed_meters_per_second = 0.0;
+                            AIRSPEED_UPDATED_SIGNAL.signal(());
                         }
                         ArchivedCommand::Calibrate => {
                             state.machine_status = MachineStatus::Initializing;

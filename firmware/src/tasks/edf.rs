@@ -24,6 +24,11 @@ pub async fn edf_task(mut edf: EdfPwm, mut pid: AirspeedControl) {
             )
         };
 
+        if setpoint == 0.0 {
+            edf.set_throttle_compatible(0);
+            continue;
+        }
+
         match status {
             MachineStatus::Running => {
                 defmt::info!(

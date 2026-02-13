@@ -92,7 +92,7 @@ pub fn get_battery_info(adc_reading: u16, vrefint_reading: u16) -> (f32, f32, f3
     const NUM_CELLS: f32 = 4.0;
 
     let battery_voltage = adc_to_voltage(adc_reading, vrefint_reading);
-    let cell_voltage = battery_voltage / NUM_CELLS;
+    let cell_voltage = battery_voltage / NUM_CELLS * 4.0;
     let soc = get_soc(cell_voltage);
 
     (battery_voltage, cell_voltage, soc)

@@ -143,9 +143,9 @@ async fn main(spawner: Spawner) {
         pwm_servo: false,
         wdt: true,
         fft: true,
-        ahrs: true,
+        ahrs: false,
         ctrl_airspeed: true,
-        battery_adc: true,
+        battery_adc: false,
         analog_pressure: true,
     };
 
@@ -515,17 +515,5 @@ async fn main(spawner: Spawner) {
             Ok(_) => info!("Acoustic Analysis task spawned"),
             Err(e) => defmt::panic!("Failed to spawn Acoustic Analysis task: {:?}", e),
         }
-    }
-
-    spawner.spawn(test_pid_task()).unwrap();
-}
-
-#[embassy_executor::task]
-async fn test_pid_task() {
-    Timer::after(Duration::from_secs(5)).await;
-    {
-        let mut state = GLOBAL_STATE.lock().await;
-        state.desired_airspeed_meters_per_second = 13.5;
-        state.machine_status = state::MachineStatus::Running;
     }
 }
