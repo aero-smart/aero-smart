@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: read
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -79,10 +79,10 @@ jobs:
       - name: Generate firmware metadata
         run: |
           cd artifacts/firmware
-          
+
           # Calculate checksums
           sha256sum *.bin *.hex *.elf > checksums.txt
-          
+
           # Get binary sizes
           ls -lh *.bin *.hex *.elf > file_sizes.txt
 

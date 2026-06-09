@@ -1,5 +1,5 @@
 [package]
-name              = "panel"
+name = "panel"
 edition.workspace = true
 license.workspace = true
 version.workspace = true
@@ -16,11 +16,7 @@ serde = { version = "1.0.204", features = ["derive"] }
 sqlx = { version = "0.8.0", features = ["postgres"] }
 tokio = { version = "1.38.0", features = ["full"] }
 tokio-serial = "5.4.4"
-aerosmart-shared = { path = "../shared", features = [
-  "sql",
-  "serde",
-  "graphql",
-] }
+aerosmart-shared = { path = "../shared", features = ["sql", "serde", "graphql"] }
 thiserror = "1.0.61"
 tower-http = { version = "0.5.2", features = ["cors", "trace", "fs"] }
 serde_json = "1.0.120"

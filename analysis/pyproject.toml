@@ -1,0 +1,13 @@
+[project]
+name = "analysis"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "anthropic>=0.79.0",
+    "eclipse-zenoh>=1.7.2",
+    "google-genai>=1.63.0",
+    "httpx[socket,sockets]>=0.28.1",
+    "openai>=2.21.0",
+]

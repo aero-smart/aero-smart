@@ -30,17 +30,17 @@ aero-smart/
 
 ## Tech Stack
 
-| Component | Technology |
-|-----------|------------|
-| Firmware | Rust + Embassy async runtime (STM32H7, Cortex-M7) |
-| Backend | Rust + Axum + WebSocket + tokio-serial |
-| Frontend | Vue 3 + TypeScript + Vite (beta) + Pinia + Tailwind CSS + ECharts |
-| Desktop | Tauri v2 (wraps panel as native app for OrangePi) |
-| Mobile | Flutter (Android/iOS companion) |
+| Component    | Technology                                                           |
+| ------------ | -------------------------------------------------------------------- |
+| Firmware     | Rust + Embassy async runtime (STM32H7, Cortex-M7)                    |
+| Backend      | Rust + Axum + WebSocket + tokio-serial                               |
+| Frontend     | Vue 3 + TypeScript + Vite (beta) + Pinia + Tailwind CSS + ECharts    |
+| Desktop      | Tauri v2 (wraps panel as native app for OrangePi)                    |
+| Mobile       | Flutter (Android/iOS companion)                                      |
 | Shared Types | rkyv (zero-copy, no_std) + Serde (JSON) + ts-rs (TypeScript codegen) |
-| Hardware | STM32H743VG @ 400MHz, probe-rs for flashing |
-| Database | PostgreSQL + SQLx + pgvector (schema defined, not yet wired) |
-| Docs | VitePress |
+| Hardware     | STM32H743VG @ 400MHz, probe-rs for flashing                          |
+| Database     | PostgreSQL + SQLx + pgvector (schema defined, not yet wired)         |
+| Docs         | VitePress                                                            |
 
 ## Development Commands
 
@@ -226,6 +226,7 @@ service/src/
 ```
 
 **Current implementation status:**
+
 - **Implemented:** Serial communication (handshake + bidirectional rkyv/JSON bridge), WebSocket server, WiFi management
 - **Placeholder:** GraphQL API, database layer, request context
 
@@ -330,13 +331,13 @@ panel/src/
 
 ### Serialization Strategy
 
-| Context | Library | Format | Purpose |
-|---------|---------|--------|---------|
-| Firmware ↔ Service | rkyv | Binary (length-prefixed) | Zero-copy, no_std, UART |
-| Service ↔ Frontend | Serde | JSON (WebSocket) | Web-friendly |
-| Rust → TypeScript | ts-rs | Generated `.ts` files | Type safety across stack |
-| Database | SQLx | SQL (PostgreSQL) | Type-safe queries |
-| Vector embeddings | pgvector | `vector(16)` | Acoustic spectral similarity |
+| Context            | Library  | Format                   | Purpose                      |
+| ------------------ | -------- | ------------------------ | ---------------------------- |
+| Firmware ↔ Service | rkyv     | Binary (length-prefixed) | Zero-copy, no_std, UART      |
+| Service ↔ Frontend | Serde    | JSON (WebSocket)         | Web-friendly                 |
+| Rust → TypeScript  | ts-rs    | Generated `.ts` files    | Type safety across stack     |
+| Database           | SQLx     | SQL (PostgreSQL)         | Type-safe queries            |
+| Vector embeddings  | pgvector | `vector(16)`             | Acoustic spectral similarity |
 
 ## Communication Protocol
 
@@ -431,33 +432,33 @@ IWDG:      Independent watchdog (20 s timeout)
 
 ### Sensors
 
-| Sensor | Interface | Address | Sample Rate | Purpose |
-|--------|-----------|---------|-------------|---------|
-| ICM-42688-P | SPI (1 MHz) | — | 1 kHz | 6-DOF IMU |
-| MS4525DO | I2C | 0x28 | 20 Hz | Pitot tube (airspeed) |
-| BME280 | I2C | 0x76 | 1 Hz | Barometer/humidity |
-| ADS1115 | I2C | 0x48 | 5 Hz | 16-bit ADC (pressure) |
-| TF-Mini S | UART | — | 10 Hz | LIDAR distance |
-| ICS-43434 | I2S/SAI | — | 44.1 kHz | Microphone (acoustic) |
+| Sensor      | Interface   | Address | Sample Rate | Purpose               |
+| ----------- | ----------- | ------- | ----------- | --------------------- |
+| ICM-42688-P | SPI (1 MHz) | —       | 1 kHz       | 6-DOF IMU             |
+| MS4525DO    | I2C         | 0x28    | 20 Hz       | Pitot tube (airspeed) |
+| BME280      | I2C         | 0x76    | 1 Hz        | Barometer/humidity    |
+| ADS1115     | I2C         | 0x48    | 5 Hz        | 16-bit ADC (pressure) |
+| TF-Mini S   | UART        | —       | 10 Hz       | LIDAR distance        |
+| ICS-43434   | I2S/SAI     | —       | 44.1 kHz    | Microphone (acoustic) |
 
 ### Actuators
 
-| Actuator | Protocol | Timer | Purpose |
-|----------|----------|-------|---------|
-| 70mm EDFs (×2) | PWM 50 Hz | TIM5 CH1/CH2 | Airflow generation |
-| MG90S Servo | PWM 50 Hz | TIM2 CH3 | Angle-of-attack |
-| WS2812B LEDs | Addressable | SPI2 | Status indication |
+| Actuator       | Protocol    | Timer        | Purpose            |
+| -------------- | ----------- | ------------ | ------------------ |
+| 70mm EDFs (×2) | PWM 50 Hz   | TIM5 CH1/CH2 | Airflow generation |
+| MG90S Servo    | PWM 50 Hz   | TIM2 CH3     | Angle-of-attack    |
+| WS2812B LEDs   | Addressable | SPI2         | Status indication  |
 
 ## Database Schema (PostgreSQL)
 
 Located in `service/migrations/20260111031124_initial.sql`. Extensions: `pgvector`, `uuid-ossp`.
 
-| Table | Purpose | Key Columns |
-|-------|---------|-------------|
-| `experiments` | Experiment sessions | id (UUID), name, description, created_at, updated_at |
-| `imu_records` | IMU telemetry | session (FK), timestamp, accel_z, gyro_x/y, quad_w/i/j/k |
-| `pitot_airspeed_records` | Airspeed measurements | session (FK), timestamp, splitter_left/right, static_port |
-| `acoustic_records` | Acoustic data + embeddings | session (FK), timestamp, overall_spl, peak_frequency, spectral_shape (vector(16)), turbulence_index |
+| Table                    | Purpose                    | Key Columns                                                                                         |
+| ------------------------ | -------------------------- | --------------------------------------------------------------------------------------------------- |
+| `experiments`            | Experiment sessions        | id (UUID), name, description, created_at, updated_at                                                |
+| `imu_records`            | IMU telemetry              | session (FK), timestamp, accel_z, gyro_x/y, quad_w/i/j/k                                            |
+| `pitot_airspeed_records` | Airspeed measurements      | session (FK), timestamp, splitter_left/right, static_port                                           |
+| `acoustic_records`       | Acoustic data + embeddings | session (FK), timestamp, overall_spl, peak_frequency, spectral_shape (vector(16)), turbulence_index |
 
 Indexes: composite (session, timestamp DESC) for range queries; HNSW on `spectral_shape` for vector similarity.
 
@@ -483,6 +484,7 @@ version = "0.1.0"
 ### Firmware Build Script (`firmware/build.rs`)
 
 Generates at compile time:
+
 - **Hann window**: 1024-point coefficients → `src/algorithms/hann_window.rs`
 - **Blackman-Harris window**: 1024-point coefficients → `src/algorithms/blackman_harris_window.rs`
 
@@ -501,11 +503,13 @@ just gen-ts-schema
 ### CI/CD
 
 **GitHub Actions** (`.github/workflows/build-aarch64.yml`):
+
 - Triggers on push/PR to `main` (panel or shared changes)
 - Builds Tauri app for `aarch64-unknown-linux-gnu` (OrangePi Zero 3)
 - Produces `.deb` package and AppImage artifacts (30-day retention)
 
 **Just CI commands:**
+
 - `just ci-shared` — check + clippy + build shared
 - `just ci-firmware` — check + clippy + build firmware (thumbv7em-none-eabi)
 - `just ci-panel` — type-check + lint + build panel
